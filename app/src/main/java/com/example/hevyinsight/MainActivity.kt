@@ -97,14 +97,7 @@ fun MainScreen() {
             composable(Screen.Settings.route) {
                 SettingsScreen()
             }
-            composable(
-                route = Screen.WorkoutDetail.route,
-                arguments = listOf(
-                    androidx.navigation.compose.navArgument("workoutId") {
-                        type = NavType.StringType
-                    }
-                )
-            ) { backStackEntry ->
+            composable(Screen.WorkoutDetail.route) { backStackEntry ->
                 val workoutId = backStackEntry.arguments?.getString("workoutId")
                 WorkoutDetailScreen(
                     workoutId = workoutId,

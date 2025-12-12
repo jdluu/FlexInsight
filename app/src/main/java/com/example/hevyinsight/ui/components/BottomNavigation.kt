@@ -63,7 +63,8 @@ fun HevyBottomNavigation(
                 BottomNavItem(
                     item = item,
                     isSelected = currentRoute == item.route,
-                    onClick = { onNavigate(item.route) }
+                    onClick = { onNavigate(item.route) },
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -74,11 +75,11 @@ fun HevyBottomNavigation(
 fun BottomNavItem(
     item: NavItem,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = androidx.compose.ui.Modifier
-            .weight(1f)
+        modifier = modifier
             .fillMaxHeight()
             .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
