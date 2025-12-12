@@ -581,18 +581,18 @@ fun VolumeBalanceChart() {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.Bottom
         ) {
-            VolumeBar("Push", 0.45f, Color(0xFF60A5FA))
-            VolumeBar("Pull", 0.30f, Color(0xFF9333EA))
-            VolumeBar("Legs", 0.85f, Primary, isHighlighted = true)
-            VolumeBar("Cardio", 0.60f, OrangeAccent)
+            VolumeBar("Push", 0.45f, Color(0xFF60A5FA), modifier = Modifier.weight(1f))
+            VolumeBar("Pull", 0.30f, Color(0xFF9333EA), modifier = Modifier.weight(1f))
+            VolumeBar("Legs", 0.85f, Primary, isHighlighted = true, modifier = Modifier.weight(1f))
+            VolumeBar("Cardio", 0.60f, OrangeAccent, modifier = Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-fun VolumeBar(label: String, percentage: Float, color: Color, isHighlighted: Boolean = false) {
+fun VolumeBar(label: String, percentage: Float, color: Color, isHighlighted: Boolean = false, modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier.weight(1f),
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {

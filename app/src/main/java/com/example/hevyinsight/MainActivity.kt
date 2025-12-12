@@ -101,7 +101,7 @@ fun MainScreen() {
             composable(
                 route = Screen.WorkoutDetail.route,
                 arguments = listOf(
-                    navArgument("workoutId") {
+                    androidx.navigation.navArgument("workoutId") {
                         type = NavType.StringType
                     }
                 )

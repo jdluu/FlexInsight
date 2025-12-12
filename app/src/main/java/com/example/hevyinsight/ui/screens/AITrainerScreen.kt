@@ -129,13 +129,12 @@ fun AITrainerHeader() {
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                        Icon(
-                            imageVector = Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
                 Column {
                     Text(
@@ -215,13 +214,12 @@ fun ChatBubble(message: ChatMessage) {
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                    Icon(
-                        imageVector = Icons.Default.SmartToy,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.SmartToy,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
             }
             Spacer(modifier = Modifier.width(12.dp))
         }

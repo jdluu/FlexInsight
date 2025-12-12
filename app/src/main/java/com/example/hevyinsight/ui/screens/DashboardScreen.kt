@@ -246,9 +246,9 @@ fun FeaturedWorkoutCard(onClick: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    StatBox("Time", "52m", Icons.Default.Timer)
-                    StatBox("Sets", "18", Icons.Default.FitnessCenter)
-                    StatBox("Vol", "12.4k", Icons.Default.MonitorWeight)
+                    StatBox("Time", "52m", Icons.Default.Timer, modifier = Modifier.weight(1f))
+                    StatBox("Sets", "18", Icons.Default.FitnessCenter, modifier = Modifier.weight(1f))
+                    StatBox("Vol", "12.4k", Icons.Default.MonitorWeight, modifier = Modifier.weight(1f))
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -257,8 +257,7 @@ fun FeaturedWorkoutCard(onClick: () -> Unit) {
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = BackgroundDark.copy(alpha = 0.5f),
-                    border = BorderStroke(2.dp, Primary, RoundedCornerShape(12.dp))
-                        .copy(start = 2.dp, end = 0.dp, top = 0.dp, bottom = 0.dp)
+                    border = BorderStroke(2.dp, Primary)
                 ) {
                     Column(
                         modifier = Modifier.padding(12.dp)
@@ -317,9 +316,9 @@ fun FeaturedWorkoutCard(onClick: () -> Unit) {
 }
 
 @Composable
-fun StatBox(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+fun StatBox(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier = Modifier) {
     Surface(
-        modifier = Modifier.weight(1f),
+        modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         color = Color.White.copy(alpha = 0.05f),
         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
@@ -641,18 +640,18 @@ fun QuickActionsGrid() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            QuickActionButton("Start", Icons.Default.PlayArrow, Primary)
-            QuickActionButton("Log Weight", Icons.Default.MonitorWeight, Color.White)
-            QuickActionButton("Add Note", Icons.Default.EditNote, Color.White)
-            QuickActionButton("Analytics", Icons.Default.Analytics, Color.White)
+            QuickActionButton("Start", Icons.Default.PlayArrow, Primary, modifier = Modifier.weight(1f))
+            QuickActionButton("Log Weight", Icons.Default.MonitorWeight, Color.White, modifier = Modifier.weight(1f))
+            QuickActionButton("Add Note", Icons.Default.EditNote, Color.White, modifier = Modifier.weight(1f))
+            QuickActionButton("Analytics", Icons.Default.Analytics, Color.White, modifier = Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-fun QuickActionButton(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, iconColor: Color) {
+fun QuickActionButton(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, iconColor: Color, modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier.weight(1f),
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {

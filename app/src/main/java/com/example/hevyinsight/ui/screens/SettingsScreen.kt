@@ -308,13 +308,12 @@ fun IntegrationItem(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = iconColor ?: Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconColor ?: Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
                 Column {
                     Row(
@@ -328,15 +327,18 @@ fun IntegrationItem(
                             color = Color.White
                         )
                         if (badge != null) {
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                brush = Brush.linearGradient(
-                                    colors = listOf(
-                                        Color(0xFF3B82F6).copy(alpha = 0.2f),
-                                        Color(0xFF9333EA).copy(alpha = 0.2f)
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(
+                                        brush = Brush.linearGradient(
+                                            colors = listOf(
+                                                Color(0xFF3B82F6).copy(alpha = 0.2f),
+                                                Color(0xFF9333EA).copy(alpha = 0.2f)
+                                            )
+                                        )
                                     )
-                                ),
-                                border = BorderStroke(1.dp, Color(0xFF3B82F6).copy(alpha = 0.3f))
+                                    .border(1.dp, Color(0xFF3B82F6).copy(alpha = 0.3f), RoundedCornerShape(6.dp))
                             ) {
                                 Text(
                                     text = badge.uppercase(),

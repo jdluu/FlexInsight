@@ -669,13 +669,12 @@ fun AICoachReflectionCard() {
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                        Icon(
-                            imageVector = Icons.Default.Psychology,
-                            contentDescription = null,
-                            tint = Color.Black,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Psychology,
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.size(18.dp)
+                    )
                 }
                 Column(
                     modifier = Modifier.weight(1f),
