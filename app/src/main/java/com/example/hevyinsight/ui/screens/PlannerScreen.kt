@@ -2,6 +2,7 @@ package com.example.hevyinsight.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hevyinsight.ui.theme.*
@@ -112,7 +114,7 @@ fun WeeklyGoalCard() {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.Baseline
+                        verticalAlignment = Alignment.Bottom
                     ) {
                         Text(
                             text = "3",
@@ -396,7 +398,7 @@ fun WorkoutItem(
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (isCompleted) Color.Black.copy(alpha = 0.6f) else Color.Black,
-                            textDecoration = if (isCompleted) androidx.compose.ui.text.TextDecoration.LineThrough else null
+                            textDecoration = if (isCompleted) TextDecoration.LineThrough else null
                         )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),

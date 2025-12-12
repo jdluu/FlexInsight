@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Workout History &amp; Analytics</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "primary-dark": "#0ea841",
+                        "surface": "#1a2c20",
+                        "surface-highlight": "#23482f",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "text-secondary": "#92c9a4",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"],
+                        "sans": ["Lexend", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem", 
+                        "lg": "1rem", 
+                        "xl": "1.5rem", 
+                        "2xl": "2rem",
+                        "3xl": "2.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glass-effect {
+            background: rgba(26, 44, 32, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-background-dark overflow-x-hidden">
+<div class="mx-auto flex min-h-screen w-full max-w-md flex-col relative pb-24">
+<header class="sticky top-0 z-50 flex items-center justify-between bg-background-light/90 dark:bg-background-dark/90 px-6 py-4 backdrop-blur-md transition-colors">
+<h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Workout History</h1>
+<button class="group flex h-10 w-10 items-center justify-center rounded-full bg-surface-highlight hover:bg-primary/20 transition-all active:scale-95">
+<span class="material-symbols-outlined text-primary group-hover:text-primary-dark transition-colors" style="font-size: 24px;">tune</span>
+</button>
+</header>
+<div class="px-4 py-2 sticky top-[72px] z-40 bg-background-light dark:bg-background-dark">
+<div class="flex h-12 w-full items-center rounded-2xl bg-surface p-1 shadow-inner">
+<button class="flex h-full flex-1 items-center justify-center rounded-xl bg-primary text-background-dark shadow-sm transition-all">
+<span class="text-sm font-bold">Summary</span>
+</button>
+<button class="flex h-full flex-1 items-center justify-center rounded-xl text-text-secondary hover:bg-surface-highlight/50 transition-all">
+<span class="text-sm font-medium">Exercises</span>
+</button>
+<button class="flex h-full flex-1 items-center justify-center rounded-xl text-text-secondary hover:bg-surface-highlight/50 transition-all">
+<span class="text-sm font-medium">Compare</span>
+</button>
+</div>
+</div>
+<main class="flex flex-col gap-6 px-4 pt-4">
+<div class="relative overflow-hidden rounded-2xl border border-primary/30 bg-surface p-5 shadow-[0_0_15px_rgba(19,236,91,0.1)]">
+<div class="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-primary/10 blur-2xl"></div>
+<div class="relative flex flex-col gap-3">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined filled" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="text-xs font-bold uppercase tracking-wider">AI Insights</span>
+</div>
+<p class="text-lg font-medium leading-snug text-white">
+                        You've increased your <span class="text-primary">chest volume by 15%</span> this month! Keep pushing on compound movements.
+                    </p>
+<button class="mt-1 w-fit rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary hover:text-background-dark transition-colors">
+                        View Analysis
+                    </button>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-3">
+<div class="flex flex-col items-center justify-center rounded-2xl bg-surface p-4 text-center">
+<span class="text-3xl font-bold text-white">42</span>
+<span class="text-xs font-medium text-text-secondary mt-1">Workouts</span>
+</div>
+<div class="flex flex-col items-center justify-center rounded-2xl bg-surface p-4 text-center">
+<div class="flex items-baseline gap-0.5">
+<span class="text-2xl font-bold text-white">12.4</span>
+<span class="text-xs font-bold text-text-secondary">k</span>
+</div>
+<span class="text-xs font-medium text-text-secondary mt-1">Avg Vol (kg)</span>
+</div>
+<div class="flex flex-col items-center justify-center rounded-2xl bg-surface p-4 text-center">
+<span class="text-xl font-bold text-primary">Oct 12</span>
+<span class="text-xs font-medium text-text-secondary mt-1">Best Week</span>
+</div>
+</div>
+<div class="flex flex-col gap-4 rounded-3xl bg-surface p-6">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="text-sm font-medium text-text-secondary">Total Volume</h3>
+<p class="mt-1 text-3xl font-bold text-white">124,500 <span class="text-lg text-text-secondary font-normal">kg</span></p>
+</div>
+<div class="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-bold text-primary">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>12%</span>
+</div>
+</div>
+<div class="h-40 w-full pt-4">
+<svg class="h-full w-full overflow-visible" viewBox="0 0 400 150">
+<defs>
+<linearGradient id="gradient-fill" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#13ec5b" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#13ec5b" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+<line opacity="0.5" stroke="#326744" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="400" y1="150" y2="150"></line>
+<line opacity="0.3" stroke="#326744" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="400" y1="75" y2="75"></line>
+<path d="M0,120 C50,120 80,60 130,70 C180,80 220,110 270,90 C320,70 350,20 400,30 V150 H0 Z" fill="url(#gradient-fill)"></path>
+<path d="M0,120 C50,120 80,60 130,70 C180,80 220,110 270,90 C320,70 350,20 400,30" fill="none" stroke="#13ec5b" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+<circle cx="130" cy="70" fill="#102216" r="4" stroke="#13ec5b" stroke-width="2"></circle>
+<circle cx="270" cy="90" fill="#102216" r="4" stroke="#13ec5b" stroke-width="2"></circle>
+<circle cx="400" cy="30" fill="#13ec5b" r="6" stroke="#ffffff" stroke-width="2"></circle>
+</svg>
+</div>
+<div class="flex justify-between px-2 text-xs font-medium text-text-secondary">
+<span>W1</span>
+<span>W2</span>
+<span>W3</span>
+<span>W4</span>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="ml-1 text-lg font-bold text-white">Analysis Breakdown</h3>
+<div class="flex gap-4 overflow-x-auto scrollbar-hide pb-2 -mx-4 px-4 snap-x">
+<div class="min-w-[280px] snap-center flex-1 rounded-3xl bg-surface p-6">
+<h4 class="mb-6 text-base font-bold text-white">Volume by Muscle</h4>
+<div class="flex items-center gap-6">
+<div class="relative h-32 w-32 flex-shrink-0">
+<svg class="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="40" stroke="#23482f" stroke-width="12"></circle>
+<circle cx="50" cy="50" fill="none" r="40" stroke="#13ec5b" stroke-dasharray="251.2" stroke-dashoffset="150" stroke-linecap="round" stroke-width="12"></circle>
+<circle class="origin-center rotate-[144deg]" cx="50" cy="50" fill="none" r="40" stroke="#0ea841" stroke-dasharray="251.2" stroke-dashoffset="175" stroke-linecap="round" stroke-width="12"></circle>
+<circle class="origin-center rotate-[252deg]" cx="50" cy="50" fill="none" r="40" stroke="#065f24" stroke-dasharray="251.2" stroke-dashoffset="200" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-text-secondary">fitness_center</span>
+</div>
+</div>
+<div class="flex flex-col justify-center gap-3">
+<div class="flex items-center gap-2">
+<div class="h-3 w-3 rounded-full bg-primary"></div>
+<span class="text-sm font-medium text-white">Chest</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="h-3 w-3 rounded-full bg-primary-dark"></div>
+<span class="text-sm font-medium text-white">Legs</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="h-3 w-3 rounded-full bg-[#065f24]"></div>
+<span class="text-sm font-medium text-white">Back</span>
+</div>
+</div>
+</div>
+</div>
+<div class="min-w-[280px] snap-center flex-1 rounded-3xl bg-surface p-6">
+<h4 class="mb-2 text-base font-bold text-white">Duration Trend</h4>
+<p class="text-2xl font-bold text-white">55 <span class="text-sm text-text-secondary font-normal">min avg</span></p>
+<div class="mt-8 flex h-20 items-end justify-between gap-2">
+<div class="group relative w-full">
+<div class="mx-auto h-10 w-3 rounded-full bg-surface-highlight group-hover:bg-primary transition-colors"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-text-secondary">M</span>
+</div>
+<div class="group relative w-full">
+<div class="mx-auto h-14 w-3 rounded-full bg-surface-highlight group-hover:bg-primary transition-colors"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-text-secondary">T</span>
+</div>
+<div class="group relative w-full">
+<div class="mx-auto h-8 w-3 rounded-full bg-surface-highlight group-hover:bg-primary transition-colors"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-text-secondary">W</span>
+</div>
+<div class="group relative w-full">
+<div class="mx-auto h-16 w-3 rounded-full bg-primary shadow-[0_0_10px_rgba(19,236,91,0.4)]"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white">T</span>
+</div>
+<div class="group relative w-full">
+<div class="mx-auto h-12 w-3 rounded-full bg-surface-highlight group-hover:bg-primary transition-colors"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-text-secondary">F</span>
+</div>
+<div class="group relative w-full">
+<div class="mx-auto h-6 w-3 rounded-full bg-surface-highlight group-hover:bg-primary transition-colors"></div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-text-secondary">S</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div>
+<div class="mb-4 flex items-center justify-between">
+<h3 class="ml-1 text-lg font-bold text-white">Recent PRs</h3>
+<button class="text-sm font-medium text-primary hover:text-primary-dark">View All</button>
+</div>
+<div class="flex flex-col gap-3">
+<div class="group flex items-center gap-4 rounded-2xl bg-surface p-4 transition-transform active:scale-[0.98]">
+<div class="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-highlight text-primary">
+<span class="material-symbols-outlined">fitness_center</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-white">Bench Press</h4>
+<p class="text-xs text-text-secondary">Oct 14 • Chest</p>
+</div>
+<div class="h-8 w-16">
+<svg class="h-full w-full overflow-visible" viewBox="0 0 60 30">
+<path d="M0,25 L10,20 L20,22 L30,10 L40,15 L50,5 L60,2" fill="none" stroke="#13ec5b" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="text-right">
+<p class="text-base font-bold text-white">225 <span class="text-xs font-normal text-text-secondary">lbs</span></p>
+<p class="text-[10px] font-bold text-primary">NEW 1RM</p>
+</div>
+</div>
+<div class="group flex items-center gap-4 rounded-2xl bg-surface p-4 transition-transform active:scale-[0.98]">
+<div class="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-highlight text-text-secondary group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined">directions_run</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold text-white">Back Squat</h4>
+<p class="text-xs text-text-secondary">Oct 12 • Legs</p>
+</div>
+<div class="h-8 w-16 opacity-60">
+<svg class="h-full w-full overflow-visible" viewBox="0 0 60 30">
+<path d="M0,20 L15,22 L30,15 L45,18 L60,10" fill="none" stroke="#92c9a4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="text-right">
+<p class="text-base font-bold text-white">315 <span class="text-xs font-normal text-text-secondary">lbs</span></p>
+<p class="text-[10px] text-text-secondary">Vol: 4.2k</p>
+</div>
+</div>
+</div>
+</div>
+<div class="h-20"></div>
+</main>
+<div class="fixed bottom-6 left-1/2 z-50 h-[72px] w-[95%] max-w-[400px] -translate-x-1/2 rounded-3xl border border-surface-highlight bg-[#102216]/95 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] flex items-center justify-between px-2 pb-1">
+<button class="group flex flex-1 flex-col items-center justify-center gap-1 p-1 text-text-secondary hover:text-white transition-all active:scale-95">
+<div class="rounded-full px-4 py-1 transition-colors group-hover:bg-surface-highlight/50">
+<span class="material-symbols-outlined">dashboard</span>
+</div>
+<span class="text-[10px] font-medium opacity-80">Dash</span>
+</button>
+<button class="group flex flex-1 flex-col items-center justify-center gap-1 p-1 text-primary transition-all active:scale-95">
+<div class="rounded-full bg-primary/20 px-4 py-1 text-primary shadow-[0_0_10px_rgba(19,236,91,0.2)]">
+<span class="material-symbols-outlined filled" style="font-variation-settings: 'FILL' 1;">history</span>
+</div>
+<span class="text-[10px] font-bold">History</span>
+</button>
+<button class="group flex flex-1 flex-col items-center justify-center gap-1 p-1 text-text-secondary hover:text-white transition-all active:scale-95">
+<div class="rounded-full px-4 py-1 transition-colors group-hover:bg-surface-highlight/50">
+<span class="material-symbols-outlined">smart_toy</span>
+</div>
+<span class="text-[10px] font-medium opacity-80">Trainer</span>
+</button>
+<button class="group flex flex-1 flex-col items-center justify-center gap-1 p-1 text-text-secondary hover:text-white transition-all active:scale-95">
+<div class="rounded-full px-4 py-1 transition-colors group-hover:bg-surface-highlight/50">
+<span class="material-symbols-outlined">calendar_month</span>
+</div>
+<span class="text-[10px] font-medium opacity-80">Plan</span>
+</button>
+<button class="group flex flex-1 flex-col items-center justify-center gap-1 p-1 text-text-secondary hover:text-white transition-all active:scale-95">
+<div class="rounded-full px-4 py-1 transition-colors group-hover:bg-surface-highlight/50">
+<span class="material-symbols-outlined">person</span>
+</div>
+<span class="text-[10px] font-medium opacity-80">Profile</span>
+</button>
+</div>
+</div>
+
+</body></html>

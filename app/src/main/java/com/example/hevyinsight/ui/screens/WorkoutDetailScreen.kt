@@ -2,6 +2,7 @@ package com.example.hevyinsight.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -205,7 +206,7 @@ fun StatItem(value: String, label: String, modifier: Modifier = Modifier) {
         Text(
             text = label.uppercase(),
             fontSize = 11.sp,
-            fontWeight = FontWeight.Semibold,
+            fontWeight = FontWeight.SemiBold,
             color = TextSecondary,
             letterSpacing = 1.sp
         )
@@ -375,7 +376,7 @@ fun ExpandableExerciseCard(
                             Text(
                                 text = bestSet,
                                 fontSize = 12.sp,
-                                fontWeight = FontWeight.Semibold,
+                                fontWeight = FontWeight.SemiBold,
                                 color = TextSecondary,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
@@ -410,7 +411,7 @@ fun ExpandableExerciseCard(
                         Text(
                             text = "Set",
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Semibold,
+                            fontWeight = FontWeight.SemiBold,
                             color = TextSecondary,
                             modifier = Modifier.width(40.dp),
                             letterSpacing = 1.sp
@@ -418,7 +419,7 @@ fun ExpandableExerciseCard(
                         Text(
                             text = "lbs",
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Semibold,
+                            fontWeight = FontWeight.SemiBold,
                             color = TextSecondary,
                             modifier = Modifier.weight(1f),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -427,7 +428,7 @@ fun ExpandableExerciseCard(
                         Text(
                             text = "Reps",
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Semibold,
+                            fontWeight = FontWeight.SemiBold,
                             color = TextSecondary,
                             modifier = Modifier.weight(1f),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -436,7 +437,7 @@ fun ExpandableExerciseCard(
                         Text(
                             text = "RPE",
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Semibold,
+                            fontWeight = FontWeight.SemiBold,
                             color = TextSecondary,
                             modifier = Modifier.width(40.dp),
                             textAlign = androidx.compose.ui.text.style.TextAlign.End,
@@ -657,14 +658,17 @@ fun AICoachReflectionCard() {
                     .padding(20.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Surface(
-                    modifier = Modifier.size(32.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    color = Brush.linearGradient(
-                        colors = listOf(Primary, Color(0xFF4ADE80))
-                    )
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(Primary, Color(0xFF4ADE80))
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.Psychology,
                             contentDescription = null,

@@ -2,6 +2,7 @@ package com.example.hevyinsight.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -410,7 +411,7 @@ fun WeeklyProgressSection() {
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.Baseline
+                            verticalAlignment = Alignment.Bottom
                         ) {
                             Text(
                                 text = "45k",
@@ -559,17 +560,20 @@ fun DailyInsightCard() {
                     .padding(20.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Surface(
-                    modifier = Modifier.size(40.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    color = Brush.linearGradient(
-                        colors = listOf(
-                            Color(0xFF6366F1),
-                            Color(0xFF9333EA)
-                        )
-                    )
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xFF6366F1),
+                                    Color(0xFF9333EA)
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
                             contentDescription = null,

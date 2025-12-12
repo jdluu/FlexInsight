@@ -2,6 +2,7 @@ package com.example.hevyinsight.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -290,15 +291,23 @@ fun IntegrationItem(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    modifier = Modifier.size(48.dp),
-                    shape = CircleShape,
-                    color = if (iconColor != null) iconColor.copy(alpha = 0.1f)
-                    else Brush.linearGradient(
-                        colors = listOf(Color(0xFF3B82F6), Color(0xFF9333EA))
-                    )
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .then(
+                            if (iconColor != null) {
+                                Modifier.background(iconColor.copy(alpha = 0.1f))
+                            } else {
+                                Modifier.background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(Color(0xFF3B82F6), Color(0xFF9333EA))
+                                    )
+                                )
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
@@ -315,13 +324,13 @@ fun IntegrationItem(
                         Text(
                             text = name,
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.Semibold,
+                            fontWeight = FontWeight.SemiBold,
                             color = Color.White
                         )
                         if (badge != null) {
                             Surface(
                                 shape = RoundedCornerShape(6.dp),
-                                color = Brush.linearGradient(
+                                brush = Brush.linearGradient(
                                     colors = listOf(
                                         Color(0xFF3B82F6).copy(alpha = 0.2f),
                                         Color(0xFF9333EA).copy(alpha = 0.2f)
@@ -421,7 +430,7 @@ fun PreferenceItem(
                 Text(
                     text = title,
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Semibold,
+                    fontWeight = FontWeight.SemiBold,
                     color = if (isDestructive) RedAccent else Color.White
                 )
             }

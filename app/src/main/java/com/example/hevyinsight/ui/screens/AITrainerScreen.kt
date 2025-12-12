@@ -2,12 +2,14 @@ package com.example.hevyinsight.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -116,14 +118,17 @@ fun AITrainerHeader() {
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    modifier = Modifier.size(40.dp),
-                    shape = CircleShape,
-                    color = Brush.linearGradient(
-                        colors = listOf(Color(0xFF60A5FA), Primary.copy(alpha = 0.8f))
-                    )
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(Color(0xFF60A5FA), Primary.copy(alpha = 0.8f))
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
                             contentDescription = null,
@@ -199,14 +204,17 @@ fun ChatBubble(message: ChatMessage) {
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
     ) {
         if (!isUser) {
-            Surface(
-                modifier = Modifier.size(32.dp),
-                shape = CircleShape,
-                color = Brush.linearGradient(
-                    colors = listOf(Color(0xFF3B82F6), Primary)
-                )
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color(0xFF3B82F6), Primary)
+                        )
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Default.SmartToy,
                         contentDescription = null,
@@ -223,9 +231,11 @@ fun ChatBubble(message: ChatMessage) {
             horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
         ) {
             Surface(
-                shape = RoundedCornerShape(16.dp).copy(
-                    bottomStart = if (isUser) 16.dp else 0.dp,
-                    bottomEnd = if (isUser) 0.dp else 16.dp
+                shape = RoundedCornerShape(
+                    topStart = 16.dp,
+                    topEnd = 16.dp,
+                    bottomEnd = if (isUser) 0.dp else 16.dp,
+                    bottomStart = if (isUser) 16.dp else 0.dp
                 ),
                 color = if (isUser) Primary else SurfaceHighlight,
                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
@@ -297,7 +307,7 @@ fun HeartRateChart() {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.Baseline
+                        verticalAlignment = Alignment.Bottom
                     ) {
                         Text(
                             text = "165",
@@ -520,14 +530,17 @@ fun TypingIndicator() {
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Surface(
-            modifier = Modifier.size(32.dp),
-            shape = CircleShape,
-            color = Brush.linearGradient(
-                colors = listOf(Color(0xFF3B82F6), Primary)
-            )
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color(0xFF3B82F6), Primary)
+                    )
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = Icons.Default.SmartToy,
                     contentDescription = null,
@@ -538,7 +551,12 @@ fun TypingIndicator() {
         }
         Spacer(modifier = Modifier.width(12.dp))
         Surface(
-            shape = RoundedCornerShape(16.dp).copy(bottomStart = 0.dp),
+                shape = RoundedCornerShape(
+                    topStart = 16.dp,
+                    topEnd = 16.dp,
+                    bottomEnd = 16.dp,
+                    bottomStart = 0.dp
+                ),
             color = SurfaceHighlight,
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
         ) {

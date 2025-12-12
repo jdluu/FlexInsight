@@ -2,6 +2,7 @@ package com.example.hevyinsight.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -225,7 +226,7 @@ fun StatCard(value: String, label: String, modifier: Modifier = Modifier, isHigh
             if (value.contains("k")) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    verticalAlignment = Alignment.Baseline
+                    verticalAlignment = Alignment.Bottom
                 ) {
                     Text(
                         text = value.substringBefore("k"),
@@ -286,7 +287,7 @@ fun TotalVolumeCard() {
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.Baseline
+                        verticalAlignment = Alignment.Bottom
                     ) {
                         Text(
                             text = "124,500",
@@ -628,7 +629,7 @@ fun PRCard(
             ) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.Baseline
+                    verticalAlignment = Alignment.Bottom
                 ) {
                     Text(
                         text = weight,

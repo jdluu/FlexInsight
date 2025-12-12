@@ -2,6 +2,7 @@ package com.example.hevyinsight.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -178,7 +179,7 @@ fun RecoveryScoreCard() {
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.TempPreferencesCustom,
+                                imageVector = Icons.Default.Settings,
                                 contentDescription = null,
                                 tint = Primary,
                                 modifier = Modifier.size(20.dp)
@@ -285,7 +286,7 @@ fun SleepRestSection() {
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.Baseline
+                            verticalAlignment = Alignment.Bottom
                         ) {
                             Text(
                                 text = "7h 42m",

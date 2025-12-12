@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.example.hevyinsight.ui.components.HevyBottomNavigation
 import com.example.hevyinsight.ui.navigation.Screen
@@ -99,8 +101,8 @@ fun MainScreen() {
             composable(
                 route = Screen.WorkoutDetail.route,
                 arguments = listOf(
-                    androidx.navigation.NavArgument("workoutId") {
-                        type = androidx.navigation.NavType.StringType
+                    navArgument("workoutId") {
+                        type = NavType.StringType
                     }
                 )
             ) { backStackEntry ->

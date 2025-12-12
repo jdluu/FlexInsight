@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Recovery &amp; Health Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "on-primary": "#003912",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#101412", // Very dark charcoal
+                        "surface-dark": "#1e2621", // Slightly lighter for cards
+                        "surface-variant": "#2b3830", // For secondary elements
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "3xl": "2.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>input[type=range] {
+            -webkit-appearance: none; 
+            width: 100%; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 32px;
+            width: 32px;
+            border-radius: 50%;
+            background: #13ec5b;
+            margin-top: -12px; 
+            box-shadow: 0 0 10px rgba(19, 236, 91, 0.5);
+            cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #2b3830;
+            border-radius: 999px;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;scrollbar-width: none;}
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white overflow-x-hidden antialiased">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto shadow-2xl overflow-hidden pb-24">
+<header class="flex items-center justify-between px-6 pt-10 pb-4 bg-transparent z-10">
+<h1 class="text-4xl font-bold tracking-tight text-white">Recovery</h1>
+<div class="flex items-center gap-2 bg-surface-variant/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+<span class="material-symbols-outlined text-primary text-[18px]">favorite</span>
+<span class="text-primary text-xs font-bold tracking-wide uppercase">Synced</span>
+</div>
+</header>
+<main class="flex flex-col gap-6 px-4 py-4 overflow-y-auto no-scrollbar">
+<section class="relative overflow-hidden rounded-3xl bg-surface-dark p-6 shadow-lg border border-white/5">
+<div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl"></div>
+<div class="flex flex-col items-center justify-center gap-4">
+<div class="relative flex items-center justify-center h-48 w-48">
+<svg class="h-full w-full -rotate-90 transform" viewBox="0 0 100 100">
+<circle cx="50" cy="50" fill="transparent" r="42" stroke="#2b3830" stroke-linecap="round" stroke-width="12"></circle>
+<circle class="drop-shadow-[0_0_8px_rgba(19,236,91,0.6)]" cx="50" cy="50" fill="transparent" r="42" stroke="#13ec5b" stroke-dasharray="264" stroke-dashoffset="47" stroke-linecap="round" stroke-width="12"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-6xl font-bold tracking-tighter text-white">82</span>
+<span class="text-sm font-medium text-gray-400">SCORE</span>
+</div>
+</div>
+<div class="text-center space-y-2 max-w-[280px]">
+<h2 class="text-xl font-bold text-primary">High Readiness</h2>
+<div class="flex items-start gap-2 rounded-xl bg-primary/10 p-3 text-left">
+<span class="material-symbols-outlined text-primary text-lg mt-0.5 shrink-0">temp_preferences_custom</span>
+<p class="text-sm text-gray-200 leading-snug">
+                                Your HRV is up significantly. AI suggests today is a good day for a PR attempt.
+                            </p>
+</div>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-3">
+<h2 class="text-2xl font-bold px-1">Sleep &amp; Rest</h2>
+<div class="rounded-3xl bg-surface-dark border border-white/5 p-5">
+<div class="flex justify-between items-end mb-6">
+<div>
+<p class="text-gray-400 text-sm font-medium">Last 7 Days</p>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="text-3xl font-bold text-white">7h 42m</span>
+<span class="text-sm font-medium text-gray-400">avg</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-1 text-primary bg-primary/10 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span class="text-xs font-bold">+15%</span>
+</div>
+<span class="text-xs text-gray-500 mt-1">vs last week</span>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-2 items-end h-32 mb-2">
+<div class="flex flex-col items-center gap-2 h-full justify-end group">
+<div class="w-full bg-surface-variant rounded-t-sm h-[50%] group-hover:bg-primary/50 transition-colors"></div>
+<span class="text-[10px] font-bold text-gray-500 uppercase">M</span>
+</div>
+<div class="flex flex-col items-center gap-2 h-full justify-end group">
+<div class="w-full bg-surface-variant rounded-t-sm h-[60%] group-hover:bg-primary/50 transition-colors"></div>
+<span class="text-[10px] font-bold text-gray-500 uppercase">T</span>
+</div>
+<div class="flex flex-col items-center gap-2 h-full justify-end group">
+<div class="w-full bg-surface-variant rounded-t-sm h-[65%] group-hover:bg-primary/50 transition-colors"></div>
+<span class="text-[10px] font-bold text-gray-500 uppercase">W</span>
+</div>
+<div class="flex flex-col items-center gap-2 h-full justify-end group">
+<div class="w-full bg-primary rounded-t-sm h-[85%] shadow-[0_0_10px_rgba(19,236,91,0.3)]"></div>
+<span class="text-[10px] font-bold text-white uppercase">T</span>
+</div>
+<div class="flex flex-col items-center gap-2 h-full justify-end group">
+<div class="w-full bg-surface-variant rounded-t-sm h-[40%] group-hover:bg-primary/50 transition-colors"></div>
+<span class="text-[10px] font-bold text-gray-500 uppercase">F</span>
+</div>
+<div class="flex flex-col items-center gap-2 h-full justify-end group">
+<div class="w-full bg-surface-variant rounded-t-sm h-[90%] group-hover:bg-primary/50 transition-colors"></div>
+<span class="text-[10px] font-bold text-gray-500 uppercase">S</span>
+</div>
+<div class="flex flex-col items-center gap-2 h-full justify-end group">
+<div class="w-full bg-surface-variant rounded-t-sm h-[75%] group-hover:bg-primary/50 transition-colors"></div>
+<span class="text-[10px] font-bold text-gray-500 uppercase">S</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined">auto_awesome</span>
+</div>
+<div class="flex-1">
+<p class="text-sm text-gray-200">
+                            Strong correlation: <span class="text-primary font-bold">Sleep +10%</span> on days following cardio sessions.
+                        </p>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-3">
+<h2 class="text-2xl font-bold px-1">Fatigue</h2>
+<div class="rounded-3xl bg-surface-dark border border-white/5 p-5 relative overflow-hidden">
+<div class="absolute top-0 left-0 h-1 bg-primary w-2/3 shadow-[0_0_10px_#13ec5b]"></div>
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-white text-lg font-bold">Leg Day (Heavy)</p>
+<p class="text-gray-400 text-sm">Yesterday at 6:00 PM</p>
+</div>
+<div class="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-red-500/20">
+                            Recovering
+                        </div>
+</div>
+<div class="flex items-center gap-4 mt-2">
+<div class="flex-1 bg-surface-variant h-14 rounded-2xl flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-gray-400">timer</span>
+<div class="text-center">
+<p class="text-xs text-gray-400 uppercase font-bold">Elapsed</p>
+<p class="text-lg font-bold text-white">14h</p>
+</div>
+</div>
+<div class="flex-1 bg-primary/10 h-14 rounded-2xl flex items-center justify-center gap-2 border border-primary/20">
+<span class="material-symbols-outlined text-primary">bolt</span>
+<div class="text-center">
+<p class="text-xs text-primary/80 uppercase font-bold">Train In</p>
+<p class="text-lg font-bold text-primary">6h</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="flex flex-col gap-3 mb-6">
+<h2 class="text-2xl font-bold px-1">Mood Log</h2>
+<div class="rounded-3xl bg-surface-dark border border-white/5 p-6 space-y-6">
+<div>
+<div class="flex justify-between items-center mb-4">
+<label class="text-base font-medium text-white">How do you feel today?</label>
+<span class="text-2xl font-bold text-primary">7.5</span>
+</div>
+<input class="w-full" max="10" min="1" step="0.5" type="range" value="7.5"/>
+<div class="flex justify-between text-xs text-gray-500 mt-2 px-1 font-bold uppercase tracking-wider">
+<span>Drained</span>
+<span>Unstoppable</span>
+</div>
+</div>
+<div class="bg-surface-variant rounded-2xl p-4 flex gap-3 items-start">
+<span class="material-symbols-outlined text-gray-400 mt-1">edit_note</span>
+<textarea class="bg-transparent w-full text-sm text-white placeholder-gray-500 resize-none focus:outline-none h-16" placeholder="Add notes on soreness, pain, or injury..."></textarea>
+</div>
+<div class="flex gap-2 items-start">
+<span class="material-symbols-outlined text-primary text-sm mt-0.5">psychology</span>
+<p class="text-xs text-gray-400 italic">
+                            "You often report lower mood ratings the day after heavy leg sessions. Consider active recovery today."
+                        </p>
+</div>
+</div>
+</section>
+</main>
+<div class="fixed bottom-6 right-6 z-50 pointer-events-none opacity-0">
+<button class="h-16 w-16 bg-primary text-on-primary rounded-2xl shadow-[0_4px_20px_rgba(19,236,91,0.4)] flex items-center justify-center transition-transform hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</div>
+<nav class="fixed bottom-0 w-full max-w-md bg-surface-dark/90 backdrop-blur-xl border-t border-white/5 pb-6 pt-4 px-6 flex justify-between items-center z-40">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined fill-1">grid_view</span>
+<span class="text-[10px] font-bold tracking-wide">Dashboard</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-500 group hover:text-primary transition-colors">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">history</span>
+<span class="text-[10px] font-bold tracking-wide">History</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-500 group hover:text-primary transition-colors">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">smart_toy</span>
+<span class="text-[10px] font-bold tracking-wide">AI Trainer</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-500 group hover:text-primary transition-colors">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">calendar_month</span>
+<span class="text-[10px] font-bold tracking-wide">Planner</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-gray-500 group hover:text-primary transition-colors">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">person</span>
+<span class="text-[10px] font-bold tracking-wide">Profile</span>
+</button>
+</nav>
+</div>
+</body></html>
