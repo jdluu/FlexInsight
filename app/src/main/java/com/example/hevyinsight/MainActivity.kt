@@ -12,7 +12,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
 import com.example.hevyinsight.ui.components.HevyBottomNavigation
 import com.example.hevyinsight.ui.navigation.Screen
@@ -101,7 +100,7 @@ fun MainScreen() {
             composable(
                 route = Screen.WorkoutDetail.route,
                 arguments = listOf(
-                    androidx.navigation.navArgument("workoutId") {
+                    androidx.navigation.compose.navArgument("workoutId") {
                         type = NavType.StringType
                     }
                 )

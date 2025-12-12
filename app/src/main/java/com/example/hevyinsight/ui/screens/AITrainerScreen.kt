@@ -539,22 +539,21 @@ fun TypingIndicator() {
                 ),
             contentAlignment = Alignment.Center
         ) {
-                Icon(
-                    imageVector = Icons.Default.SmartToy,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
+            Icon(
+                imageVector = Icons.Default.SmartToy,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
+            )
         }
         Spacer(modifier = Modifier.width(12.dp))
         Surface(
-                shape = RoundedCornerShape(
-                    topStart = 16.dp,
-                    topEnd = 16.dp,
-                    bottomEnd = 16.dp,
-                    bottomStart = 0.dp
-                ),
+            shape = RoundedCornerShape(
+                topStart = 16.dp,
+                topEnd = 16.dp,
+                bottomEnd = 16.dp,
+                bottomStart = 0.dp
+            ),
             color = SurfaceHighlight,
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
         ) {

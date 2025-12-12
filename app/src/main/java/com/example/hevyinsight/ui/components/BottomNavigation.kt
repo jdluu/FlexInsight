@@ -77,7 +77,7 @@ fun BottomNavItem(
     onClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier
+        modifier = androidx.compose.ui.Modifier
             .weight(1f)
             .fillMaxHeight()
             .padding(vertical = 8.dp),
