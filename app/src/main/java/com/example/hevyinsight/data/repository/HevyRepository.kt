@@ -163,27 +163,20 @@ class HevyRepository(
     }
     
     /**
-     * Get all workouts - returns Flow from Room immediately, syncs in background
+     * Get all workouts - returns Flow from Room immediately
+     * No automatic sync - sync must be triggered explicitly
      */
     fun getWorkouts(): Flow<List<Workout>> {
-        // Return cached data immediately
-        val cachedFlow = workoutDao.getAllWorkoutsFlow()
-        
-        // Sync in background
-        scope.launch {
-            syncWorkouts()
-        }
-        
-        return cachedFlow
+        // Return cached data immediately - no sync
+        return workoutDao.getAllWorkoutsFlow()
     }
     
     /**
-     * Get recent workouts
+     * Get recent workouts - returns database data immediately
+     * No automatic sync - sync must be triggered explicitly
      */
     fun getRecentWorkouts(limit: Int = 10): Flow<List<Workout>> {
-        scope.launch {
-            syncWorkouts()
-        }
+        // Return database data immediately - no sync
         return workoutDao.getRecentWorkoutsFlow(limit)
     }
     
@@ -233,36 +226,46 @@ class HevyRepository(
     }
     
     /**
-     * Get workout by ID as Flow
+     * Get workout by ID as Flow - returns database data immediately
+     * No automatic sync - sync must be triggered explicitly
      */
     fun getWorkoutByIdFlow(workoutId: String): Flow<Workout?> {
-        scope.launch {
-            syncWorkout(workoutId)
-        }
+        // Return database data immediately - no sync
         return workoutDao.getWorkoutByIdFlow(workoutId)
     }
     
     /**
-     * Get workout count
+     * Get workout count - returns database data immediately
+     * No automatic sync - sync must be triggered explicitly
      */
     fun getWorkoutCount(): Flow<Int> {
-        scope.launch {
-            syncWorkouts()
-        }
+        // Return database data immediately - no sync
         return workoutDao.getWorkoutCountFlow()
     }
     
     /**
      * Sync workouts from API
+     * Implements incremental sync: only fetches new workouts if database already has data
      */
     private suspend fun syncWorkouts() {
         val apiService = getApiService() ?: return
         
         try {
+            // Check if we have any workouts in the database
+            val mostRecentSynced = workoutDao.getMostRecentSyncedTimestamp()
+            val isIncrementalSync = mostRecentSynced != null
+            
+            if (isIncrementalSync) {
+                android.util.Log.d("HevyRepository", "Starting incremental sync (most recent synced: $mostRecentSynced)")
+            } else {
+                android.util.Log.d("HevyRepository", "Starting full sync (no existing workouts)")
+            }
+            
             var page = 1
             var hasMore = true
+            var allWorkoutsExist = false
             
-            while (hasMore) {
+            while (hasMore && !allWorkoutsExist) {
                 val response = apiService.getWorkouts(page, 50)
                 if (response.isSuccessful && response.body() != null) {
                     val paginatedResponse = response.body()!!
@@ -275,9 +278,29 @@ class HevyRepository(
                         continue
                     }
                     
+                    // For incremental sync, check if all workouts in this page already exist
+                    if (isIncrementalSync) {
+                        var newWorkoutsCount = 0
+                        workoutsList.forEach { workoutResponse ->
+                            val existingWorkout = workoutDao.getWorkoutById(workoutResponse.id)
+                            if (existingWorkout == null) {
+                                newWorkoutsCount++
+                            }
+                        }
+                        
+                        // If all workouts already exist, we've caught up - stop syncing
+                        if (newWorkoutsCount == 0) {
+                            android.util.Log.d("HevyRepository", "All workouts on page $page already exist - incremental sync complete")
+                            allWorkoutsExist = true
+                            break
+                        } else {
+                            android.util.Log.d("HevyRepository", "Found $newWorkoutsCount new workouts on page $page")
+                        }
+                    }
+                    
                     val workouts = workoutsList.map { it.toWorkout() }
                     
-                    // Insert workouts
+                    // Insert workouts (REPLACE strategy will update existing ones)
                     workoutDao.insertWorkouts(workouts)
                     
                     // Insert exercises and sets
@@ -310,6 +333,12 @@ class HevyRepository(
                     }
                     hasMore = false
                 }
+            }
+            
+            if (isIncrementalSync && allWorkoutsExist) {
+                android.util.Log.d("HevyRepository", "Incremental sync completed - all workouts up to date")
+            } else if (!isIncrementalSync) {
+                android.util.Log.d("HevyRepository", "Full sync completed")
             }
         } catch (e: Exception) {
             android.util.Log.e("HevyRepository", "Error syncing workouts: ${e.message}", e)
@@ -719,7 +748,8 @@ class HevyRepository(
     }
     
     /**
-     * Get all routines
+     * Get all routines - returns cached data immediately
+     * No automatic sync - sync must be triggered explicitly via syncAllData()
      */
     fun getRoutines(): Flow<List<Routine>> {
         val now = System.currentTimeMillis()
@@ -729,12 +759,7 @@ class HevyRepository(
             return flow { emit(routinesCache!!) }
         }
         
-        // Sync in background
-        scope.launch {
-            syncRoutines()
-        }
-        
-        // Return cached data or empty list
+        // Return cached data or empty list - no automatic sync
         return flow { emit(routinesCache ?: emptyList()) }
     }
     

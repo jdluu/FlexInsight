@@ -14,13 +14,12 @@ class SyncService(
 ) {
     /**
      * Sync with Hevy API on app launch
+     * Explicitly syncs all data from the API
      */
     fun syncWithApi() {
         scope.launch {
             try {
-                // Repository handles the sync internally when data is requested
-                // This method can be called explicitly for background sync
-                repository.getWorkoutCount().collect { } // Trigger sync
+                repository.syncAllData()
             } catch (e: Exception) {
                 // Handle error silently
             }
