@@ -87,6 +87,11 @@ fun MainScreen() {
         }
     }
     
+    // Sync on app resume
+    LaunchedEffect(Unit) {
+        application.syncManager.syncOnResume()
+    }
+    
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Dashboard.route
@@ -140,7 +145,7 @@ fun MainScreen() {
                     )
                     if (error != null) {
                         Text(
-                            text = error!!,
+                            text = error,
                             color = com.example.hevyinsight.ui.theme.RedAccent,
                             fontSize = 12.sp
                         )
