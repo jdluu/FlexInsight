@@ -24,7 +24,7 @@ class UserPreferencesManager(private val context: Context) {
         private const val DEFAULT_WEEKLY_GOAL = 5
         private const val DEFAULT_THEME = "Dark"
         private const val DEFAULT_UNITS = "Metric"
-        private const val DEFAULT_VIEW_ONLY_MODE = false
+        private const val DEFAULT_VIEW_ONLY_MODE = true
     }
     
     /**

@@ -24,6 +24,9 @@ interface WorkoutDao {
     @Query("SELECT COUNT(*) FROM workouts")
     suspend fun getWorkoutCount(): Int
     
+    @Query("SELECT MAX(lastSynced) FROM workouts")
+    suspend fun getMostRecentSyncedTimestamp(): Long?
+    
     @Query("SELECT * FROM workouts WHERE startTime >= :startTimestamp AND startTime <= :endTimestamp ORDER BY startTime DESC")
     fun getWorkoutsByDateRangeFlow(startTimestamp: Long, endTimestamp: Long): Flow<List<Workout>>
     
