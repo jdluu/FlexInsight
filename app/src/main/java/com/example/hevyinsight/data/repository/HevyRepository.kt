@@ -266,13 +266,22 @@ class HevyRepository(
                 val response = apiService.getWorkouts(page, 50)
                 if (response.isSuccessful && response.body() != null) {
                     val paginatedResponse = response.body()!!
-                    val workouts = paginatedResponse.data.map { it.toWorkout() }
+                    val data = paginatedResponse.data
+                    
+                    // Check if data is null or empty
+                    if (data == null || data.isEmpty()) {
+                        android.util.Log.w("HevyRepository", "No workout data in response for page $page")
+                        hasMore = false
+                        continue
+                    }
+                    
+                    val workouts = data.map { it.toWorkout() }
                     
                     // Insert workouts
                     workoutDao.insertWorkouts(workouts)
                     
                     // Insert exercises and sets
-                    paginatedResponse.data.forEach { workoutResponse ->
+                    data.forEach { workoutResponse ->
                         workoutResponse.exercises?.forEach { exerciseResponse ->
                             val exercise = exerciseResponse.toExercise(workoutResponse.id)
                             exerciseDao.insertExercise(exercise)
