@@ -9,24 +9,87 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.hevyinsight.HevyInsightApplication
+import com.example.hevyinsight.data.preferences.ApiKeyManager
 import com.example.hevyinsight.ui.theme.*
+import com.example.hevyinsight.ui.viewmodel.SettingsViewModel
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun SettingsScreen() {
+    val context = LocalContext.current
+    val application = context.applicationContext as? HevyInsightApplication
+    
+    if (application == null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDarkAlt)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Application error: Failed to initialize",
+                color = RedAccent
+            )
+        }
+        return
+    }
+    
+    val viewModel: SettingsViewModel = viewModel {
+        SettingsViewModel(application.repository, application.userPreferencesManager)
+    }
+    val uiState by viewModel.uiState.collectAsState()
+    
+    val apiKeyManager = remember { ApiKeyManager(context) }
+    val scope = rememberCoroutineScope()
+    
     var healthConnectEnabled by remember { mutableStateOf(false) }
     var geminiEnabled by remember { mutableStateOf(true) }
-    var privacyModeEnabled by remember { mutableStateOf(false) }
+    var apiKey by remember { mutableStateOf<String?>(null) }
+    var showApiKeyDialog by remember { mutableStateOf(false) }
+    var apiKeyError by remember { mutableStateOf<String?>(null) }
+    var showWeeklyGoalDialog by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
+    var showUnitsDialog by remember { mutableStateOf(false) }
+    var showClearCacheDialog by remember { mutableStateOf(false) }
+    
+    // Load API key
+    LaunchedEffect(Unit) {
+        apiKey = apiKeyManager.getApiKey()
+    }
+    
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDarkAlt),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Primary)
+        }
+        return
+    }
     
     LazyColumn(
         modifier = Modifier
@@ -39,17 +102,18 @@ fun SettingsScreen() {
             SettingsHeader()
         }
         item {
-            ProfileSection()
+            ProfileSection(
+                profileInfo = uiState.profileInfo,
+                isSyncing = uiState.isSyncing,
+                viewOnlyMode = uiState.viewOnlyMode,
+                onSyncClick = { viewModel.syncData() }
+            )
         }
         item {
             SectionTitle("Integrations")
-            IntegrationItem(
-                name = "Hevy",
-                description = "Connected",
-                icon = Icons.Default.FitnessCenter,
-                iconColor = Color(0xFF3B82F6),
-                isConnected = true,
-                onClick = {}
+            ApiKeySection(
+                apiKey = apiKey,
+                onApiKeyClick = { showApiKeyDialog = true }
             )
             IntegrationItem(
                 name = "Health Connect",
@@ -78,27 +142,37 @@ fun SettingsScreen() {
             PreferenceItem(
                 title = "Theme",
                 icon = Icons.Default.DarkMode,
-                value = "Dark",
-                onClick = {}
+                value = uiState.theme,
+                onClick = { showThemeDialog = true }
             )
             PreferenceItem(
                 title = "Units",
                 icon = Icons.Default.Straighten,
-                value = "Metric",
-                onClick = {}
+                value = uiState.units,
+                onClick = { showUnitsDialog = true }
             )
             PreferenceItem(
                 title = "Weekly Goal",
                 icon = Icons.Default.EmojiEvents,
-                value = "4 Days",
+                value = "${uiState.weeklyGoal} Days",
                 isHighlighted = true,
-                onClick = {}
+                onClick = { showWeeklyGoalDialog = true }
             )
             PreferenceItem(
                 title = "Notifications",
                 icon = Icons.Default.Notifications,
                 value = null,
                 onClick = {}
+            )
+            IntegrationItem(
+                name = "View Only Mode",
+                description = "Hide edit/create buttons",
+                icon = Icons.Default.Visibility,
+                iconColor = TextSecondary,
+                isConnected = false,
+                isToggle = true,
+                toggleState = uiState.viewOnlyMode,
+                onToggleChange = { viewModel.updateViewOnlyMode(it) }
             )
         }
         item {
@@ -109,22 +183,12 @@ fun SettingsScreen() {
                 value = null,
                 onClick = {}
             )
-            IntegrationItem(
-                name = "Privacy Mode",
-                description = null,
-                icon = Icons.Default.VisibilityOff,
-                iconColor = TextSecondary,
-                isConnected = false,
-                isToggle = true,
-                toggleState = privacyModeEnabled,
-                onToggleChange = { privacyModeEnabled = it }
-            )
             PreferenceItem(
                 title = "Clear Cache",
                 icon = Icons.Default.Delete,
                 value = null,
                 isDestructive = true,
-                onClick = {}
+                onClick = { showClearCacheDialog = true }
             )
         }
         item {
@@ -144,6 +208,85 @@ fun SettingsScreen() {
             )
         }
     }
+    
+    // API Key Dialog
+    if (showApiKeyDialog) {
+        ApiKeyDialog(
+            currentApiKey = apiKey,
+            onDismiss = { 
+                showApiKeyDialog = false
+                apiKeyError = null
+            },
+            onSave = { newApiKey ->
+                if (apiKeyManager.isValidApiKeyFormat(newApiKey)) {
+                    scope.launch {
+                        apiKeyManager.saveApiKey(newApiKey)
+                        apiKey = newApiKey
+                        showApiKeyDialog = false
+                        apiKeyError = null
+                        viewModel.refresh() // Refresh to update profile info
+                    }
+                } else {
+                    apiKeyError = "API key must be at least 10 characters"
+                }
+            },
+            error = apiKeyError
+        )
+    }
+    
+    // Weekly Goal Dialog
+    if (showWeeklyGoalDialog) {
+        WeeklyGoalDialog(
+            currentGoal = uiState.weeklyGoal,
+            onDismiss = { showWeeklyGoalDialog = false },
+            onSave = { goal ->
+                viewModel.updateWeeklyGoal(goal)
+                showWeeklyGoalDialog = false
+            }
+        )
+    }
+    
+    // Theme Dialog
+    if (showThemeDialog) {
+        ThemeDialog(
+            currentTheme = uiState.theme,
+            onDismiss = { showThemeDialog = false },
+            onSelect = { theme ->
+                viewModel.updateTheme(theme)
+                showThemeDialog = false
+            }
+        )
+    }
+    
+    // Units Dialog
+    if (showUnitsDialog) {
+        UnitsDialog(
+            currentUnits = uiState.units,
+            onDismiss = { showUnitsDialog = false },
+            onSelect = { units ->
+                viewModel.updateUnits(units)
+                showUnitsDialog = false
+            }
+        )
+    }
+    
+    // Clear Cache Dialog
+    if (showClearCacheDialog) {
+        ClearCacheDialog(
+            onDismiss = { showClearCacheDialog = false },
+            onConfirm = {
+                viewModel.clearCache()
+                showClearCacheDialog = false
+            }
+        )
+    }
+    
+    // Error Snackbar
+    uiState.error?.let { error ->
+        LaunchedEffect(error) {
+            // Error is displayed in UI state
+        }
+    }
 }
 
 @Composable
@@ -157,7 +300,7 @@ fun SettingsHeader() {
     ) {
         IconButton(onClick = {}) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Back",
                 tint = Color.White
             )
@@ -173,7 +316,12 @@ fun SettingsHeader() {
 }
 
 @Composable
-fun ProfileSection() {
+fun ProfileSection(
+    profileInfo: com.example.hevyinsight.data.model.ProfileInfo?,
+    isSyncing: Boolean,
+    viewOnlyMode: Boolean,
+    onSyncClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -190,54 +338,111 @@ fun ProfileSection() {
                 color = Color.Gray.copy(alpha = 0.3f),
                 border = BorderStroke(4.dp, SurfaceCardAlt)
             ) {}
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(32.dp),
-                shape = CircleShape,
-                color = Primary,
-                border = BorderStroke(4.dp, BackgroundDarkAlt)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit profile",
-                        tint = BackgroundDarkAlt,
-                        modifier = Modifier.size(16.dp)
-                    )
+            if (!viewOnlyMode) {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(32.dp),
+                    shape = CircleShape,
+                    color = Primary,
+                    border = BorderStroke(4.dp, BackgroundDarkAlt)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit profile",
+                            tint = BackgroundDarkAlt,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
             }
         }
         
         Text(
-            text = "Alex Strider",
+            text = getDisplayName(profileInfo),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White
         )
         Text(
-            text = "Pro Member",
+            text = if (profileInfo?.isProMember == true) "Pro Member" else "Free Member",
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = TextSecondary
         )
         
+        // Profile stats
+        if (profileInfo != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = formatNumber(profileInfo.totalWorkouts),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "Workouts",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = TextSecondary
+                    )
+                }
+                if (profileInfo.memberSince != null) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = formatMemberSince(profileInfo.memberSince),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = TextSecondary
+                        )
+                        Text(
+                            text = "Member since",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = TextSecondary
+                        )
+                    }
+                }
+            }
+        }
+        
         Button(
-            onClick = {},
+            onClick = onSyncClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 320.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Primary),
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            enabled = !isSyncing
         ) {
-            Icon(
-                imageVector = Icons.Default.Sync,
-                contentDescription = null,
-                tint = BackgroundDarkAlt
-            )
+            if (isSyncing) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = BackgroundDarkAlt,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Sync,
+                    contentDescription = null,
+                    tint = BackgroundDarkAlt
+                )
+            }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Sync Hevy Data",
+                text = if (isSyncing) "Syncing..." else "Sync Hevy Data",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = BackgroundDarkAlt
@@ -245,6 +450,33 @@ fun ProfileSection() {
         }
     }
 }
+
+/**
+ * Format member since date
+ */
+fun formatMemberSince(timestamp: Long): String {
+    val dateFormat = SimpleDateFormat("MMM yyyy", Locale.getDefault())
+    return dateFormat.format(Date(timestamp))
+}
+
+/**
+ * Format account age
+ */
+fun formatAccountAge(days: Int): String {
+    return when {
+        days < 30 -> "$days days"
+        days < 365 -> "${days / 30} months"
+        else -> "${days / 365} years"
+    }
+}
+
+/**
+ * Get display name from profile info
+ */
+fun getDisplayName(profileInfo: com.example.hevyinsight.data.model.ProfileInfo?): String {
+    return profileInfo?.displayName ?: "User"
+}
+
 
 @Composable
 fun SectionTitle(title: String) {
@@ -480,11 +712,346 @@ fun PreferenceItem(
                 }
             } else {
                 Icon(
-                    imageVector = if (isDestructive) Icons.Default.OpenInNew else Icons.Default.ChevronRight,
+                    imageVector = if (isDestructive) Icons.AutoMirrored.Filled.OpenInNew else Icons.Default.ChevronRight,
                     contentDescription = null,
                     tint = TextSecondary
                 )
             }
         }
     }
+}
+
+@Composable
+fun ApiKeySection(
+    apiKey: String?,
+    onApiKeyClick: () -> Unit
+) {
+    IntegrationItem(
+        name = "Hevy API",
+        description = if (apiKey != null) "Connected" else "Not configured",
+        icon = Icons.Default.FitnessCenter,
+        iconColor = Color(0xFF3B82F6),
+        isConnected = apiKey != null,
+        onClick = onApiKeyClick
+    )
+}
+
+@Composable
+fun ApiKeyDialog(
+    currentApiKey: String?,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+    error: String?
+) {
+    var apiKeyText by remember { mutableStateOf(currentApiKey ?: "") }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Hevy API Key",
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Enter your Hevy API key. You can get it from https://hevy.com/settings?developer",
+                    color = TextSecondary,
+                    fontSize = 14.sp
+                )
+                OutlinedTextField(
+                    value = apiKeyText,
+                    onValueChange = { apiKeyText = it },
+                    label = { Text("API Key", color = TextSecondary) },
+                    placeholder = { Text("Enter your API key", color = TextTertiary) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Primary,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                        focusedLabelColor = TextSecondary,
+                        unfocusedLabelColor = TextSecondary
+                    ),
+                    singleLine = true
+                )
+                if (error != null) {
+                    Text(
+                        text = error,
+                        color = RedAccent,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSave(apiKeyText) },
+                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            ) {
+                Text("Save", color = BackgroundDark, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextSecondary)
+            }
+        },
+        containerColor = SurfaceCardAlt,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+fun WeeklyGoalDialog(
+    currentGoal: Int,
+    onDismiss: () -> Unit,
+    onSave: (Int) -> Unit
+) {
+    var goalText by remember { mutableStateOf(currentGoal.toString()) }
+    var error by remember { mutableStateOf<String?>(null) }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Weekly Goal",
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Set your weekly workout goal (number of days per week)",
+                    color = TextSecondary,
+                    fontSize = 14.sp
+                )
+                OutlinedTextField(
+                    value = goalText,
+                    onValueChange = { 
+                        goalText = it
+                        error = null
+                    },
+                    label = { Text("Days per week", color = TextSecondary) },
+                    placeholder = { Text("Enter number", color = TextTertiary) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Primary,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                        focusedLabelColor = TextSecondary,
+                        unfocusedLabelColor = TextSecondary
+                    ),
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+                if (error != null) {
+                    Text(
+                        text = error!!,
+                        color = RedAccent,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val goal = goalText.toIntOrNull()
+                    if (goal != null && goal > 0 && goal <= 7) {
+                        onSave(goal)
+                    } else {
+                        error = "Please enter a number between 1 and 7"
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            ) {
+                Text("Save", color = BackgroundDark, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextSecondary)
+            }
+        },
+        containerColor = SurfaceCardAlt,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+fun ThemeDialog(
+    currentTheme: String,
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit
+) {
+    val themes = listOf("Dark", "Light", "System")
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Theme",
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                themes.forEach { theme ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(theme) },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (theme == currentTheme) Primary.copy(alpha = 0.2f) else SurfaceCardAlt,
+                        border = if (theme == currentTheme) BorderStroke(1.dp, Primary) else null
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = theme,
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                fontWeight = if (theme == currentTheme) FontWeight.Bold else FontWeight.Normal
+                            )
+                            if (theme == currentTheme) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = Primary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextSecondary)
+            }
+        },
+        containerColor = SurfaceCardAlt,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+fun UnitsDialog(
+    currentUnits: String,
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit
+) {
+    val units = listOf("Metric", "Imperial")
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Units",
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                units.forEach { unit ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(unit) },
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (unit == currentUnits) Primary.copy(alpha = 0.2f) else SurfaceCardAlt,
+                        border = if (unit == currentUnits) BorderStroke(1.dp, Primary) else null
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = unit,
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                fontWeight = if (unit == currentUnits) FontWeight.Bold else FontWeight.Normal
+                            )
+                            if (unit == currentUnits) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = Primary
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextSecondary)
+            }
+        },
+        containerColor = SurfaceCardAlt,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+fun ClearCacheDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Clear Cache",
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Text(
+                text = "This will clear all cached data (exercise templates, routines). Your workout data will not be affected.",
+                color = TextSecondary,
+                fontSize = 14.sp
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = RedAccent)
+            ) {
+                Text("Clear", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextSecondary)
+            }
+        },
+        containerColor = SurfaceCardAlt,
+        shape = RoundedCornerShape(16.dp)
+    )
 }
