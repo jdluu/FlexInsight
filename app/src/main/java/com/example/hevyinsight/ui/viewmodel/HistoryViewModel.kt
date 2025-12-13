@@ -54,110 +54,111 @@ class HistoryViewModel(
             try {
                 _uiState.value = _uiState.value.copy(isLoading = true, error = null)
                 
-                // Load all workouts
-                repository.getWorkouts()
-                    .catch { e ->
-                        _uiState.value = _uiState.value.copy(
-                            error = "Failed to load workouts: ${e.message}",
-                            isLoading = false
+                // Load all workouts - use first() to get initial value instead of continuous collection
+                val workouts = try {
+                    repository.getWorkouts().first()
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        error = "Failed to load workouts: ${e.message}",
+                        isLoading = false
+                    )
+                    return@launch
+                }
+                
+                try {
+                    // Load stats
+                    val stats = try {
+                        repository.calculateStats()
+                    } catch (e: Exception) {
+                        WorkoutStats(
+                            totalWorkouts = 0,
+                            totalVolume = 0.0,
+                            averageVolume = 0.0,
+                            totalSets = 0,
+                            totalDuration = 0L,
+                            averageDuration = 0L,
+                            currentStreak = 0,
+                            longestStreak = 0,
+                            bestWeekVolume = 0.0,
+                            bestWeekDate = null
                         )
                     }
-                    .collect { workouts ->
-                        try {
-                            // Load stats
-                            val stats = try {
-                                repository.calculateStats()
-                            } catch (e: Exception) {
-                                WorkoutStats(
-                                    totalWorkouts = 0,
-                                    totalVolume = 0.0,
-                                    averageVolume = 0.0,
-                                    totalSets = 0,
-                                    totalDuration = 0L,
-                                    averageDuration = 0L,
-                                    currentStreak = 0,
-                                    longestStreak = 0,
-                                    bestWeekVolume = 0.0,
-                                    bestWeekDate = null
-                                )
-                            }
-                            
-                            // Load workout count
-                            var count = 0
-                            try {
-                                count = repository.getWorkoutCount().first()
-                            } catch (e: Exception) {
-                                // Continue with 0 if it fails
-                            }
-                            
-                            // Load recent PRs
-                            var prs = emptyList<com.example.hevyinsight.data.model.Set>()
-                            try {
-                                prs = repository.getRecentPRs(limit = 10).first()
-                            } catch (e: Exception) {
-                                // Continue with empty list if it fails
-                            }
-                            
-                            // Load PRs with details
-                            var prsWithDetails = emptyList<PRDetails>()
-                            try {
-                                prsWithDetails = repository.getPRsWithDetails(limit = 10)
-                            } catch (e: Exception) {
-                                // Continue with empty list if it fails
-                            }
-                            
-                            // Load volume trend
-                            var volumeTrend: VolumeTrend? = null
-                            try {
-                                volumeTrend = repository.calculateVolumeTrend(weeks = 4)
-                            } catch (e: Exception) {
-                                // Continue with null if it fails
-                            }
-                            
-                            // Load weekly volume data
-                            var weeklyVolumeData = emptyList<WeeklyVolumeData>()
-                            try {
-                                weeklyVolumeData = repository.getWeeklyVolumeData(weeks = 4)
-                            } catch (e: Exception) {
-                                // Continue with empty list if it fails
-                            }
-                            
-                            // Load duration trend
-                            var durationTrend = emptyList<DailyDurationData>()
-                            try {
-                                durationTrend = repository.getDurationTrend(weeks = 6)
-                            } catch (e: Exception) {
-                                // Continue with empty list if it fails
-                            }
-                            
-                            // Load muscle group progress
-                            var muscleGroupProgress = emptyList<MuscleGroupProgress>()
-                            try {
-                                muscleGroupProgress = repository.getMuscleGroupProgress(weeks = 4)
-                            } catch (e: Exception) {
-                                // Continue with empty list if it fails
-                            }
-                            
-                            _uiState.value = _uiState.value.copy(
-                                isLoading = false,
-                                workouts = workouts,
-                                workoutStats = stats,
-                                recentPRs = prs,
-                                workoutCount = count,
-                                volumeTrend = volumeTrend,
-                                weeklyVolumeData = weeklyVolumeData,
-                                durationTrend = durationTrend,
-                                muscleGroupProgress = muscleGroupProgress,
-                                prsWithDetails = prsWithDetails,
-                                error = null
-                            )
-                        } catch (e: Exception) {
-                            _uiState.value = _uiState.value.copy(
-                                isLoading = false,
-                                error = "Error processing data: ${e.message}"
-                            )
-                        }
+                    
+                    // Load workout count
+                    var count = 0
+                    try {
+                        count = repository.getWorkoutCount().first()
+                    } catch (e: Exception) {
+                        // Continue with 0 if it fails
                     }
+                    
+                    // Load recent PRs
+                    var prs = emptyList<com.example.hevyinsight.data.model.Set>()
+                    try {
+                        prs = repository.getRecentPRs(limit = 10).first()
+                    } catch (e: Exception) {
+                        // Continue with empty list if it fails
+                    }
+                    
+                    // Load PRs with details
+                    var prsWithDetails = emptyList<PRDetails>()
+                    try {
+                        prsWithDetails = repository.getPRsWithDetails(limit = 10)
+                    } catch (e: Exception) {
+                        // Continue with empty list if it fails
+                    }
+                    
+                    // Load volume trend
+                    var volumeTrend: VolumeTrend? = null
+                    try {
+                        volumeTrend = repository.calculateVolumeTrend(weeks = 4)
+                    } catch (e: Exception) {
+                        // Continue with null if it fails
+                    }
+                    
+                    // Load weekly volume data
+                    var weeklyVolumeData = emptyList<WeeklyVolumeData>()
+                    try {
+                        weeklyVolumeData = repository.getWeeklyVolumeData(weeks = 4)
+                    } catch (e: Exception) {
+                        // Continue with empty list if it fails
+                    }
+                    
+                    // Load duration trend
+                    var durationTrend = emptyList<DailyDurationData>()
+                    try {
+                        durationTrend = repository.getDurationTrend(weeks = 6)
+                    } catch (e: Exception) {
+                        // Continue with empty list if it fails
+                    }
+                    
+                    // Load muscle group progress
+                    var muscleGroupProgress = emptyList<MuscleGroupProgress>()
+                    try {
+                        muscleGroupProgress = repository.getMuscleGroupProgress(weeks = 4)
+                    } catch (e: Exception) {
+                        // Continue with empty list if it fails
+                    }
+                    
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        workouts = workouts,
+                        workoutStats = stats,
+                        recentPRs = prs,
+                        workoutCount = count,
+                        volumeTrend = volumeTrend,
+                        weeklyVolumeData = weeklyVolumeData,
+                        durationTrend = durationTrend,
+                        muscleGroupProgress = muscleGroupProgress,
+                        prsWithDetails = prsWithDetails,
+                        error = null
+                    )
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Error processing data: ${e.message}"
+                    )
+                }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,

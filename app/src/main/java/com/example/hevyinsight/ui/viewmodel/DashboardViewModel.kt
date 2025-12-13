@@ -46,78 +46,79 @@ class DashboardViewModel(
             try {
                 _uiState.value = _uiState.value.copy(isLoading = true, error = null)
                 
-                // Load latest workout
-                repository.getRecentWorkouts(limit = 1)
-                    .catch { e ->
-                        _uiState.value = _uiState.value.copy(
-                            error = "Failed to load workouts: ${e.message}",
-                            isLoading = false
-                        )
-                    }
-                    .collect { workouts ->
+                // Load latest workout - use first() to get initial value instead of continuous collection
+                val workouts = try {
+                    repository.getRecentWorkouts(limit = 1).first()
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        error = "Failed to load workouts: ${e.message}",
+                        isLoading = false
+                    )
+                    return@launch
+                }
+                
+                try {
+                    val latestWorkout = workouts.firstOrNull()
+                    
+                    // Calculate latest workout stats
+                    val latestWorkoutStats = latestWorkout?.let {
                         try {
-                            val latestWorkout = workouts.firstOrNull()
-                            
-                            // Calculate latest workout stats
-                            val latestWorkoutStats = latestWorkout?.let {
-                                try {
-                                    repository.calculateWorkoutStats(it)
-                                } catch (e: Exception) {
-                                    null
-                                }
-                            }
-                            
-                            // Load stats
-                            val stats = try {
-                                repository.calculateStats()
-                            } catch (e: Exception) {
-                                WorkoutStats(
-                                    totalWorkouts = 0,
-                                    totalVolume = 0.0,
-                                    averageVolume = 0.0,
-                                    totalSets = 0,
-                                    totalDuration = 0L,
-                                    averageDuration = 0L,
-                                    currentStreak = 0,
-                                    longestStreak = 0,
-                                    bestWeekVolume = 0.0,
-                                    bestWeekDate = null
-                                )
-                            }
-                            
-                            // Load weekly progress
-                            var weeklyProgress = emptyList<com.example.hevyinsight.data.model.WeeklyProgress>()
-                            try {
-                                weeklyProgress = repository.getWeeklyProgress(weeks = 4)
-                            } catch (e: Exception) {
-                                // Continue with empty progress if it fails
-                            }
-                            
-                            // Load muscle group progress
-                            var muscleGroupProgress = emptyList<com.example.hevyinsight.data.model.MuscleGroupProgress>()
-                            try {
-                                muscleGroupProgress = repository.getMuscleGroupProgress(weeks = 4)
-                            } catch (e: Exception) {
-                                // Continue with empty progress if it fails
-                            }
-                            
-                            _uiState.value = _uiState.value.copy(
-                                isLoading = false,
-                                latestWorkout = latestWorkout,
-                                latestWorkoutStats = latestWorkoutStats,
-                                workoutStats = stats,
-                                weeklyProgress = weeklyProgress,
-                                currentStreak = stats.currentStreak,
-                                muscleGroupProgress = muscleGroupProgress,
-                                error = null
-                            )
+                            repository.calculateWorkoutStats(it)
                         } catch (e: Exception) {
-                            _uiState.value = _uiState.value.copy(
-                                isLoading = false,
-                                error = "Error processing data: ${e.message}"
-                            )
+                            null
                         }
                     }
+                    
+                    // Load stats
+                    val stats = try {
+                        repository.calculateStats()
+                    } catch (e: Exception) {
+                        WorkoutStats(
+                            totalWorkouts = 0,
+                            totalVolume = 0.0,
+                            averageVolume = 0.0,
+                            totalSets = 0,
+                            totalDuration = 0L,
+                            averageDuration = 0L,
+                            currentStreak = 0,
+                            longestStreak = 0,
+                            bestWeekVolume = 0.0,
+                            bestWeekDate = null
+                        )
+                    }
+                    
+                    // Load weekly progress
+                    var weeklyProgress = emptyList<com.example.hevyinsight.data.model.WeeklyProgress>()
+                    try {
+                        weeklyProgress = repository.getWeeklyProgress(weeks = 4)
+                    } catch (e: Exception) {
+                        // Continue with empty progress if it fails
+                    }
+                    
+                    // Load muscle group progress
+                    var muscleGroupProgress = emptyList<com.example.hevyinsight.data.model.MuscleGroupProgress>()
+                    try {
+                        muscleGroupProgress = repository.getMuscleGroupProgress(weeks = 4)
+                    } catch (e: Exception) {
+                        // Continue with empty progress if it fails
+                    }
+                    
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        latestWorkout = latestWorkout,
+                        latestWorkoutStats = latestWorkoutStats,
+                        workoutStats = stats,
+                        weeklyProgress = weeklyProgress,
+                        currentStreak = stats.currentStreak,
+                        muscleGroupProgress = muscleGroupProgress,
+                        error = null
+                    )
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Error processing data: ${e.message}"
+                    )
+                }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
@@ -129,6 +130,22 @@ class DashboardViewModel(
     
     fun refresh() {
         loadDashboardData()
+    }
+    
+    fun sync() {
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+                repository.syncAllData()
+                // Reload data after sync
+                loadDashboardData()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = "Failed to sync: ${e.message}"
+                )
+            }
+        }
     }
 }
 
