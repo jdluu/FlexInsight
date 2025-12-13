@@ -204,6 +204,18 @@ fun MainScreen() {
                     },
                     onNavigateToRecovery = {
                         navController.navigate(Screen.Recovery.route)
+                    },
+                    onNavigateToHistory = {
+                        navController.navigate(Screen.History.route)
+                    },
+                    onNavigateToAITrainer = {
+                        navController.navigate(Screen.AITrainer.route)
+                    },
+                    onNavigateToPlanner = {
+                        navController.navigate(Screen.Planner.route)
+                    },
+                    onNavigateToSettings = {
+                        navController.navigate(Screen.Settings.route)
                     }
                 )
             }
@@ -238,8 +250,15 @@ fun MainScreen() {
             }
             composable(Screen.WorkoutDetail.route) { backStackEntry ->
                 val workoutId = backStackEntry.arguments?.getString("workoutId")
+                val viewModel: com.example.hevyinsight.ui.viewmodel.WorkoutDetailViewModel = viewModel {
+                    com.example.hevyinsight.ui.viewmodel.WorkoutDetailViewModel(
+                        repository = application.repository,
+                        database = application.database,
+                        workoutId = workoutId
+                    )
+                }
                 WorkoutDetailScreen(
-                    workoutId = workoutId,
+                    viewModel = viewModel,
                     onNavigateBack = {
                         navController.popBackStack()
                     }
