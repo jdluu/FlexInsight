@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -331,7 +332,7 @@ fun HeartRateChart() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.TrendingUp,
+                            imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                             contentDescription = null,
                             tint = RedAccent,
                             modifier = Modifier.size(14.dp)
@@ -408,7 +409,7 @@ fun QuickActionChips() {
     val quickActions = listOf(
         "Suggest recovery workout" to Icons.Default.Bolt,
         "Log water intake" to Icons.Default.WaterDrop,
-        "Compare to last week" to Icons.Default.ShowChart
+        "Compare to last week" to Icons.AutoMirrored.Filled.ShowChart
     )
     
     Row(
@@ -513,7 +514,7 @@ fun ChatInput(
                 contentColor = BackgroundDarkAlt
             ) {
                 Icon(
-                    imageVector = if (text.isNotBlank()) Icons.Default.Send else Icons.Default.Mic,
+                    imageVector = if (text.isNotBlank()) Icons.AutoMirrored.Filled.Send else Icons.Default.Mic,
                     contentDescription = if (text.isNotBlank()) "Send" else "Voice input",
                     modifier = Modifier.size(24.dp)
                 )
