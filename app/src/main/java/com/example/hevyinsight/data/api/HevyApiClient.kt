@@ -1,0 +1,69 @@
+package com.example.hevyinsight.data.api
+
+import android.util.Log
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
+
+object HevyApiClient {
+    private const val BASE_URL = "https://api.hevyapp.com/"
+    private const val TIMEOUT_SECONDS = 30L
+    private const val TAG = "HevyApiClient"
+    
+    /**
+     * Creates an OkHttpClient with API key interceptor
+     */
+    private fun createOkHttpClient(apiKey: String): OkHttpClient {
+        val loggingInterceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY // Change to NONE in production
+        }
+        
+            val apiKeyInterceptor = Interceptor { chain ->
+            val original = chain.request()
+            val requestBuilder = original.newBuilder()
+                // Use 'api-key' header as specified in Hevy API CORS headers
+                .header("api-key", apiKey)
+                .header("Content-Type", "application/json")
+            
+            val request = requestBuilder.build()
+            val response = chain.proceed(request)
+            
+            // Log API errors for debugging (body is already logged by HttpLoggingInterceptor)
+            if (!response.isSuccessful) {
+                Log.e(TAG, "API request failed: ${response.code} ${response.message}")
+                Log.e(TAG, "Request URL: ${request.url}")
+                if (response.code == 401) {
+                    Log.e(TAG, "Invalid API key - check your API key in settings")
+                }
+            }
+            
+            response
+        }
+        
+        return OkHttpClient.Builder()
+            .addInterceptor(apiKeyInterceptor)
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .build()
+    }
+    
+    /**
+     * Creates a Retrofit instance with the provided API key
+     */
+    fun createApiService(apiKey: String): HevyApiService {
+        val client = createOkHttpClient(apiKey)
+        
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(HevyApiService::class.java)
+    }
+}
+
