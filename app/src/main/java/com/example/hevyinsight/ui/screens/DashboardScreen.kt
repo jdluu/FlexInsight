@@ -10,9 +10,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,14 +25,97 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hevyinsight.ui.theme.*
+import com.example.hevyinsight.ui.utils.rememberViewOnlyMode
+import com.example.hevyinsight.ui.viewmodel.DashboardViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Format duration in minutes as "Xm" or "Xh Xm"
+ */
+fun formatDuration(minutes: Long): String {
+    if (minutes <= 0) return "0m"
+    if (minutes < 60) return "${minutes}m"
+    val hours = minutes / 60
+    val remainingMinutes = minutes % 60
+    return if (remainingMinutes > 0) "${hours}h ${remainingMinutes}m" else "${hours}h"
+}
+
+/**
+ * Format volume as "X.Xk" for thousands or "X" for regular numbers
+ */
+fun formatVolume(volume: Double): String {
+    if (volume <= 0) return "0"
+    if (volume >= 1000) {
+        val thousands = volume / 1000.0
+        return if (thousands % 1.0 == 0.0) {
+            "${thousands.toInt()}k"
+        } else {
+            String.format("%.1fk", thousands)
+        }
+    }
+    return if (volume % 1.0 == 0.0) {
+        volume.toInt().toString()
+    } else {
+        String.format("%.1f", volume)
+    }
+}
+
+/**
+ * Format number with commas if needed
+ */
+fun formatNumber(value: Int): String {
+    return value.toString().reversed().chunked(3).joinToString(",").reversed()
+}
+
 @Composable
 fun DashboardScreen(
+    viewModel: DashboardViewModel,
     onNavigateToWorkoutDetail: (String) -> Unit = {},
     onNavigateToRecovery: () -> Unit = {}
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val viewOnlyMode = rememberViewOnlyMode()
+    
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDark),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Primary)
+        }
+        return
+    }
+    
+    if (uiState.error != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDark)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = uiState.error!!,
+                    color = RedAccent,
+                    fontSize = 16.sp
+                )
+                Button(
+                    onClick = { viewModel.refresh() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text("Retry", color = BackgroundDark)
+                }
+            }
+        }
+        return
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -41,19 +127,33 @@ fun DashboardScreen(
             DashboardHeader()
         }
         item {
-            StreakIndicator()
+            StreakIndicator(streak = uiState.currentStreak)
         }
         item {
-            FeaturedWorkoutCard(onClick = { onNavigateToWorkoutDetail("1") })
+            uiState.latestWorkout?.let { workout ->
+                FeaturedWorkoutCard(
+                    workout = workout,
+                    workoutStats = uiState.latestWorkoutStats,
+                    onClick = { onNavigateToWorkoutDetail(workout.id) }
+                )
+            } ?: run {
+                // Show placeholder if no workout
+                FeaturedWorkoutCardPlaceholder()
+            }
         }
         item {
-            WeeklyProgressSection()
+            WeeklyProgressSection(
+                progress = uiState.weeklyProgress,
+                muscleGroupProgress = uiState.muscleGroupProgress
+            )
         }
         item {
             DailyInsightCard()
         }
-        item {
-            QuickActionsGrid()
+        if (!viewOnlyMode) {
+            item {
+                QuickActionsGrid()
+            }
         }
     }
 }
@@ -120,7 +220,7 @@ fun DashboardHeader() {
 }
 
 @Composable
-fun StreakIndicator() {
+fun StreakIndicator(streak: Int = 0) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -146,32 +246,36 @@ fun StreakIndicator() {
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
-                    text = "Day 6 of 7",
+                    text = if (streak > 0) "Day $streak" else "No streak",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White
                 )
                 Text(
-                    text = "this week",
+                    text = "streak",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     color = TextSecondary
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Box(
-                    modifier = Modifier
-                        .width(64.dp)
-                        .height(6.dp)
-                        .clip(RoundedCornerShape(3.dp))
-                        .background(Color.Gray.copy(alpha = 0.3f))
-                ) {
+                if (streak > 0) {
+                    Spacer(modifier = Modifier.width(8.dp))
                     Box(
                         modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(0.85f)
+                            .width(64.dp)
+                            .height(6.dp)
                             .clip(RoundedCornerShape(3.dp))
-                            .background(OrangeAccent)
-                    )
+                            .background(Color.Gray.copy(alpha = 0.3f))
+                    ) {
+                        // Progress bar based on streak (max 7 days for visual)
+                        val progress = (streak.coerceAtMost(7) / 7f).coerceIn(0f, 1f)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .fillMaxWidth(progress)
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(OrangeAccent)
+                        )
+                    }
                 }
             }
         }
@@ -179,7 +283,11 @@ fun StreakIndicator() {
 }
 
 @Composable
-fun FeaturedWorkoutCard(onClick: () -> Unit) {
+fun FeaturedWorkoutCard(
+    workout: com.example.hevyinsight.data.model.Workout,
+    workoutStats: com.example.hevyinsight.data.model.SingleWorkoutStats?,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -222,7 +330,7 @@ fun FeaturedWorkoutCard(onClick: () -> Unit) {
                     verticalAlignment = Alignment.Bottom
                 ) {
                     Text(
-                        text = "Upper Body Power",
+                        text = workout.name ?: "Workout",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
@@ -233,7 +341,7 @@ fun FeaturedWorkoutCard(onClick: () -> Unit) {
                         border = BorderStroke(1.dp, Primary.copy(alpha = 0.2f))
                     ) {
                         Text(
-                            text = "Today, 5:30 PM",
+                            text = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault()).format(Date(workout.startTime)),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
                             color = Primary,
@@ -246,9 +354,24 @@ fun FeaturedWorkoutCard(onClick: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    StatBox("Time", "52m", Icons.Default.Timer, modifier = Modifier.weight(1f))
-                    StatBox("Sets", "18", Icons.Default.FitnessCenter, modifier = Modifier.weight(1f))
-                    StatBox("Vol", "12.4k", Icons.Default.MonitorWeight, modifier = Modifier.weight(1f))
+                    StatBox(
+                        "Time",
+                        workoutStats?.let { formatDuration(it.durationMinutes) } ?: "0m",
+                        Icons.Default.Timer,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatBox(
+                        "Sets",
+                        workoutStats?.totalSets?.toString() ?: "0",
+                        Icons.Default.FitnessCenter,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatBox(
+                        "Vol",
+                        workoutStats?.let { formatVolume(it.totalVolume) } ?: "0",
+                        Icons.Default.MonitorWeight,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -305,7 +428,7 @@ fun FeaturedWorkoutCard(onClick: () -> Unit) {
                         modifier = Modifier.padding(end = 8.dp)
                     )
                     Icon(
-                        imageVector = Icons.Default.ArrowForward,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
                         tint = Color.Black
                     )
@@ -356,7 +479,7 @@ fun StatBox(label: String, value: String, icon: androidx.compose.ui.graphics.vec
 }
 
 @Composable
-fun WeeklyProgressSection() {
+fun WeeklyProgressSection(progress: List<com.example.hevyinsight.data.model.WeeklyProgress> = emptyList(), muscleGroupProgress: List<com.example.hevyinsight.data.model.MuscleGroupProgress> = emptyList()) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -412,8 +535,9 @@ fun WeeklyProgressSection() {
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.Bottom
                         ) {
+                            val totalVolume = progress.sumOf { it.totalVolume }
                             Text(
-                                text = "45k",
+                                text = formatVolume(totalVolume),
                                 fontSize = 32.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
@@ -430,14 +554,31 @@ fun WeeklyProgressSection() {
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.Bottom
                     ) {
+                        // Show last 5 weeks of progress
+                        val weeksToShow = progress.takeLast(5)
+                        val maxVolume = weeksToShow.maxOfOrNull { it.totalVolume } ?: 1.0
+                        
                         repeat(5) { index ->
+                            val weekIndex = weeksToShow.size - 5 + index
+                            val weekVolume = if (weekIndex >= 0 && weekIndex < weeksToShow.size) {
+                                weeksToShow[weekIndex].totalVolume
+                            } else {
+                                0.0
+                            }
+                            val height = if (maxVolume > 0) {
+                                ((weekVolume / maxVolume) * 32).coerceAtLeast(4.0).dp
+                            } else {
+                                4.dp
+                            }
+                            val isCurrent = index == 4 && weekIndex >= 0
+                            
                             Box(
                                 modifier = Modifier
                                     .width(6.dp)
-                                    .height(if (index == 4) 32.dp else (8 + index * 4).dp)
+                                    .height(height)
                                     .clip(RoundedCornerShape(3.dp))
                                     .background(
-                                        if (index == 4) Primary
+                                        if (isCurrent) Primary
                                         else Primary.copy(alpha = 0.2f)
                                     )
                             )
@@ -448,9 +589,39 @@ fun WeeklyProgressSection() {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    MuscleProgressItem("Chest", 80, "HI", Icons.Default.AccessibilityNew)
-                    MuscleProgressItem("Back", 55, "MD", Icons.Default.GridView)
-                    MuscleProgressItem("Legs", 30, "LO", Icons.Default.DirectionsWalk)
+                    if (muscleGroupProgress.isEmpty()) {
+                        // Show placeholder if no data
+                        Text(
+                            text = "No muscle group data available",
+                            fontSize = 12.sp,
+                            color = TextSecondary,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+                    } else {
+                        val maxVolume = muscleGroupProgress.maxOfOrNull { it.volume } ?: 1.0
+                        muscleGroupProgress.forEach { muscleGroup ->
+                            val percentage = if (maxVolume > 0) {
+                                ((muscleGroup.volume / maxVolume) * 100).toInt()
+                            } else {
+                                0
+                            }
+                            val icon = when (muscleGroup.muscleGroup.lowercase()) {
+                                "chest" -> Icons.Default.AccessibilityNew
+                                "back" -> Icons.Default.GridView
+                                "legs" -> Icons.AutoMirrored.Filled.DirectionsWalk
+                                "shoulders" -> Icons.Default.FitnessCenter
+                                "arms" -> Icons.Default.FitnessCenter
+                                "core" -> Icons.Default.FitnessCenter
+                                else -> Icons.Default.FitnessCenter
+                            }
+                            MuscleProgressItem(
+                                muscle = muscleGroup.muscleGroup,
+                                percentage = percentage,
+                                intensity = muscleGroup.intensity,
+                                icon = icon
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -608,7 +779,7 @@ fun DailyInsightCard() {
                             color = Color(0xFF818CF8)
                         )
                         Icon(
-                            imageVector = Icons.Default.OpenInNew,
+                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                             contentDescription = null,
                             tint = Color(0xFF818CF8),
                             modifier = Modifier.size(14.dp)
@@ -677,5 +848,30 @@ fun QuickActionButton(label: String, icon: androidx.compose.ui.graphics.vector.I
             fontWeight = FontWeight.Medium,
             color = TextSecondary
         )
+    }
+}
+@Composable
+fun FeaturedWorkoutCardPlaceholder() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceCard),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(280.dp)
+                .padding(20.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "No workouts yet. Start your first workout!",
+                color = TextSecondary,
+                fontSize = 16.sp
+            )
+        }
     }
 }

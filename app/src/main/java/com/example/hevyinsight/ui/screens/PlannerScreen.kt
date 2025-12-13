@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,11 +25,59 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hevyinsight.ui.theme.*
+import com.example.hevyinsight.ui.utils.rememberViewOnlyMode
+import com.example.hevyinsight.ui.viewmodel.PlannerViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import java.util.*
 
 @Composable
-fun PlannerScreen() {
-    var selectedDay by remember { mutableStateOf(1) } // Tuesday
+fun PlannerScreen(
+    viewModel: PlannerViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val viewOnlyMode = rememberViewOnlyMode()
+    
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDarkAlt),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Primary)
+        }
+        return
+    }
+    
+    if (uiState.error != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDarkAlt)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = uiState.error!!,
+                    color = RedAccent,
+                    fontSize = 16.sp
+                )
+                Button(
+                    onClick = { viewModel.refresh() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text("Retry", color = BackgroundDark)
+                }
+            }
+        }
+        return
+    }
     
     LazyColumn(
         modifier = Modifier
@@ -38,25 +87,35 @@ fun PlannerScreen() {
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         item {
-            PlannerHeader()
+            PlannerHeader(viewOnlyMode = viewOnlyMode)
         }
         item {
-            WeeklyGoalCard()
+            WeeklyGoalCard(weeklyGoalProgress = uiState.weeklyGoalProgress)
         }
         item {
-            WeekCalendar(selectedDay = selectedDay, onDaySelected = { selectedDay = it })
+            WeekCalendar(
+                weekCalendarData = uiState.weekCalendarData,
+                selectedDayIndex = uiState.selectedDayIndex,
+                onDaySelected = { viewModel.selectDay(it) }
+            )
         }
         item {
-            WorkoutListSection(selectedDay = selectedDay)
+            WorkoutListSection(
+                selectedDayWorkouts = uiState.selectedDayWorkouts,
+                selectedDayName = uiState.weekCalendarData.getOrNull(uiState.selectedDayIndex)?.name ?: "Day"
+            )
         }
         item {
-            AIInsightsSection()
+            AIInsightsSection(
+                volumeBalance = uiState.volumeBalance,
+                muscleGroupProgress = uiState.muscleGroupProgress
+            )
         }
     }
 }
 
 @Composable
-fun PlannerHeader() {
+fun PlannerHeader(viewOnlyMode: Boolean = false) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -70,23 +129,25 @@ fun PlannerHeader() {
             fontWeight = FontWeight.ExtraBold,
             color = Color.White
         )
-        FloatingActionButton(
-            onClick = {},
-            modifier = Modifier.size(48.dp),
-            containerColor = Primary,
-            contentColor = BackgroundDarkAlt
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add workout",
-                modifier = Modifier.size(28.dp)
-            )
+        if (!viewOnlyMode) {
+            FloatingActionButton(
+                onClick = {},
+                modifier = Modifier.size(48.dp),
+                containerColor = Primary,
+                contentColor = BackgroundDarkAlt
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add workout",
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         }
     }
 }
 
 @Composable
-fun WeeklyGoalCard() {
+fun WeeklyGoalCard(weeklyGoalProgress: com.example.hevyinsight.data.model.WeeklyGoalProgress? = null) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -117,30 +178,32 @@ fun WeeklyGoalCard() {
                         verticalAlignment = Alignment.Bottom
                     ) {
                         Text(
-                            text = "3",
+                            text = "${weeklyGoalProgress?.completed ?: 0}",
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.Black
                         )
                         Text(
-                            text = "/5",
+                            text = "/${weeklyGoalProgress?.target ?: 5}",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Medium,
                             color = TextSecondary
                         )
                     }
                 }
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Primary.copy(alpha = 0.2f)
-                ) {
-                    Text(
-                        text = "On Track",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Primary,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
+                if (weeklyGoalProgress != null) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Primary.copy(alpha = 0.2f)
+                    ) {
+                        Text(
+                            text = weeklyGoalProgress.status,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Primary,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
                 }
             }
             
@@ -151,17 +214,29 @@ fun WeeklyGoalCard() {
                     .clip(RoundedCornerShape(6.dp))
                     .background(Color.Gray.copy(alpha = 0.2f))
             ) {
+                val progress = if (weeklyGoalProgress != null && weeklyGoalProgress.target > 0) {
+                    (weeklyGoalProgress.completed.toFloat() / weeklyGoalProgress.target).coerceIn(0f, 1f)
+                } else {
+                    0f
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .fillMaxWidth(0.6f)
+                        .fillMaxWidth(progress)
                         .clip(RoundedCornerShape(6.dp))
                         .background(Primary)
                 )
             }
             
+            val remaining = weeklyGoalProgress?.let { it.target - it.completed } ?: 0
             Text(
-                text = "2 workouts left to hit your streak!",
+                text = if (remaining > 0) {
+                    "$remaining workout${if (remaining == 1) "" else "s"} left to hit your goal!"
+                } else if (weeklyGoalProgress?.completed ?: 0 >= (weeklyGoalProgress?.target ?: 0)) {
+                    "Goal achieved! Great work!"
+                } else {
+                    "Keep tracking your workouts!"
+                },
                 fontSize = 12.sp,
                 color = TextSecondary
             )
@@ -170,26 +245,27 @@ fun WeeklyGoalCard() {
 }
 
 @Composable
-fun WeekCalendar(selectedDay: Int, onDaySelected: (Int) -> Unit) {
-    val days = listOf(
-        DayInfo("Mon", 11, hasWorkout = true),
-        DayInfo("Tue", 12, hasWorkout = true, isSelected = selectedDay == 1, isCompleted = true),
-        DayInfo("Wed", 13, hasWorkout = true),
-        DayInfo("Thu", 14, hasWorkout = false),
-        DayInfo("Fri", 15, hasWorkout = true),
-        DayInfo("Sat", 16, hasWorkout = false),
-        DayInfo("Sun", 17, hasWorkout = false)
-    )
-    
+fun WeekCalendar(
+    weekCalendarData: List<com.example.hevyinsight.data.model.DayInfo> = emptyList(),
+    selectedDayIndex: Int = 0,
+    onDaySelected: (Int) -> Unit = {}
+) {
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(days.size) { index ->
-            val day = days[index]
+        items(weekCalendarData.size) { index ->
+            val dayData = weekCalendarData[index]
+            val dayInfo = DayInfo(
+                name = dayData.name,
+                date = dayData.date,
+                hasWorkout = dayData.hasWorkout,
+                isSelected = index == selectedDayIndex,
+                isCompleted = dayData.isCompleted
+            )
             DayCard(
-                day = day,
+                day = dayInfo,
                 onClick = { onDaySelected(index) }
             )
         }
@@ -279,8 +355,19 @@ data class DayInfo(
     val isCompleted: Boolean = false
 )
 
+/**
+ * Format duration in minutes as "X min"
+ */
+fun formatDuration(minutes: Long?): String {
+    if (minutes == null || minutes <= 0) return "0 min"
+    return "${minutes} min"
+}
+
 @Composable
-fun WorkoutListSection(selectedDay: Int) {
+fun WorkoutListSection(
+    selectedDayWorkouts: List<com.example.hevyinsight.data.model.PlannedWorkout> = emptyList(),
+    selectedDayName: String = "Day"
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -293,51 +380,68 @@ fun WorkoutListSection(selectedDay: Int) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Tuesday's Plan",
+                text = "${selectedDayName}'s Plan",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
-            Surface(
-                shape = RoundedCornerShape(6.dp),
-                color = Color.White.copy(alpha = 0.05f)
-            ) {
-                Text(
-                    text = "2 Sessions",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = TextSecondary,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            if (selectedDayWorkouts.isNotEmpty()) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color.White.copy(alpha = 0.05f)
+                ) {
+                    Text(
+                        text = "${selectedDayWorkouts.size} Session${if (selectedDayWorkouts.size == 1) "" else "s"}",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = TextSecondary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+        }
+        
+        if (selectedDayWorkouts.isEmpty()) {
+            Text(
+                text = "No workouts planned for this day",
+                fontSize = 14.sp,
+                color = TextSecondary,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
+        } else {
+            selectedDayWorkouts.forEach { workout ->
+                val icon = when {
+                    workout.intensity?.contains("High", ignoreCase = true) == true -> Icons.Default.FitnessCenter
+                    workout.intensity?.contains("Aerobic", ignoreCase = true) == true -> Icons.AutoMirrored.Filled.DirectionsRun
+                    else -> Icons.Default.FitnessCenter
+                }
+                val iconColor = when {
+                    workout.intensity?.contains("High", ignoreCase = true) == true -> Color(0xFF10B981)
+                    workout.intensity?.contains("Aerobic", ignoreCase = true) == true -> Color(0xFF3B82F6)
+                    else -> Primary
+                }
+                
+                WorkoutItem(
+                    title = workout.name,
+                    duration = formatDuration(workout.duration),
+                    intensity = workout.intensity ?: "Medium Intensity",
+                    isCompleted = workout.isCompleted,
+                    icon = icon,
+                    iconColor = iconColor,
+                    hasCheckbox = !workout.isCompleted
                 )
             }
         }
         
-        WorkoutItem(
-            title = "Upper Body Power",
-            duration = "45 min",
-            intensity = "High Intensity",
-            isCompleted = true,
-            icon = Icons.Default.FitnessCenter,
-            iconColor = Color(0xFF10B981)
-        )
-        
-        WorkoutItem(
-            title = "Zone 2 Cardio",
-            duration = "30 min",
-            intensity = "Aerobic",
-            isCompleted = false,
-            icon = Icons.Default.DirectionsRun,
-            iconColor = Color(0xFF3B82F6),
-            hasCheckbox = true
-        )
-        
-        Text(
-            text = "Long press to reschedule",
-            fontSize = 12.sp,
-            color = TextSecondary,
-            modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
+        if (selectedDayWorkouts.isNotEmpty()) {
+            Text(
+                text = "Long press to reschedule",
+                fontSize = 12.sp,
+                color = TextSecondary,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+        }
     }
 }
 
@@ -458,7 +562,10 @@ fun WorkoutItem(
 }
 
 @Composable
-fun AIInsightsSection() {
+fun AIInsightsSection(
+    volumeBalance: com.example.hevyinsight.data.model.VolumeBalance? = null,
+    muscleGroupProgress: List<com.example.hevyinsight.data.model.MuscleGroupProgress> = emptyList()
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -503,8 +610,8 @@ fun AIInsightsSection() {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    RecommendedWorkoutCard()
-                    VolumeBalanceChart()
+                    RecommendedWorkoutCard(muscleGroupProgress = muscleGroupProgress)
+                    VolumeBalanceChart(volumeBalance = volumeBalance)
                 }
             }
         }
@@ -512,7 +619,9 @@ fun AIInsightsSection() {
 }
 
 @Composable
-fun RecommendedWorkoutCard() {
+fun RecommendedWorkoutCard(
+    muscleGroupProgress: List<com.example.hevyinsight.data.model.MuscleGroupProgress> = emptyList()
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -547,14 +656,32 @@ fun RecommendedWorkoutCard() {
                     )
                 }
             }
+            val recommendation = when {
+                muscleGroupProgress.isEmpty() -> {
+                    "Active Recovery" to "Keep tracking your workouts to get personalized recommendations."
+                }
+                muscleGroupProgress.any { it.intensity == "HI" } -> {
+                    "Active Recovery Yoga" to "Based on your high intensity load, a lighter session will optimize recovery."
+                }
+                else -> {
+                    val lowest = muscleGroupProgress.minByOrNull { it.volume }
+                    if (lowest != null) {
+                        val focusArea = lowest.muscleGroup
+                        "Focus on $focusArea" to "Your $focusArea volume is lower. Consider adding more exercises targeting this area."
+                    } else {
+                        "Balanced Training" to "Your volume distribution looks good. Continue with your current routine."
+                    }
+                }
+            }
+            
             Text(
-                text = "Active Recovery Yoga",
+                text = recommendation.first,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color.Black
             )
             Text(
-                text = "Based on your high intensity load yesterday, a lighter session will optimize recovery.",
+                text = recommendation.second,
                 fontSize = 12.sp,
                 color = TextSecondary,
                 lineHeight = 18.sp
@@ -564,7 +691,9 @@ fun RecommendedWorkoutCard() {
 }
 
 @Composable
-fun VolumeBalanceChart() {
+fun VolumeBalanceChart(
+    volumeBalance: com.example.hevyinsight.data.model.VolumeBalance? = null
+) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -581,10 +710,14 @@ fun VolumeBalanceChart() {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.Bottom
         ) {
-            VolumeBar("Push", 0.45f, Color(0xFF60A5FA), modifier = Modifier.weight(1f))
-            VolumeBar("Pull", 0.30f, Color(0xFF9333EA), modifier = Modifier.weight(1f))
-            VolumeBar("Legs", 0.85f, Primary, isHighlighted = true, modifier = Modifier.weight(1f))
-            VolumeBar("Cardio", 0.60f, OrangeAccent, modifier = Modifier.weight(1f))
+            val balance = volumeBalance ?: com.example.hevyinsight.data.model.VolumeBalance(0.25f, 0.25f, 0.25f, 0.25f)
+            val maxValue = maxOf(balance.push, balance.pull, balance.legs, balance.cardio)
+            val isLegsHighlighted = balance.legs == maxValue
+            
+            VolumeBar("Push", balance.push, Color(0xFF60A5FA), modifier = Modifier.weight(1f))
+            VolumeBar("Pull", balance.pull, Color(0xFF9333EA), modifier = Modifier.weight(1f))
+            VolumeBar("Legs", balance.legs, Primary, isHighlighted = isLegsHighlighted, modifier = Modifier.weight(1f))
+            VolumeBar("Cardio", balance.cardio, OrangeAccent, modifier = Modifier.weight(1f))
         }
     }
 }

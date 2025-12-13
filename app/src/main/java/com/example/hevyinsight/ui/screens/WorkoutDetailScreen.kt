@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hevyinsight.ui.theme.*
+import com.example.hevyinsight.ui.utils.rememberViewOnlyMode
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -30,6 +32,8 @@ fun WorkoutDetailScreen(
     workoutId: String? = null,
     onNavigateBack: () -> Unit = {}
 ) {
+    val viewOnlyMode = rememberViewOnlyMode()
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -48,7 +52,7 @@ fun WorkoutDetailScreen(
             WorkoutStatsCard()
         }
         item {
-            ExercisesSection()
+            ExercisesSection(viewOnlyMode = viewOnlyMode)
         }
         item {
             NotesSection()
@@ -78,7 +82,7 @@ fun WorkoutDetailHeader(
         ) {
             IconButton(onClick = onNavigateBack) {
                 Icon(
-                    imageVector = Icons.Default.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
                     tint = Color.White
                 )
@@ -177,7 +181,7 @@ fun WorkoutStatsCard() {
                     StatItem("145", "Reps", modifier = Modifier.weight(1f))
                 }
                 
-                Divider(color = Color.White.copy(alpha = 0.1f))
+                HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
                 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -242,7 +246,7 @@ fun TagChip(text: String, color: Color, icon: androidx.compose.ui.graphics.vecto
 }
 
 @Composable
-fun ExercisesSection() {
+fun ExercisesSection(viewOnlyMode: Boolean = false) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -260,13 +264,15 @@ fun ExercisesSection() {
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
-            TextButton(onClick = {}) {
-                Text(
-                    text = "Edit workout",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Primary
-                )
+            if (!viewOnlyMode) {
+                TextButton(onClick = {}) {
+                    Text(
+                        text = "Edit workout",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Primary
+                    )
+                }
             }
         }
         
@@ -458,7 +464,7 @@ fun ExpandableExerciseCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Default.TrendingUp,
+                                imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                                 contentDescription = null,
                                 tint = Primary,
                                 modifier = Modifier.size(14.dp)
