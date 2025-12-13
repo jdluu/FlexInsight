@@ -14,13 +14,14 @@ interface HevyApiService {
     /**
      * Get a paginated list of workouts
      * API key is added automatically by the interceptor
-     * @param page Page number (default: 1)
-     * @param perPage Items per page (default: 20)
+     * Note: Both page and per_page are mandatory query parameters
+     * @param page Page number (required)
+     * @param perPage Items per page (required)
      */
     @GET("v1/workouts")
     suspend fun getWorkouts(
-        @Query("page") page: Int = 1,
-        @Query("per_page") perPage: Int = 20
+        @Query("page") page: Int,
+        @Query("per_page") perPage: Int
     ): Response<PaginatedWorkoutResponse>
     
     /**
