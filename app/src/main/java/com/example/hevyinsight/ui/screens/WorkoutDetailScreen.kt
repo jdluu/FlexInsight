@@ -24,15 +24,82 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hevyinsight.ui.theme.*
 import com.example.hevyinsight.ui.utils.rememberViewOnlyMode
+import com.example.hevyinsight.ui.viewmodel.WorkoutDetailViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.text.style.TextAlign
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
 fun WorkoutDetailScreen(
-    workoutId: String? = null,
+    viewModel: WorkoutDetailViewModel,
     onNavigateBack: () -> Unit = {}
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     val viewOnlyMode = rememberViewOnlyMode()
+    
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDark),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = Primary)
+        }
+        return
+    }
+    
+    if (uiState.error != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDark)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = uiState.error!!,
+                    color = RedAccent,
+                    fontSize = 16.sp
+                )
+                Button(
+                    onClick = { viewModel.refresh() },
+                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                ) {
+                    Text("Retry", color = BackgroundDark)
+                }
+            }
+        }
+        return
+    }
+    
+    val workout = uiState.workout
+    if (workout == null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDark)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Workout not found",
+                color = TextSecondary,
+                fontSize = 16.sp
+            )
+        }
+        return
+    }
+    
+    // Format date
+    val dateFormat = SimpleDateFormat("EEE, MMM d, yyyy", Locale.getDefault())
+    val dateString = dateFormat.format(Date(workout.startTime))
     
     LazyColumn(
         modifier = Modifier
@@ -43,19 +110,27 @@ fun WorkoutDetailScreen(
     ) {
         item {
             WorkoutDetailHeader(
-                title = "Leg Day Destruction",
-                date = "Tue, Oct 24, 2023",
+                title = workout.name ?: "Workout",
+                date = dateString,
                 onNavigateBack = onNavigateBack
             )
         }
         item {
-            WorkoutStatsCard()
+            WorkoutStatsCard(
+                stats = uiState.workoutStats,
+                totalReps = uiState.exercisesWithSets.sumOf { it.sets.sumOf { set -> set.reps ?: 0 } }
+            )
         }
         item {
-            ExercisesSection(viewOnlyMode = viewOnlyMode)
+            ExercisesSection(
+                exercisesWithSets = uiState.exercisesWithSets,
+                viewOnlyMode = viewOnlyMode
+            )
         }
-        item {
-            NotesSection()
+        if (workout.notes != null && workout.notes.isNotBlank()) {
+            item {
+                NotesSection(notes = workout.notes)
+            }
         }
         item {
             AICoachReflectionCard()
@@ -140,7 +215,33 @@ fun WorkoutDetailHeader(
 }
 
 @Composable
-fun WorkoutStatsCard() {
+fun WorkoutStatsCard(
+    stats: com.example.hevyinsight.data.model.SingleWorkoutStats?,
+    totalReps: Int
+) {
+    val durationText = if (stats?.durationMinutes != null && stats.durationMinutes > 0) {
+        val hours = stats.durationMinutes / 60
+        val minutes = stats.durationMinutes % 60
+        if (hours > 0) {
+            "${hours}h ${minutes}m"
+        } else {
+            "${minutes}m"
+        }
+    } else {
+        "0m"
+    }
+    
+    val volumeText = if (stats?.totalVolume != null && stats.totalVolume > 0) {
+        formatVolumeWithCommas(stats.totalVolume)
+    } else {
+        "0"
+    }
+    
+    val setsText = (stats?.totalSets ?: 0).toString()
+    val repsText = totalReps.toString()
+    
+    val hasPR = false // TODO: Check if any sets are PRs
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -170,15 +271,15 @@ fun WorkoutStatsCard() {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    StatItem("1h 15m", "Duration", modifier = Modifier.weight(1f))
-                    StatItem("12,450", "Vol (lbs)", modifier = Modifier.weight(1f))
+                    StatItem(durationText, "Duration", modifier = Modifier.weight(1f))
+                    StatItem(volumeText, "Vol (lbs)", modifier = Modifier.weight(1f))
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    StatItem("18", "Sets", modifier = Modifier.weight(1f))
-                    StatItem("145", "Reps", modifier = Modifier.weight(1f))
+                    StatItem(setsText, "Sets", modifier = Modifier.weight(1f))
+                    StatItem(repsText, "Reps", modifier = Modifier.weight(1f))
                 }
                 
                 HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
@@ -187,7 +288,9 @@ fun WorkoutStatsCard() {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    TagChip("PR DAY", Primary, Icons.Default.EmojiEvents)
+                    if (hasPR) {
+                        TagChip("PR DAY", Primary, Icons.Default.EmojiEvents)
+                    }
                     TagChip("AI Summary", Color(0xFF9333EA), Icons.Default.AutoAwesome)
                 }
             }
@@ -246,7 +349,10 @@ fun TagChip(text: String, color: Color, icon: androidx.compose.ui.graphics.vecto
 }
 
 @Composable
-fun ExercisesSection(viewOnlyMode: Boolean = false) {
+fun ExercisesSection(
+    exercisesWithSets: List<com.example.hevyinsight.ui.viewmodel.ExerciseWithSets>,
+    viewOnlyMode: Boolean = false
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -276,36 +382,41 @@ fun ExercisesSection(viewOnlyMode: Boolean = false) {
             }
         }
         
-        ExpandableExerciseCard(
-            number = 1,
-            exerciseName = "Back Squat",
-            sets = 3,
-            equipment = "Barbell",
-            isExpanded = true,
-            setsData = listOf(
-                SetData(1, "225", "5", "7"),
-                SetData(2, "235", "5", "PR", isPR = true),
-                SetData(3, "235", "4", "9")
-            ),
-            improvement = "+10 lbs vs last time"
-        )
-        
-        ExpandableExerciseCard(
-            number = 2,
-            exerciseName = "Leg Press",
-            sets = 4,
-            equipment = "Machine",
-            isExpanded = false,
-            bestSet = "Best: 450x8"
-        )
-        
-        ExpandableExerciseCard(
-            number = 3,
-            exerciseName = "Romanian Deadlift",
-            sets = 3,
-            equipment = "Dumbbell",
-            isExpanded = false
-        )
+        exercisesWithSets.forEachIndexed { index, exerciseWithSets ->
+            val exercise = exerciseWithSets.exercise
+            val sets = exerciseWithSets.sets
+            
+            // Convert sets to SetData format
+            val setsData = sets.map { set ->
+                SetData(
+                    number = set.number,
+                    weight = if (set.weight != null) String.format("%.0f", set.weight) else "-",
+                    reps = set.reps?.toString() ?: "-",
+                    rpe = if (set.rpe != null) String.format("%.1f", set.rpe) else "-",
+                    isPR = set.isPersonalRecord
+                )
+            }
+            
+            // Find best set (highest weight * reps)
+            val bestSet = sets.maxByOrNull { (it.weight ?: 0.0) * (it.reps ?: 0) }
+            val bestSetText = bestSet?.let {
+                val weight = it.weight ?: 0.0
+                val reps = it.reps ?: 0
+                if (weight > 0 && reps > 0) {
+                    "Best: ${String.format("%.0f", weight)}x$reps"
+                } else null
+            }
+            
+            ExpandableExerciseCard(
+                number = index + 1,
+                exerciseName = exercise.name,
+                sets = sets.size,
+                equipment = "Exercise", // TODO: Get equipment from exercise template if available
+                isExpanded = index == 0, // Expand first exercise by default
+                setsData = setsData,
+                bestSet = bestSetText
+            )
+        }
     }
 }
 
@@ -572,7 +683,7 @@ data class SetData(
 )
 
 @Composable
-fun NotesSection() {
+fun NotesSection(notes: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -615,7 +726,7 @@ fun NotesSection() {
                         .padding(12.dp)
                 ) {
                     Text(
-                        text = "Felt strong today, knee didn't hurt much. Good warm up helped.",
+                        text = notes,
                         fontSize = 14.sp,
                         color = Color.White,
                         lineHeight = 20.sp
