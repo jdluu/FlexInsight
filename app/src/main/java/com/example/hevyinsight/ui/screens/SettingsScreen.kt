@@ -855,7 +855,7 @@ fun WeeklyGoalDialog(
                 )
                 if (error != null) {
                     Text(
-                        text = error!!,
+                        text = error,
                         color = RedAccent,
                         fontSize = 12.sp
                     )

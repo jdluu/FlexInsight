@@ -2,8 +2,10 @@ package com.example.hevyinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.hevyinsight.core.errors.ErrorHandler
 import com.example.hevyinsight.data.model.*
 import com.example.hevyinsight.data.repository.HevyRepository
+import com.example.hevyinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +15,7 @@ import kotlinx.coroutines.delay
 
 data class PlannerUiState(
     val isLoading: Boolean = false,
-    val error: String? = null,
+    val error: UiError? = null,
     val weeklyGoalProgress: WeeklyGoalProgress? = null,
     val weekCalendarData: List<DayInfo> = emptyList(),
     val selectedDayIndex: Int = 0,
@@ -105,9 +107,10 @@ class PlannerViewModel(
                     error = null
                 )
             } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "Failed to load planner data: ${e.message}"
+                    error = UiError.fromApiError(apiError)
                 )
             }
         }
@@ -127,8 +130,9 @@ class PlannerViewModel(
                     )
                 }
             } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    error = "Failed to load day workouts: ${e.message}"
+                    error = UiError.fromApiError(apiError)
                 )
             }
         }

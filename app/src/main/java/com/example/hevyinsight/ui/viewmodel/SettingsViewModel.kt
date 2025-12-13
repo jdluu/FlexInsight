@@ -2,9 +2,11 @@ package com.example.hevyinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.hevyinsight.core.errors.ErrorHandler
 import com.example.hevyinsight.data.model.ProfileInfo
 import com.example.hevyinsight.data.preferences.UserPreferencesManager
 import com.example.hevyinsight.data.repository.HevyRepository
+import com.example.hevyinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,14 +16,14 @@ import kotlinx.coroutines.delay
 
 data class SettingsUiState(
     val isLoading: Boolean = false,
-    val error: String? = null,
+    val error: UiError? = null,
     val profileInfo: ProfileInfo? = null,
     val weeklyGoal: Int = 5,
     val theme: String = "Dark",
     val units: String = "Metric",
     val viewOnlyMode: Boolean = false,
     val isSyncing: Boolean = false,
-    val syncError: String? = null
+    val syncError: UiError? = null
 )
 
 class SettingsViewModel(
@@ -86,9 +88,10 @@ class SettingsViewModel(
                     error = null
                 )
             } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "Failed to load settings data: ${e.message}"
+                    error = UiError.fromApiError(apiError)
                 )
             }
         }
@@ -103,9 +106,10 @@ class SettingsViewModel(
                 // Reload profile info after sync
                 loadSettingsData()
             } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
                     isSyncing = false,
-                    syncError = "Failed to sync data: ${e.message}"
+                    syncError = UiError.fromApiError(apiError)
                 )
             }
         }
@@ -117,8 +121,9 @@ class SettingsViewModel(
                 userPreferencesManager.setWeeklyGoal(goal)
                 _uiState.value = _uiState.value.copy(weeklyGoal = goal)
             } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    error = "Failed to update weekly goal: ${e.message}"
+                    error = UiError.fromApiError(apiError)
                 )
             }
         }
@@ -130,8 +135,9 @@ class SettingsViewModel(
                 userPreferencesManager.setTheme(theme)
                 _uiState.value = _uiState.value.copy(theme = theme)
             } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    error = "Failed to update theme: ${e.message}"
+                    error = UiError.fromApiError(apiError)
                 )
             }
         }
@@ -143,8 +149,9 @@ class SettingsViewModel(
                 userPreferencesManager.setUnits(units)
                 _uiState.value = _uiState.value.copy(units = units)
             } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    error = "Failed to update units: ${e.message}"
+                    error = UiError.fromApiError(apiError)
                 )
             }
         }
@@ -156,8 +163,9 @@ class SettingsViewModel(
                 userPreferencesManager.setViewOnlyMode(enabled)
                 _uiState.value = _uiState.value.copy(viewOnlyMode = enabled)
             } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    error = "Failed to update view only mode: ${e.message}"
+                    error = UiError.fromApiError(apiError)
                 )
             }
         }
@@ -169,8 +177,9 @@ class SettingsViewModel(
                 repository.clearCache()
                 _uiState.value = _uiState.value.copy(error = null)
             } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    error = "Failed to clear cache: ${e.message}"
+                    error = UiError.fromApiError(apiError)
                 )
             }
         }

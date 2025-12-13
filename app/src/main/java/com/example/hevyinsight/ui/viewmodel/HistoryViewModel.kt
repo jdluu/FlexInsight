@@ -2,6 +2,7 @@ package com.example.hevyinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.hevyinsight.core.errors.ErrorHandler
 import com.example.hevyinsight.data.model.PersonalRecord
 import com.example.hevyinsight.data.model.Set
 import com.example.hevyinsight.data.model.Workout
@@ -12,17 +13,17 @@ import com.example.hevyinsight.data.model.WeeklyVolumeData
 import com.example.hevyinsight.data.model.DailyDurationData
 import com.example.hevyinsight.data.model.MuscleGroupProgress
 import com.example.hevyinsight.data.repository.HevyRepository
+import com.example.hevyinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
 data class HistoryUiState(
     val isLoading: Boolean = false,
-    val error: String? = null,
+    val error: UiError? = null,
     val workouts: List<Workout> = emptyList(),
     val workoutStats: WorkoutStats? = null,
     val recentPRs: List<Set> = emptyList(),
@@ -58,8 +59,9 @@ class HistoryViewModel(
                 val workouts = try {
                     repository.getWorkouts().first()
                 } catch (e: Exception) {
+                    val apiError = ErrorHandler.handleError(e)
                     _uiState.value = _uiState.value.copy(
-                        error = "Failed to load workouts: ${e.message}",
+                        error = UiError.fromApiError(apiError),
                         isLoading = false
                     )
                     return@launch
@@ -154,15 +156,17 @@ class HistoryViewModel(
                         error = null
                     )
                 } catch (e: Exception) {
+                    val apiError = ErrorHandler.handleError(e)
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = "Error processing data: ${e.message}"
+                        error = UiError.fromApiError(apiError)
                     )
                 }
             } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "Failed to load history data: ${e.message}"
+                    error = UiError.fromApiError(apiError)
                 )
             }
         }

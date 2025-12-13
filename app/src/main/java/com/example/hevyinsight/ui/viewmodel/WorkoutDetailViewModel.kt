@@ -2,12 +2,14 @@ package com.example.hevyinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.hevyinsight.core.errors.ErrorHandler
 import com.example.hevyinsight.data.local.HevyDatabase
 import com.example.hevyinsight.data.model.Exercise
 import com.example.hevyinsight.data.model.Set
 import com.example.hevyinsight.data.model.SingleWorkoutStats
 import com.example.hevyinsight.data.model.Workout
 import com.example.hevyinsight.data.repository.HevyRepository
+import com.example.hevyinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +23,7 @@ data class ExerciseWithSets(
 
 data class WorkoutDetailUiState(
     val isLoading: Boolean = false,
-    val error: String? = null,
+    val error: UiError? = null,
     val workout: Workout? = null,
     val workoutStats: SingleWorkoutStats? = null,
     val exercisesWithSets: List<ExerciseWithSets> = emptyList()
@@ -61,7 +63,7 @@ class WorkoutDetailViewModel(
                 if (workout == null) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        error = "Workout not found"
+                        error = UiError.Unknown("Workout not found")
                     )
                     return@launch
                 }
@@ -98,9 +100,10 @@ class WorkoutDetailViewModel(
                     error = null
                 )
             } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "Failed to load workout: ${e.message}"
+                    error = UiError.fromApiError(apiError)
                 )
             }
         }

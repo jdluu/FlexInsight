@@ -84,7 +84,7 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = uiState.error!!,
+                    text = uiState.error?.message ?: "Unknown error",
                     color = RedAccent,
                     fontSize = 16.sp
                 )
