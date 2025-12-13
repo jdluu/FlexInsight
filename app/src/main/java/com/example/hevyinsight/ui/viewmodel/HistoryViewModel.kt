@@ -13,6 +13,7 @@ import com.example.hevyinsight.data.model.WeeklyVolumeData
 import com.example.hevyinsight.data.model.DailyDurationData
 import com.example.hevyinsight.data.model.MuscleGroupProgress
 import com.example.hevyinsight.data.repository.HevyRepository
+import com.example.hevyinsight.ui.common.LoadingState
 import com.example.hevyinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
 data class HistoryUiState(
-    val isLoading: Boolean = false,
+    val loadingState: LoadingState = LoadingState.Idle,
     val error: UiError? = null,
     val workouts: List<Workout> = emptyList(),
     val workoutStats: WorkoutStats? = null,
@@ -33,13 +34,17 @@ data class HistoryUiState(
     val durationTrend: List<DailyDurationData> = emptyList(),
     val muscleGroupProgress: List<MuscleGroupProgress> = emptyList(),
     val prsWithDetails: List<PRDetails> = emptyList()
-)
+) {
+    // Backward compatibility helper
+    val isLoading: Boolean
+        get() = loadingState.isLoading
+}
 
 class HistoryViewModel(
     private val repository: HevyRepository
 ) : ViewModel() {
     
-    private val _uiState = MutableStateFlow(HistoryUiState(isLoading = true))
+    private val _uiState = MutableStateFlow(HistoryUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<HistoryUiState> = _uiState.asStateFlow()
     
     init {
@@ -53,7 +58,7 @@ class HistoryViewModel(
     private fun loadHistoryData() {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+                _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
                 
                 // Load all workouts - use first() to get initial value instead of continuous collection
                 val workouts = try {
@@ -62,7 +67,7 @@ class HistoryViewModel(
                     val apiError = ErrorHandler.handleError(e)
                     _uiState.value = _uiState.value.copy(
                         error = UiError.fromApiError(apiError),
-                        isLoading = false
+                        loadingState = LoadingState.Error(apiError)
                     )
                     return@launch
                 }
@@ -143,7 +148,7 @@ class HistoryViewModel(
                     }
                     
                     _uiState.value = _uiState.value.copy(
-                        isLoading = false,
+                        loadingState = LoadingState.Success,
                         workouts = workouts,
                         workoutStats = stats,
                         recentPRs = prs,
@@ -158,14 +163,14 @@ class HistoryViewModel(
                 } catch (e: Exception) {
                     val apiError = ErrorHandler.handleError(e)
                     _uiState.value = _uiState.value.copy(
-                        isLoading = false,
+                        loadingState = LoadingState.Error(apiError),
                         error = UiError.fromApiError(apiError)
                     )
                 }
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    loadingState = LoadingState.Error(apiError),
                     error = UiError.fromApiError(apiError)
                 )
             }

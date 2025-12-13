@@ -2,12 +2,14 @@ package com.example.hevyinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.hevyinsight.core.errors.ApiError
 import com.example.hevyinsight.core.errors.ErrorHandler
 import com.example.hevyinsight.data.model.Workout
 import com.example.hevyinsight.data.model.WorkoutStats
 import com.example.hevyinsight.data.model.WeeklyProgress
 import com.example.hevyinsight.data.model.SingleWorkoutStats
 import com.example.hevyinsight.data.repository.HevyRepository
+import com.example.hevyinsight.ui.common.LoadingState
 import com.example.hevyinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
 data class DashboardUiState(
-    val isLoading: Boolean = false,
+    val loadingState: LoadingState = LoadingState.Idle,
     val error: UiError? = null,
     val latestWorkout: Workout? = null,
     val latestWorkoutStats: SingleWorkoutStats? = null,
@@ -25,13 +27,17 @@ data class DashboardUiState(
     val weeklyProgress: List<WeeklyProgress> = emptyList(),
     val currentStreak: Int = 0,
     val muscleGroupProgress: List<com.example.hevyinsight.data.model.MuscleGroupProgress> = emptyList()
-)
+) {
+    // Backward compatibility helper
+    val isLoading: Boolean
+        get() = loadingState.isLoading
+}
 
 class DashboardViewModel(
     private val repository: HevyRepository
 ) : ViewModel() {
     
-    private val _uiState = MutableStateFlow(DashboardUiState(isLoading = true))
+    private val _uiState = MutableStateFlow(DashboardUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
     
     init {
@@ -45,7 +51,7 @@ class DashboardViewModel(
     private fun loadDashboardData() {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+                _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
                 
                 // Load latest workout - use first() to get initial value instead of continuous collection
                 val workouts = try {
@@ -54,7 +60,7 @@ class DashboardViewModel(
                     val apiError = ErrorHandler.handleError(e)
                     _uiState.value = _uiState.value.copy(
                         error = UiError.fromApiError(apiError),
-                        isLoading = false
+                        loadingState = LoadingState.Error(apiError)
                     )
                     return@launch
                 }
@@ -106,7 +112,7 @@ class DashboardViewModel(
                     }
                     
                     _uiState.value = _uiState.value.copy(
-                        isLoading = false,
+                        loadingState = LoadingState.Success,
                         latestWorkout = latestWorkout,
                         latestWorkoutStats = latestWorkoutStats,
                         workoutStats = stats,
@@ -118,14 +124,14 @@ class DashboardViewModel(
                 } catch (e: Exception) {
                     val apiError = ErrorHandler.handleError(e)
                     _uiState.value = _uiState.value.copy(
-                        isLoading = false,
+                        loadingState = LoadingState.Error(apiError),
                         error = UiError.fromApiError(apiError)
                     )
                 }
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    loadingState = LoadingState.Error(apiError),
                     error = UiError.fromApiError(apiError)
                 )
             }
@@ -139,14 +145,14 @@ class DashboardViewModel(
     fun sync() {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+                _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
                 repository.syncAllData()
                 // Reload data after sync
                 loadDashboardData()
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    loadingState = LoadingState.Error(apiError),
                     error = UiError.fromApiError(apiError)
                 )
             }

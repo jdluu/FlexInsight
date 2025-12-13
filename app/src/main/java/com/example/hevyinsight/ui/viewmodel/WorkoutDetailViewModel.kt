@@ -9,6 +9,7 @@ import com.example.hevyinsight.data.model.Set
 import com.example.hevyinsight.data.model.SingleWorkoutStats
 import com.example.hevyinsight.data.model.Workout
 import com.example.hevyinsight.data.repository.HevyRepository
+import com.example.hevyinsight.ui.common.LoadingState
 import com.example.hevyinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,12 +23,16 @@ data class ExerciseWithSets(
 )
 
 data class WorkoutDetailUiState(
-    val isLoading: Boolean = false,
+    val loadingState: LoadingState = LoadingState.Idle,
     val error: UiError? = null,
     val workout: Workout? = null,
     val workoutStats: SingleWorkoutStats? = null,
     val exercisesWithSets: List<ExerciseWithSets> = emptyList()
-)
+) {
+    // Backward compatibility helper
+    val isLoading: Boolean
+        get() = loadingState.isLoading
+}
 
 class WorkoutDetailViewModel(
     private val repository: HevyRepository,
@@ -35,7 +40,7 @@ class WorkoutDetailViewModel(
     workoutId: String?
 ) : ViewModel() {
     
-    private val _uiState = MutableStateFlow(WorkoutDetailUiState(isLoading = true))
+    private val _uiState = MutableStateFlow(WorkoutDetailUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<WorkoutDetailUiState> = _uiState.asStateFlow()
     
     private val exerciseDao = database.exerciseDao()
@@ -46,8 +51,8 @@ class WorkoutDetailViewModel(
             loadWorkoutData(workoutId)
         } else {
             _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                error = "No workout ID provided"
+                loadingState = LoadingState.Error(com.example.hevyinsight.core.errors.ApiError.Unknown("No workout ID provided")),
+                error = UiError.Unknown("No workout ID provided")
             )
         }
     }
@@ -55,14 +60,15 @@ class WorkoutDetailViewModel(
     private fun loadWorkoutData(workoutId: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+                _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
                 
                 // Load workout
                 val workout = repository.getWorkoutByIdFlow(workoutId).first()
                 
                 if (workout == null) {
+                    val apiError = com.example.hevyinsight.core.errors.ApiError.Unknown("Workout not found")
                     _uiState.value = _uiState.value.copy(
-                        isLoading = false,
+                        loadingState = LoadingState.Error(apiError),
                         error = UiError.Unknown("Workout not found")
                     )
                     return@launch
@@ -93,7 +99,7 @@ class WorkoutDetailViewModel(
                 }
                 
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    loadingState = LoadingState.Success,
                     workout = workout,
                     workoutStats = workoutStats,
                     exercisesWithSets = exercisesWithSets,
@@ -102,7 +108,7 @@ class WorkoutDetailViewModel(
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    loadingState = LoadingState.Error(apiError),
                     error = UiError.fromApiError(apiError)
                 )
             }

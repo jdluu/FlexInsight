@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.hevyinsight.core.errors.ErrorHandler
 import com.example.hevyinsight.data.model.*
 import com.example.hevyinsight.data.repository.HevyRepository
+import com.example.hevyinsight.ui.common.LoadingState
 import com.example.hevyinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
 data class PlannerUiState(
-    val isLoading: Boolean = false,
+    val loadingState: LoadingState = LoadingState.Idle,
     val error: UiError? = null,
     val weeklyGoalProgress: WeeklyGoalProgress? = null,
     val weekCalendarData: List<DayInfo> = emptyList(),
@@ -23,13 +24,17 @@ data class PlannerUiState(
     val routines: List<Routine> = emptyList(),
     val volumeBalance: VolumeBalance? = null,
     val muscleGroupProgress: List<MuscleGroupProgress> = emptyList()
-)
+) {
+    // Backward compatibility helper
+    val isLoading: Boolean
+        get() = loadingState.isLoading
+}
 
 class PlannerViewModel(
     private val repository: HevyRepository
 ) : ViewModel() {
     
-    private val _uiState = MutableStateFlow(PlannerUiState(isLoading = true))
+    private val _uiState = MutableStateFlow(PlannerUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<PlannerUiState> = _uiState.asStateFlow()
     
     init {
@@ -42,7 +47,7 @@ class PlannerViewModel(
     fun loadPlannerData() {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+                _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
                 
                 // Load weekly goal progress
                 var weeklyGoalProgress: WeeklyGoalProgress? = null
@@ -97,7 +102,7 @@ class PlannerViewModel(
                 }
                 
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    loadingState = LoadingState.Success,
                     weeklyGoalProgress = weeklyGoalProgress,
                     weekCalendarData = weekCalendarData,
                     selectedDayWorkouts = selectedDayWorkouts,
@@ -109,7 +114,7 @@ class PlannerViewModel(
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    loadingState = LoadingState.Error(apiError),
                     error = UiError.fromApiError(apiError)
                 )
             }

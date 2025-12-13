@@ -16,6 +16,10 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.hevyinsight.ui.common.LoadingState
+import com.example.hevyinsight.ui.components.ErrorBanner
+import com.example.hevyinsight.ui.components.NetworkStatusIndicator
+import com.example.hevyinsight.ui.components.SyncStatusIndicator
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -102,12 +106,37 @@ fun SettingsScreen() {
             SettingsHeader()
         }
         item {
+            // Network status indicator
+            val networkState by application.networkMonitor.networkState.collectAsState()
+            NetworkStatusIndicator(
+                networkState = networkState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            )
+        }
+        
+        item {
             ProfileSection(
                 profileInfo = uiState.profileInfo,
-                isSyncing = uiState.isSyncing,
+                syncState = uiState.syncState,
+                syncError = uiState.syncError,
                 viewOnlyMode = uiState.viewOnlyMode,
                 onSyncClick = { viewModel.syncData() }
             )
+        }
+        
+        // Error banner
+        uiState.error?.let { error ->
+            item {
+                ErrorBanner(
+                    error = error,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    onDismiss = { /* TODO: Add dismiss action */ }
+                )
+            }
         }
         item {
             SectionTitle("Integrations")
@@ -318,10 +347,12 @@ fun SettingsHeader() {
 @Composable
 fun ProfileSection(
     profileInfo: com.example.hevyinsight.data.model.ProfileInfo?,
-    isSyncing: Boolean,
+    syncState: LoadingState,
+    syncError: com.example.hevyinsight.ui.common.UiError?,
     viewOnlyMode: Boolean,
     onSyncClick: () -> Unit
 ) {
+    val isSyncing = syncState.isLoading
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -446,6 +477,31 @@ fun ProfileSection(
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = BackgroundDarkAlt
+            )
+        }
+        
+        // Sync status indicator
+        val syncStateForIndicator = when (syncState) {
+            is LoadingState.Loading -> com.example.hevyinsight.data.sync.SyncState.Syncing
+            is LoadingState.Success -> com.example.hevyinsight.data.sync.SyncState.Success(
+                timestamp = System.currentTimeMillis()
+            )
+            is LoadingState.Error -> com.example.hevyinsight.data.sync.SyncState.Error(
+                error = syncState.error
+            )
+            else -> com.example.hevyinsight.data.sync.SyncState.Idle
+        }
+        SyncStatusIndicator(
+            syncState = syncStateForIndicator,
+            modifier = Modifier.fillMaxWidth()
+        )
+        
+        // Sync error banner
+        syncError?.let { error ->
+            ErrorBanner(
+                error = error,
+                modifier = Modifier.fillMaxWidth(),
+                onDismiss = null
             )
         }
     }

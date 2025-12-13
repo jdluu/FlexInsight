@@ -6,6 +6,7 @@ import com.example.hevyinsight.core.errors.ErrorHandler
 import com.example.hevyinsight.data.model.ProfileInfo
 import com.example.hevyinsight.data.preferences.UserPreferencesManager
 import com.example.hevyinsight.data.repository.HevyRepository
+import com.example.hevyinsight.ui.common.LoadingState
 import com.example.hevyinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,23 +16,29 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
 data class SettingsUiState(
-    val isLoading: Boolean = false,
+    val loadingState: LoadingState = LoadingState.Idle,
     val error: UiError? = null,
     val profileInfo: ProfileInfo? = null,
     val weeklyGoal: Int = 5,
     val theme: String = "Dark",
     val units: String = "Metric",
     val viewOnlyMode: Boolean = false,
-    val isSyncing: Boolean = false,
+    val syncState: LoadingState = LoadingState.Idle,
     val syncError: UiError? = null
-)
+) {
+    // Backward compatibility helpers
+    val isLoading: Boolean
+        get() = loadingState.isLoading
+    val isSyncing: Boolean
+        get() = syncState.isLoading
+}
 
 class SettingsViewModel(
     private val repository: HevyRepository,
     private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {
     
-    private val _uiState = MutableStateFlow(SettingsUiState(isLoading = true))
+    private val _uiState = MutableStateFlow(SettingsUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
     
     init {
@@ -44,7 +51,7 @@ class SettingsViewModel(
     private fun loadSettingsData() {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+                _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
                 
                 // Load profile info
                 val profileInfo = try {
@@ -79,7 +86,7 @@ class SettingsViewModel(
                 }
                 
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    loadingState = LoadingState.Success,
                     profileInfo = profileInfo,
                     weeklyGoal = weeklyGoal,
                     theme = theme,
@@ -90,7 +97,7 @@ class SettingsViewModel(
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    isLoading = false,
+                    loadingState = LoadingState.Error(apiError),
                     error = UiError.fromApiError(apiError)
                 )
             }
@@ -100,15 +107,15 @@ class SettingsViewModel(
     fun syncData() {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(isSyncing = true, syncError = null)
+                _uiState.value = _uiState.value.copy(syncState = LoadingState.Loading, syncError = null)
                 repository.syncAllData()
-                _uiState.value = _uiState.value.copy(isSyncing = false, syncError = null)
+                _uiState.value = _uiState.value.copy(syncState = LoadingState.Success, syncError = null)
                 // Reload profile info after sync
                 loadSettingsData()
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
-                    isSyncing = false,
+                    syncState = LoadingState.Error(apiError),
                     syncError = UiError.fromApiError(apiError)
                 )
             }

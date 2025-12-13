@@ -32,6 +32,9 @@ import androidx.compose.ui.unit.sp
 import com.example.hevyinsight.ui.theme.*
 import com.example.hevyinsight.ui.utils.rememberViewOnlyMode
 import com.example.hevyinsight.ui.viewmodel.DashboardViewModel
+import com.example.hevyinsight.ui.components.ErrorBanner
+import com.example.hevyinsight.ui.components.NetworkStatusIndicator
+import kotlinx.coroutines.flow.collectAsState
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -106,34 +109,6 @@ fun DashboardScreen(
         return
     }
     
-    if (uiState.error != null) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(BackgroundDark)
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(
-                    text = uiState.error?.message ?: "Unknown error",
-                    color = RedAccent,
-                    fontSize = 16.sp
-                )
-                Button(
-                    onClick = { viewModel.refresh() },
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
-                ) {
-                    Text("Retry", color = BackgroundDark)
-                }
-            }
-        }
-        return
-    }
-    
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -150,6 +125,41 @@ fun DashboardScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
+        // Network status indicator
+        val context = androidx.compose.ui.platform.LocalContext.current
+        val application = context.applicationContext as? com.example.hevyinsight.HevyInsightApplication
+        val networkState by remember {
+            if (application != null) {
+                application.networkMonitor.networkState
+            } else {
+                kotlinx.coroutines.flow.flowOf(com.example.hevyinsight.core.network.NetworkState.Unknown)
+            }
+        }.collectAsState(initial = com.example.hevyinsight.core.network.NetworkState.Unknown)
+        
+        if (networkState is com.example.hevyinsight.core.network.NetworkState.Unavailable) {
+            item {
+                NetworkStatusIndicator(
+                    networkState = networkState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                )
+            }
+        }
+        
+        // Error banner
+        uiState.error?.let { error ->
+            item {
+                ErrorBanner(
+                    error = error,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    onDismiss = null
+                )
+            }
+        }
+        
         item {
             DashboardHeader(
                 onNotificationsClick = { onNavigateToSettings() },

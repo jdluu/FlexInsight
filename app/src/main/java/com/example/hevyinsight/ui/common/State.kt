@@ -8,12 +8,46 @@ import com.example.hevyinsight.core.errors.ApiError
 
 /**
  * Sealed class for loading states
+ * Replaces boolean isLoading flags with type-safe states
  */
 sealed class LoadingState {
+    /**
+     * Initial state, no operation in progress
+     */
     data object Idle : LoadingState()
+    
+    /**
+     * Operation is currently in progress
+     */
     data object Loading : LoadingState()
+    
+    /**
+     * Operation completed successfully
+     */
     data object Success : LoadingState()
+    
+    /**
+     * Operation failed with an error
+     */
     data class Error(val error: ApiError) : LoadingState()
+    
+    /**
+     * Returns true if currently loading
+     */
+    val isLoading: Boolean
+        get() = this is Loading
+    
+    /**
+     * Returns true if operation succeeded
+     */
+    val isSuccess: Boolean
+        get() = this is Success
+    
+    /**
+     * Returns true if operation failed
+     */
+    val isError: Boolean
+        get() = this is Error
 }
 
 /**
