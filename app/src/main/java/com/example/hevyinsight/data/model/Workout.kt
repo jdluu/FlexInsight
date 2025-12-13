@@ -31,14 +31,14 @@ data class Workout(
 data class WorkoutResponse(
     @SerializedName("id")
     val id: String,
-    @SerializedName("name")
-    val name: String?,
+    @SerializedName("title")
+    val title: String?,
     @SerializedName("start_time")
     val startTime: String, // ISO 8601 format
     @SerializedName("end_time")
     val endTime: String?,
-    @SerializedName("notes")
-    val notes: String?,
+    @SerializedName("description")
+    val description: String?,
     @SerializedName("routine_id")
     val routineId: String?,
     @SerializedName("exercises")
@@ -50,10 +50,10 @@ data class WorkoutResponse(
         
         return Workout(
             id = id,
-            name = name,
+            name = title, // API uses "title", we store as "name"
             startTime = startTimestamp,
             endTime = endTimestamp,
-            notes = notes,
+            notes = description, // API uses "description", we store as "notes"
             routineId = routineId,
             lastSynced = System.currentTimeMillis(),
             needsSync = false
@@ -62,34 +62,41 @@ data class WorkoutResponse(
     
     private fun parseTimestamp(isoString: String): Long {
         return try {
-            // Parse ISO 8601 format (e.g., "2024-01-15T10:30:00Z")
-            val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
-            dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
-            dateFormat.parse(isoString)?.time ?: System.currentTimeMillis()
+            // Parse ISO 8601 format (e.g., "2025-12-12T18:27:13+00:00" or "2024-01-15T10:30:00Z")
+            // Try parsing with timezone offset first (+00:00 format)
+            if (isoString.contains("+") || isoString.contains("-", startIndex = 10)) {
+                // Format: "2025-12-12T18:27:13+00:00"
+                val cleanString = isoString.replace("+00:00", "Z").replaceFirst(Regex("([+-]\\d{2}):(\\d{2})$"), "Z")
+                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
+                dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                dateFormat.parse(cleanString)?.time ?: System.currentTimeMillis()
+            } else {
+                // Format: "2024-01-15T10:30:00Z"
+                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
+                dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                dateFormat.parse(isoString)?.time ?: System.currentTimeMillis()
+            }
         } catch (e: Exception) {
-            System.currentTimeMillis()
+            // Fallback: try parsing with java.time if available (Android API 26+)
+            try {
+                java.time.Instant.parse(isoString).toEpochMilli()
+            } catch (e2: Exception) {
+                System.currentTimeMillis()
+            }
         }
     }
 }
 
 /**
  * Paginated response wrapper for workouts
+ * Actual API response structure: {"page":1,"page_count":12,"workouts":[...]}
  */
 data class PaginatedWorkoutResponse(
-    @SerializedName("data")
-    val data: List<WorkoutResponse>,
-    @SerializedName("pagination")
-    val pagination: Pagination?
-)
-
-data class Pagination(
     @SerializedName("page")
     val page: Int,
-    @SerializedName("per_page")
-    val perPage: Int,
-    @SerializedName("total")
-    val total: Int,
-    @SerializedName("total_pages")
-    val totalPages: Int
+    @SerializedName("page_count")
+    val pageCount: Int,
+    @SerializedName("workouts")
+    val workouts: List<WorkoutResponse>?
 )
 

@@ -37,27 +37,34 @@ data class Exercise(
  * API response model for Exercise
  */
 data class ExerciseResponse(
-    @SerializedName("id")
-    val id: String,
+    @SerializedName("index")
+    val index: Int?,
+    @SerializedName("title")
+    val title: String,
     @SerializedName("exercise_template_id")
     val exerciseTemplateId: String?,
-    @SerializedName("name")
-    val name: String,
     @SerializedName("notes")
     val notes: String?,
-    @SerializedName("rest_duration")
-    val restDuration: Int?,
+    @SerializedName("rest_seconds")
+    val restSeconds: Int?,
     @SerializedName("sets")
     val sets: List<SetResponse>?
 ) {
     fun toExercise(workoutId: String): Exercise {
+        // Generate ID from workout ID and index, or use a hash if index is null
+        val exerciseId = if (index != null) {
+            "${workoutId}_exercise_$index"
+        } else {
+            "${workoutId}_exercise_${title.hashCode()}"
+        }
+        
         return Exercise(
-            id = id,
+            id = exerciseId,
             workoutId = workoutId,
             exerciseTemplateId = exerciseTemplateId,
-            name = name,
+            name = title, // API uses "title", we store as "name"
             notes = notes,
-            restDuration = restDuration,
+            restDuration = restSeconds, // API uses "rest_seconds", we store as "restDuration"
             lastSynced = System.currentTimeMillis(),
             needsSync = false
         )
