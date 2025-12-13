@@ -63,10 +63,13 @@ data class WorkoutResponse(
     private fun parseTimestamp(isoString: String): Long {
         return try {
             // Parse ISO 8601 format (e.g., "2025-12-12T18:27:13+00:00" or "2024-01-15T10:30:00Z")
-            // Try parsing with timezone offset first (+00:00 format)
-            if (isoString.contains("+") || isoString.contains("-", startIndex = 10)) {
-                // Format: "2025-12-12T18:27:13+00:00"
-                val cleanString = isoString.replace("+00:00", "Z").replaceFirst(Regex("([+-]\\d{2}):(\\d{2})$"), "Z")
+            // Check if string has timezone offset (contains "+" or has "-" after the date part)
+            val hasTimezoneOffset = isoString.contains("+") || 
+                (isoString.length > 19 && isoString.substring(19).contains("-"))
+            
+            if (hasTimezoneOffset) {
+                // Format: "2025-12-12T18:27:13+00:00" - replace timezone with Z
+                val cleanString = isoString.replace(Regex("[+-]\\d{2}:\\d{2}$"), "Z")
                 val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
                 dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
                 dateFormat.parse(cleanString)?.time ?: System.currentTimeMillis()
