@@ -16,11 +16,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -72,12 +77,24 @@ fun formatNumber(value: Int): String {
 fun DashboardScreen(
     viewModel: DashboardViewModel,
     onNavigateToWorkoutDetail: (String) -> Unit = {},
-    onNavigateToRecovery: () -> Unit = {}
+    onNavigateToRecovery: () -> Unit = {},
+    onNavigateToHistory: () -> Unit = {},
+    onNavigateToAITrainer: () -> Unit = {},
+    onNavigateToPlanner: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val viewOnlyMode = rememberViewOnlyMode()
+    val listState = rememberLazyListState()
+    var isRefreshing by remember { mutableStateOf(false) }
     
-    if (uiState.isLoading) {
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) {
+            isRefreshing = false
+        }
+    }
+    
+    if (uiState.isLoading && !isRefreshing) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -116,15 +133,28 @@ fun DashboardScreen(
         }
         return
     }
-    LazyColumn(
+    
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark),
-        contentPadding = PaddingValues(bottom = 100.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            .background(BackgroundDark)
     ) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundDark),
+            contentPadding = PaddingValues(
+                top = if (isRefreshing) 60.dp else 0.dp,
+                bottom = 100.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
         item {
-            DashboardHeader()
+            DashboardHeader(
+                onNotificationsClick = { onNavigateToSettings() },
+                onRefreshClick = { viewModel.sync() }
+            )
         }
         item {
             StreakIndicator(streak = uiState.currentStreak)
@@ -144,22 +174,48 @@ fun DashboardScreen(
         item {
             WeeklyProgressSection(
                 progress = uiState.weeklyProgress,
-                muscleGroupProgress = uiState.muscleGroupProgress
+                muscleGroupProgress = uiState.muscleGroupProgress,
+                onSeeAllClick = { onNavigateToHistory() }
             )
         }
         item {
-            DailyInsightCard()
+            DailyInsightCard(
+                onChatClick = { onNavigateToAITrainer() }
+            )
         }
         if (!viewOnlyMode) {
             item {
-                QuickActionsGrid()
+                QuickActionsGrid(
+                    onStartClick = { onNavigateToPlanner() },
+                    onLogWeightClick = { /* TODO: Implement weight logging */ },
+                    onAddNoteClick = { /* TODO: Implement note adding */ },
+                    onAnalyticsClick = { onNavigateToHistory() }
+                )
+            }
+        }
+        }
+        
+        // Pull-to-refresh indicator
+        if (isRefreshing) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp)
+            ) {
+                CircularProgressIndicator(
+                    color = Primary,
+                    modifier = Modifier.size(32.dp)
+                )
             }
         }
     }
 }
 
 @Composable
-fun DashboardHeader() {
+fun DashboardHeader(
+    onNotificationsClick: () -> Unit = {},
+    onRefreshClick: () -> Unit = {}
+) {
     val dateFormat = SimpleDateFormat("EEE, MMM d", Locale.getDefault())
     val greeting = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
         in 0..11 -> "Good morning"
@@ -209,12 +265,23 @@ fun DashboardHeader() {
                 )
             }
         }
-        IconButton(onClick = {}) {
-            Icon(
-                imageVector = Icons.Default.Notifications,
-                contentDescription = "Notifications",
-                tint = TextSecondary
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            IconButton(onClick = onRefreshClick) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Refresh",
+                    tint = TextSecondary
+                )
+            }
+            IconButton(onClick = onNotificationsClick) {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "Notifications",
+                    tint = TextSecondary
+                )
+            }
         }
     }
 }
@@ -479,7 +546,11 @@ fun StatBox(label: String, value: String, icon: androidx.compose.ui.graphics.vec
 }
 
 @Composable
-fun WeeklyProgressSection(progress: List<com.example.hevyinsight.data.model.WeeklyProgress> = emptyList(), muscleGroupProgress: List<com.example.hevyinsight.data.model.MuscleGroupProgress> = emptyList()) {
+fun WeeklyProgressSection(
+    progress: List<com.example.hevyinsight.data.model.WeeklyProgress> = emptyList(),
+    muscleGroupProgress: List<com.example.hevyinsight.data.model.MuscleGroupProgress> = emptyList(),
+    onSeeAllClick: () -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -496,7 +567,7 @@ fun WeeklyProgressSection(progress: List<com.example.hevyinsight.data.model.Week
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
-            TextButton(onClick = {}) {
+            TextButton(onClick = onSeeAllClick) {
                 Text(
                     text = "See All",
                     fontSize = 14.sp,
@@ -702,7 +773,9 @@ fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon:
 }
 
 @Composable
-fun DailyInsightCard() {
+fun DailyInsightCard(
+    onChatClick: () -> Unit = {}
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -769,7 +842,7 @@ fun DailyInsightCard() {
                         lineHeight = 20.sp
                     )
                     TextButton(
-                        onClick = {},
+                        onClick = onChatClick,
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Text(
@@ -792,7 +865,12 @@ fun DailyInsightCard() {
 }
 
 @Composable
-fun QuickActionsGrid() {
+fun QuickActionsGrid(
+    onStartClick: () -> Unit = {},
+    onLogWeightClick: () -> Unit = {},
+    onAddNoteClick: () -> Unit = {},
+    onAnalyticsClick: () -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -810,16 +888,22 @@ fun QuickActionsGrid() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            QuickActionButton("Start", Icons.Default.PlayArrow, Primary, modifier = Modifier.weight(1f))
-            QuickActionButton("Log Weight", Icons.Default.MonitorWeight, Color.White, modifier = Modifier.weight(1f))
-            QuickActionButton("Add Note", Icons.Default.EditNote, Color.White, modifier = Modifier.weight(1f))
-            QuickActionButton("Analytics", Icons.Default.Analytics, Color.White, modifier = Modifier.weight(1f))
+            QuickActionButton("Start", Icons.Default.PlayArrow, Primary, onClick = onStartClick, modifier = Modifier.weight(1f))
+            QuickActionButton("Log Weight", Icons.Default.MonitorWeight, Color.White, onClick = onLogWeightClick, modifier = Modifier.weight(1f))
+            QuickActionButton("Add Note", Icons.Default.EditNote, Color.White, onClick = onAddNoteClick, modifier = Modifier.weight(1f))
+            QuickActionButton("Analytics", Icons.Default.Analytics, Color.White, onClick = onAnalyticsClick, modifier = Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-fun QuickActionButton(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, iconColor: Color, modifier: Modifier = Modifier) {
+fun QuickActionButton(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconColor: Color,
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -828,7 +912,8 @@ fun QuickActionButton(label: String, icon: androidx.compose.ui.graphics.vector.I
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f),
+                .aspectRatio(1f)
+                .clickable(onClick = onClick),
             shape = RoundedCornerShape(16.dp),
             color = SurfaceCard,
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
@@ -836,7 +921,7 @@ fun QuickActionButton(label: String, icon: androidx.compose.ui.graphics.vector.I
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = icon,
-                    contentDescription = null,
+                    contentDescription = label,
                     tint = iconColor,
                     modifier = Modifier.size(32.dp)
                 )
