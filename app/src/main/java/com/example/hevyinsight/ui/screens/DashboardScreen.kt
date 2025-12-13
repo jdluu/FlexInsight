@@ -34,7 +34,6 @@ import com.example.hevyinsight.ui.utils.rememberViewOnlyMode
 import com.example.hevyinsight.ui.viewmodel.DashboardViewModel
 import com.example.hevyinsight.ui.components.ErrorBanner
 import com.example.hevyinsight.ui.components.NetworkStatusIndicator
-import kotlinx.coroutines.flow.collectAsState
 import java.text.SimpleDateFormat
 import java.util.*
 
