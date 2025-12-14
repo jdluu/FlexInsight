@@ -146,5 +146,64 @@ class PlannerViewModel(
     fun refresh() {
         loadPlannerData()
     }
+
+    fun markWorkoutAsComplete(workoutId: String, isCompleted: Boolean) {
+        viewModelScope.launch {
+            try {
+                // Optimistic update
+                val updatedWorkouts = _uiState.value.selectedDayWorkouts.map {
+                    if (it.id == workoutId) it.copy(isCompleted = isCompleted) else it
+                }
+                _uiState.value = _uiState.value.copy(selectedDayWorkouts = updatedWorkouts)
+
+                val result = repository.updateWorkoutStatus(workoutId, isCompleted)
+                
+                if (result is com.example.flexinsight.core.errors.Result.Error) {
+                    // Revert on failure
+                    val revertedWorkouts = _uiState.value.selectedDayWorkouts.map {
+                        if (it.id == workoutId) it.copy(isCompleted = !isCompleted) else it
+                    }
+                    _uiState.value = _uiState.value.copy(
+                        selectedDayWorkouts = revertedWorkouts,
+                        error = UiError.fromApiError(result.error)
+                    )
+                } else {
+                    // Refresh data to update stats/calendar
+                    loadPlannerData()
+                }
+            } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
+                _uiState.value = _uiState.value.copy(
+                    error = UiError.fromApiError(apiError)
+                )
+            }
+        }
+    }
+
+    fun rescheduleWorkout(workoutId: String, newDate: Long) {
+        viewModelScope.launch {
+            try {
+                val result = repository.rescheduleWorkout(workoutId, newDate)
+                
+                if (result is com.example.flexinsight.core.errors.Result.Success) {
+                    loadPlannerData()
+                } else if (result is com.example.flexinsight.core.errors.Result.Error) {
+                    _uiState.value = _uiState.value.copy(
+                        error = UiError.fromApiError(result.error)
+                    )
+                }
+            } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
+                _uiState.value = _uiState.value.copy(
+                    error = UiError.fromApiError(apiError)
+                )
+            }
+        }
+    }
+
+    fun generateAIWorkout() {
+        // AI implementation not yet available
+        // Could show a toast or message in UI state if needed
+    }
 }
 
