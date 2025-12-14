@@ -97,6 +97,14 @@ class FlexRepository(
     fun getWorkoutCount(): Flow<Int> {
         return workoutRepository.getWorkoutCount()
     }
+
+    suspend fun updateWorkoutStatus(workoutId: String, isCompleted: Boolean): Result<Unit> {
+        return workoutRepository.updateWorkoutStatus(workoutId, isCompleted, if (isCompleted) System.currentTimeMillis() else null)
+    }
+
+    suspend fun rescheduleWorkout(workoutId: String, newStartTime: Long): Result<Unit> {
+        return workoutRepository.rescheduleWorkout(workoutId, newStartTime)
+    }
     
     // Statistics operations
     

@@ -411,4 +411,40 @@ class WorkoutRepository(
             Result.error(error)
         }
     }
+
+    /**
+     * Update workout status (completed/incomplete)
+     */
+    suspend fun updateWorkoutStatus(workoutId: String, isCompleted: Boolean, endTime: Long?): Result<Unit> {
+        val workout = workoutDao.getWorkoutById(workoutId) ?: return Result.error(ApiError.Unknown("Workout not found"))
+        
+        val updatedWorkout = workout.copy(
+            endTime = if (isCompleted) (endTime ?: System.currentTimeMillis()) else null,
+            needsSync = true
+        )
+        
+        workoutDao.updateWorkout(updatedWorkout)
+        
+        // In a real app with sync, we would queue this for sync here
+        
+        return Result.success(Unit)
+    }
+
+    /**
+     * Reschedule a workout
+     */
+    suspend fun rescheduleWorkout(workoutId: String, newStartTime: Long): Result<Unit> {
+        val workout = workoutDao.getWorkoutById(workoutId) ?: return Result.error(ApiError.Unknown("Workout not found"))
+        
+        val updatedWorkout = workout.copy(
+            startTime = newStartTime,
+            needsSync = true
+        )
+        
+        workoutDao.updateWorkout(updatedWorkout)
+        
+        // In a real app with sync, we would queue this for sync here
+        
+        return Result.success(Unit)
+    }
 }
