@@ -121,7 +121,7 @@ fun TotalVolumeCard(
     ) {
         Column(
             modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -153,7 +153,14 @@ fun TotalVolumeCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = workoutStats?.let { "Across ${it.totalWorkouts} workouts" } ?: "No workouts yet",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                </Column>
                 if (volumeTrend != null && volumeTrend.percentageChange != 0.0) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
@@ -181,62 +188,58 @@ fun TotalVolumeCard(
                 }
             }
             
-            // Weekly volume chart
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(140.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+            // Recent 4 weeks trend (simplified)
+            if (weeklyVolumeData.isNotEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (weeklyVolumeData.isNotEmpty()) {
+                    Text(
+                        text = "Last 4 Weeks",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         val maxVolume = weeklyVolumeData.maxOfOrNull { it.volume } ?: 1.0
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            weeklyVolumeData.take(4).forEach { weekData ->
-                                val height = if (maxVolume > 0) {
-                                    ((weekData.volume / maxVolume) * 108).coerceAtLeast(4.0).dp
-                                } else {
-                                    4.dp
-                                }
+                        weeklyVolumeData.take(4).reversed().forEachIndexed { index, weekData ->
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
                                 Box(
                                     modifier = Modifier
-                                        .width(24.dp)
-                                        .height(height)
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(MaterialTheme.colorScheme.primary)
+                                        .fillMaxWidth()
+                                        .height(60.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
+                                    contentAlignment = Alignment.BottomCenter
+                                ) {
+                                    val height = if (maxVolume > 0) {
+                                        ((weekData.volume / maxVolume) * 60).coerceAtLeast(4.0).dp
+                                    } else {
+                                        4.dp
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(height)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(MaterialTheme.colorScheme.primary)
+                                    )
+                                }
+                                Text(
+                                    text = "W${index + 1}",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                 )
                             }
-                        }
-                    }
-                }
-                
-                // Week labels
-                if (weeklyVolumeData.isNotEmpty()) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        weeklyVolumeData.take(4).forEachIndexed { index, _ ->
-                            Text(
-                                text = "W${4 - index}",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.width(24.dp),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                maxLines = 1
-                            )
                         }
                     }
                 }
