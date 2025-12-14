@@ -132,6 +132,7 @@ fun HistoryScreen(
                 } ?: "N/A",
                 useMetric = useMetric
             )
+        }
         item {
             TotalVolumeCard(
                 workoutStats = uiState.workoutStats,
