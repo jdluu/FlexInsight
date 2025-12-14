@@ -135,7 +135,7 @@ fun SettingsScreen() {
             )
             IntegrationItem(
                 name = "Health Connect",
-                description = null,
+                description = "Sync workouts with Google Health",
                 icon = Icons.Default.Favorite,
                 iconColor = MaterialTheme.colorScheme.error,
                 isConnected = false,
