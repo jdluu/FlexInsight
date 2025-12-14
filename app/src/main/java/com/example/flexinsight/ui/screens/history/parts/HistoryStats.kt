@@ -270,8 +270,8 @@ fun AIInsightsCard(
                     )
                 }
                 Text(
-                    text = "AI Insights coming soon! We're building tools to help you analyze your training patterns.",
-                    fontSize = 16.sp,
+                    text = "Complete 10+ workouts to unlock AI-powered insights about your training patterns, muscle balance, and recovery recommendations.",
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface,
                     lineHeight = 22.sp

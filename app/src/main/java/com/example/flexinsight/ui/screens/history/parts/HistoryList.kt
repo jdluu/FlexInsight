@@ -65,9 +65,10 @@ fun RecentPRsSection(
         
         if (prsWithDetails.isEmpty()) {
             Text(
-                text = "No personal records yet. Keep training to set PRs!",
+                text = "🏆 No personal records yet!\n\nKeep pushing your limits - your first PR is just one workout away. Track your progress and celebrate every milestone.",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 20.sp,
                 modifier = Modifier.padding(vertical = 16.dp)
             )
         } else {
