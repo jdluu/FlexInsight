@@ -853,6 +853,91 @@ fun RecentPRsSection(
 }
 
 @Composable
+fun EmptyStateMessage(message: String, isPlaceholder: Boolean = false) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Surface(
+            modifier = Modifier.size(64.dp),
+            shape = CircleShape,
+            color = Color.White.copy(alpha = 0.05f)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = TextSecondary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+        Text(
+            text = message,
+            color = TextSecondary,
+            fontSize = 16.sp,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+fun ExerciseHistoryItem(exercise: Exercise) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceCardAlt)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = exercise.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                if (!exercise.notes.isNullOrBlank()) {
+                    Text(
+                        text = exercise.notes,
+                        fontSize = 14.sp,
+                        color = TextSecondary,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                }
+            }
+            if (exercise.restDuration != null && exercise.restDuration > 0) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color.White.copy(alpha = 0.05f)
+                ) {
+                    Text(
+                        text = "${exercise.restDuration}s rest",
+                        fontSize = 12.sp,
+                        color = TextSecondary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun PRCard(
     exercise: String,
     date: String,

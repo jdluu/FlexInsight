@@ -100,7 +100,9 @@ fun PlannerScreen(
                     showRescheduleDialog?.let { workout ->
                         val calendar = Calendar.getInstance()
                         calendar.add(Calendar.DAY_OF_YEAR, 1)
-                        viewModel.rescheduleWorkout(workout.id, calendar.timeInMillis)
+                        workout.id?.let { id ->
+                            viewModel.rescheduleWorkout(id, calendar.timeInMillis)
+                        }
                         Toast.makeText(context, "Moved to tomorrow", Toast.LENGTH_SHORT).show()
                     }
                     showRescheduleDialog = null
@@ -486,7 +488,9 @@ fun WorkoutListSection(
                     icon = icon,
                     iconColor = iconColor,
                     hasCheckbox = !workout.isCompleted,
-                    onCheckedChange = { isChecked -> onWorkoutComplete(workout.id, isChecked) },
+                    onCheckedChange = { isChecked -> 
+                        workout.id?.let { id -> onWorkoutComplete(id, isChecked) }
+                    },
                     onLongClick = { onReschedule(workout) }
                 )
             }
