@@ -33,7 +33,7 @@ fun WorkoutDetailHeader(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(BackgroundDark.copy(alpha = 0.8f))
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
         Row(
