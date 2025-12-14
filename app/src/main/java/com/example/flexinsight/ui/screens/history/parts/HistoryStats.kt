@@ -160,7 +160,7 @@ fun TotalVolumeCard(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
-                </Column>
+                }
                 if (volumeTrend != null && volumeTrend.percentageChange != 0.0) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
