@@ -1,6 +1,7 @@
 package com.example.flexinsight
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -233,6 +234,12 @@ fun MainScreen() {
                     viewModel = viewModel,
                     onNavigateToWorkoutDetail = { workoutId ->
                         navController.navigate(Screen.WorkoutDetail.createRoute(workoutId))
+                    },
+                    onNavigateToAnalysis = {
+                        Toast.makeText(context, "detailed analysis coming soon", Toast.LENGTH_SHORT).show()
+                    },
+                    onNavigateToPRList = {
+                         Toast.makeText(context, "PR list coming soon", Toast.LENGTH_SHORT).show()
                     }
                 )
             }
