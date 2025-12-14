@@ -77,6 +77,7 @@ fun SettingsScreen() {
     var showWeeklyGoalDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showClearCacheDialog by remember { mutableStateOf(false) }
+    var showEditProfileDialog by remember { mutableStateOf(false) }
     
     // Load API key
     LaunchedEffect(Unit) {
@@ -124,7 +125,8 @@ fun SettingsScreen() {
                 syncState = uiState.syncState,
                 syncError = uiState.syncError,
                 viewOnlyMode = uiState.viewOnlyMode,
-                onSyncClick = { viewModel.syncData() }
+                onSyncClick = { viewModel.syncData() },
+                onEditProfileClick = { showEditProfileDialog = true }
             )
         }
         
@@ -195,7 +197,9 @@ fun SettingsScreen() {
                 title = "Notifications",
                 icon = Icons.Default.Notifications,
                 value = null,
-                onClick = {}
+                onClick = {
+                    android.widget.Toast.makeText(context, "Notifications features coming soon!", android.widget.Toast.LENGTH_SHORT).show()
+                }
             )
             IntegrationItem(
                 name = "View Only Mode",
@@ -214,7 +218,9 @@ fun SettingsScreen() {
                 title = "Export Data",
                 icon = Icons.Default.Download,
                 value = null,
-                onClick = {}
+                onClick = {
+                    android.widget.Toast.makeText(context, "Export Data feature coming soon!", android.widget.Toast.LENGTH_SHORT).show()
+                }
             )
             PreferenceItem(
                 title = "Clear Cache",
@@ -231,12 +237,6 @@ fun SettingsScreen() {
                 icon = Icons.Default.Info,
                 value = "v1.0.4 (Build 203)",
                 isValueOnly = true,
-                onClick = {}
-            )
-            PreferenceItem(
-                title = "Report a Bug",
-                icon = Icons.Default.BugReport,
-                value = null,
                 onClick = {}
             )
         }
@@ -301,6 +301,19 @@ fun SettingsScreen() {
             }
         )
     }
+
+    // Edit Profile Dialog
+    if (showEditProfileDialog) {
+        val currentName = uiState.profileInfo?.displayName ?: ""
+        EditProfileDialog(
+            currentName = currentName,
+            onDismiss = { showEditProfileDialog = false },
+            onSave = { newName ->
+                viewModel.updateDisplayName(newName)
+                showEditProfileDialog = false
+            }
+        )
+    }
     
     // Error Snackbar
     uiState.error?.let { error ->
@@ -342,7 +355,8 @@ fun ProfileSection(
     syncState: LoadingState,
     syncError: com.example.flexinsight.ui.common.UiError?,
     viewOnlyMode: Boolean,
-    onSyncClick: () -> Unit
+    onSyncClick: () -> Unit,
+    onEditProfileClick: () -> Unit
 ) {
     val isSyncing = syncState.isLoading
     Column(
@@ -370,7 +384,12 @@ fun ProfileSection(
                     color = Primary,
                     border = BorderStroke(4.dp, BackgroundDarkAlt)
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable(onClick = onEditProfileClick)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Edit profile",
@@ -1076,6 +1095,86 @@ fun ClearCacheDialog(
                 colors = ButtonDefaults.buttonColors(containerColor = RedAccent)
             ) {
                 Text("Clear", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextSecondary)
+            }
+        },
+        containerColor = SurfaceCardAlt,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+fun EditProfileDialog(
+    currentName: String,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit
+) {
+    var nameText by remember { mutableStateOf(currentName) }
+    var error by remember { mutableStateOf<String?>(null) }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Edit Profile",
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Enter your display name",
+                    color = TextSecondary,
+                    fontSize = 14.sp
+                )
+                OutlinedTextField(
+                    value = nameText,
+                    onValueChange = { 
+                        nameText = it
+                        error = null
+                    },
+                    label = { Text("Display Name", color = TextSecondary) },
+                    placeholder = { Text("Enter your name", color = TextTertiary) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Primary,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                        focusedLabelColor = TextSecondary,
+                        unfocusedLabelColor = TextSecondary
+                    ),
+                    singleLine = true
+                )
+                val errorText = error
+                if (errorText != null) {
+                    Text(
+                        text = errorText,
+                        color = RedAccent,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (nameText.isNotBlank()) {
+                        onSave(nameText.trim())
+                    } else {
+                        error = "Name cannot be empty"
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            ) {
+                Text("Save", color = BackgroundDark, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
