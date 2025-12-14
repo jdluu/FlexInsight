@@ -19,6 +19,17 @@ object ErrorHandler {
     fun handleError(throwable: Throwable): ApiError {
         return when (throwable) {
             is HttpException -> handleHttpException(throwable)
+            is IllegalStateException -> {
+                // Gson deserialization errors often throw IllegalStateException
+                if (throwable.message?.contains("Expected BEGIN_ARRAY") == true ||
+                    throwable.message?.contains("Expected BEGIN_OBJECT") == true) {
+                    Log.e(TAG, "JSON deserialization error - API response structure mismatch", throwable)
+                    ApiError.Unknown("API response format error: ${throwable.message}", throwable)
+                } else {
+                    Log.e(TAG, "Unknown error", throwable)
+                    ApiError.Unknown(throwable.message ?: "Unknown error", throwable)
+                }
+            }
             is SocketTimeoutException -> ApiError.NetworkError.Timeout(30L)
             is UnknownHostException -> ApiError.NetworkError.NoConnection
             is IOException -> ApiError.NetworkError.ConnectionError(throwable)
