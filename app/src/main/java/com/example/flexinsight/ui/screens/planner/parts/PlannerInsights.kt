@@ -35,8 +35,8 @@ fun AIInsightsSection(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF0D1610)),
-        border = BorderStroke(1.dp, Primary.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
     ) {
         Box(
             modifier = Modifier
@@ -44,7 +44,7 @@ fun AIInsightsSection(
                 .background(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Primary.copy(alpha = 0.05f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
                             Color.Transparent
                         )
                     )
@@ -61,13 +61,13 @@ fun AIInsightsSection(
                     Icon(
                         imageVector = Icons.Default.AutoAwesome,
                         contentDescription = null,
-                        tint = Primary
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         text = "AI Insights",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
                 
@@ -93,7 +93,7 @@ fun RecommendedWorkoutCard(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFFE8ECE9)
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -108,18 +108,18 @@ fun RecommendedWorkoutCard(
                     text = "Recommended Next",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 1.sp
                 )
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = Primary.copy(alpha = 0.2f)
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                 ) {
                     Text(
                         text = "HIGH CONFIDENCE",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Primary,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -146,29 +146,29 @@ fun RecommendedWorkoutCard(
                 text = recommendation.first,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = recommendation.second,
                 fontSize = 12.sp,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 18.sp
             )
             
             Button(
                 onClick = onGeneratePlan,
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.AutoAwesome,
                     contentDescription = null,
-                    tint = BackgroundDark,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Generate Optimized Plan", color = BackgroundDark)
+                Text("Generate Optimized Plan", color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }
@@ -185,7 +185,7 @@ fun VolumeBalanceChart(
             text = "Volume Balance",
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             letterSpacing = 1.sp
         )
         
@@ -200,8 +200,8 @@ fun VolumeBalanceChart(
             
             VolumeBar("Push", balance.push, Color(0xFF60A5FA), modifier = Modifier.weight(1f))
             VolumeBar("Pull", balance.pull, Color(0xFF9333EA), modifier = Modifier.weight(1f))
-            VolumeBar("Legs", balance.legs, Primary, isHighlighted = isLegsHighlighted, modifier = Modifier.weight(1f))
-            VolumeBar("Cardio", balance.cardio, OrangeAccent, modifier = Modifier.weight(1f))
+            VolumeBar("Legs", balance.legs, MaterialTheme.colorScheme.primary, isHighlighted = isLegsHighlighted, modifier = Modifier.weight(1f))
+            VolumeBar("Cardio", balance.cardio, MaterialTheme.colorScheme.tertiary, modifier = Modifier.weight(1f))
         }
     }
 }
@@ -218,7 +218,7 @@ fun VolumeBar(label: String, percentage: Float, color: Color, isHighlighted: Boo
                 .fillMaxWidth()
                 .height(96.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFE8ECE9)),
+                .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.BottomCenter
         ) {
             Box(
@@ -234,14 +234,14 @@ fun VolumeBar(label: String, percentage: Float, color: Color, isHighlighted: Boo
                             .align(Alignment.TopCenter)
                             .offset(y = (-24).dp),
                         shape = RoundedCornerShape(4.dp),
-                        color = SurfaceCardAlt,
-                        border = BorderStroke(1.dp, Primary.copy(alpha = 0.2f))
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
                     ) {
                         Text(
                             text = "${(percentage * 100).toInt()}%",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Primary,
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
@@ -252,7 +252,7 @@ fun VolumeBar(label: String, percentage: Float, color: Color, isHighlighted: Boo
             text = label,
             fontSize = 10.sp,
             fontWeight = if (isHighlighted) FontWeight.Bold else FontWeight.Medium,
-            color = if (isHighlighted) Primary else TextSecondary,
+            color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             letterSpacing = 1.sp
         )
     }

@@ -35,14 +35,14 @@ fun PlannerHeader(
             text = "Planner",
             fontSize = 32.sp,
             fontWeight = FontWeight.ExtraBold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onBackground
         )
         if (!viewOnlyMode) {
             FloatingActionButton(
                 onClick = onAddWorkout,
                 modifier = Modifier.size(48.dp),
-                containerColor = Primary,
-                contentColor = BackgroundDarkAlt
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -61,7 +61,7 @@ fun WeeklyGoalCard(weeklyGoalProgress: WeeklyGoalProgress? = null) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8ECE9))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
@@ -77,7 +77,7 @@ fun WeeklyGoalCard(weeklyGoalProgress: WeeklyGoalProgress? = null) {
                         text = "Weekly Goal",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                         letterSpacing = 1.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
@@ -89,26 +89,26 @@ fun WeeklyGoalCard(weeklyGoalProgress: WeeklyGoalProgress? = null) {
                             text = "${weeklyGoalProgress?.completed ?: 0}",
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                         Text(
                             text = "/${weeklyGoalProgress?.target ?: 5}",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Medium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
                         )
                     }
                 }
                 if (weeklyGoalProgress != null) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = Primary.copy(alpha = 0.2f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                     ) {
                         Text(
                             text = weeklyGoalProgress.status,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Primary,
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
                     }
@@ -120,7 +120,7 @@ fun WeeklyGoalCard(weeklyGoalProgress: WeeklyGoalProgress? = null) {
                     .fillMaxWidth()
                     .height(12.dp)
                     .clip(RoundedCornerShape(6.dp))
-                    .background(Color.Gray.copy(alpha = 0.2f))
+                    .background(MaterialTheme.colorScheme.outlineVariant)
             ) {
                 val progress = if (weeklyGoalProgress != null && weeklyGoalProgress.target > 0) {
                     (weeklyGoalProgress.completed.toFloat() / weeklyGoalProgress.target).coerceIn(0f, 1f)
@@ -132,7 +132,7 @@ fun WeeklyGoalCard(weeklyGoalProgress: WeeklyGoalProgress? = null) {
                         .fillMaxHeight()
                         .fillMaxWidth(progress)
                         .clip(RoundedCornerShape(6.dp))
-                        .background(Primary)
+                        .background(MaterialTheme.colorScheme.primary)
                 )
             }
             
@@ -146,7 +146,7 @@ fun WeeklyGoalCard(weeklyGoalProgress: WeeklyGoalProgress? = null) {
                     "Keep tracking your workouts!"
                 },
                 fontSize = 12.sp,
-                color = TextSecondary
+                color = MaterialTheme.colorScheme.onSecondaryContainer
             )
         }
     }

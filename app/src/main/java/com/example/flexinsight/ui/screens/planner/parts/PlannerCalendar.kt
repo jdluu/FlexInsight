@@ -2,6 +2,7 @@ package com.example.flexinsight.ui.screens.planner.parts
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -74,8 +75,8 @@ fun DayCard(day: PlannerDayUiModel, onClick: () -> Unit) {
             .height(90.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(24.dp),
-        color = if (day.isSelected) Primary else Color(0xFFE8ECE9),
-        border = BorderStroke(1.dp, Color.Black.copy(alpha = 0.05f))
+        color = if (day.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -88,7 +89,7 @@ fun DayCard(day: PlannerDayUiModel, onClick: () -> Unit) {
                         .background(
                             brush = Brush.radialGradient(
                                 colors = listOf(
-                                    Color.White.copy(alpha = 0.2f),
+                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
                                     Color.Transparent
                                 ),
                                 radius = 100f
@@ -105,20 +106,20 @@ fun DayCard(day: PlannerDayUiModel, onClick: () -> Unit) {
                     text = day.name,
                     fontSize = 12.sp,
                     fontWeight = if (day.isSelected) FontWeight.Bold else FontWeight.Medium,
-                    color = if (day.isSelected) BackgroundDarkAlt else TextSecondary,
+                    color = if (day.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
                     letterSpacing = if (day.isSelected) 1.sp else 0.sp
                 )
                 Text(
                     text = day.date.toString(),
                     fontSize = if (day.isSelected) 20.sp else 18.sp,
                     fontWeight = if (day.isSelected) FontWeight.Black else FontWeight.Bold,
-                    color = if (day.isSelected) BackgroundDarkAlt else Color.Black
+                    color = if (day.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
                 )
                 if (day.isCompleted) {
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
                         contentDescription = null,
-                        tint = BackgroundDarkAlt,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
                         modifier = Modifier.size(12.dp)
                     )
                 } else if (day.hasWorkout) {
@@ -126,14 +127,14 @@ fun DayCard(day: PlannerDayUiModel, onClick: () -> Unit) {
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(if (day.isSelected) BackgroundDarkAlt else Primary)
+                            .background(if (day.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary)
                     )
                 } else {
                     Box(
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .border(1.dp, Color.Gray, CircleShape)
+                            .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
                     )
                 }
             }

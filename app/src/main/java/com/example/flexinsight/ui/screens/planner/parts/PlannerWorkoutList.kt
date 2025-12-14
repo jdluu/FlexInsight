@@ -51,18 +51,18 @@ fun WorkoutListSection(
                 text = "${selectedDayName}'s Plan",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
             if (selectedDayWorkouts.isNotEmpty()) {
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = Color.White.copy(alpha = 0.05f)
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Text(
                         text = "${selectedDayWorkouts.size} Session${if (selectedDayWorkouts.size == 1) "" else "s"}",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Normal,
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -73,7 +73,7 @@ fun WorkoutListSection(
             Text(
                 text = "No workouts planned for this day",
                 fontSize = 14.sp,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 16.dp)
             )
         } else {
@@ -86,7 +86,7 @@ fun WorkoutListSection(
                 val iconColor = when {
                     workout.intensity?.contains("High", ignoreCase = true) == true -> Color(0xFF10B981)
                     workout.intensity?.contains("Aerobic", ignoreCase = true) == true -> Color(0xFF3B82F6)
-                    else -> Primary
+                    else -> MaterialTheme.colorScheme.primary
                 }
                 
                 WorkoutItem(
@@ -109,7 +109,7 @@ fun WorkoutListSection(
             Text(
                 text = "Long press to reschedule",
                 fontSize = 12.sp,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
                 textAlign = TextAlign.Center
             )
@@ -139,14 +139,14 @@ fun WorkoutItem(
                 onLongClick = onLongClick
             ),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8ECE9)),
-        border = BorderStroke(1.dp, if (isCompleted) Primary.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.05f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        border = BorderStroke(1.dp, if (isCompleted) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(
-                    if (isCompleted) Modifier.border(2.dp, Primary, RoundedCornerShape(16.dp))
+                    if (isCompleted) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
                     else Modifier
                 )
         ) {
@@ -180,7 +180,7 @@ fun WorkoutItem(
                             text = title,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (isCompleted) Color.Black.copy(alpha = 0.6f) else Color.Black,
+                            color = if (isCompleted) MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSecondaryContainer,
                             textDecoration = if (isCompleted) TextDecoration.LineThrough else null
                         )
                         Row(
@@ -204,7 +204,7 @@ fun WorkoutItem(
                             Text(
                                 text = duration,
                                 fontSize = 14.sp,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
                     }
@@ -214,13 +214,13 @@ fun WorkoutItem(
                     Surface(
                         modifier = Modifier.size(32.dp),
                         shape = CircleShape,
-                        color = Primary
+                        color = MaterialTheme.colorScheme.primary
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = null,
-                                tint = BackgroundDarkAlt,
+                                tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -230,8 +230,8 @@ fun WorkoutItem(
                         checked = isCompleted,
                         onCheckedChange = onCheckedChange,
                         colors = CheckboxDefaults.colors(
-                            checkedColor = Primary,
-                            uncheckedColor = Color.Gray
+                            checkedColor = MaterialTheme.colorScheme.primary,
+                            uncheckedColor = MaterialTheme.colorScheme.outline
                         )
                     )
                 }
