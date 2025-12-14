@@ -6,6 +6,7 @@ import com.example.flexinsight.core.errors.ErrorHandler
 import com.example.flexinsight.data.model.PersonalRecord
 import com.example.flexinsight.data.model.Set
 import com.example.flexinsight.data.model.Workout
+import com.example.flexinsight.data.model.Exercise
 import com.example.flexinsight.data.model.WorkoutStats
 import com.example.flexinsight.data.model.PRDetails
 import com.example.flexinsight.data.model.VolumeTrend
@@ -33,7 +34,9 @@ data class HistoryUiState(
     val weeklyVolumeData: List<WeeklyVolumeData> = emptyList(),
     val durationTrend: List<DailyDurationData> = emptyList(),
     val muscleGroupProgress: List<MuscleGroupProgress> = emptyList(),
-    val prsWithDetails: List<PRDetails> = emptyList()
+    val prsWithDetails: List<PRDetails> = emptyList(),
+    val exercises: List<Exercise> = emptyList(),
+    val dateFilter: String = "All Time"
 ) {
     // Backward compatibility helper
     val isLoading: Boolean
@@ -146,6 +149,14 @@ class HistoryViewModel(
                     } catch (e: Exception) {
                         // Continue with empty list if it fails
                     }
+
+                    // Load exercises
+                    var exercises = emptyList<Exercise>()
+                    try {
+                        exercises = repository.getAllExercises().first()
+                    } catch (e: Exception) {
+                        // Continue
+                    }
                     
                     _uiState.value = _uiState.value.copy(
                         loadingState = LoadingState.Success,
@@ -158,6 +169,7 @@ class HistoryViewModel(
                         durationTrend = durationTrend,
                         muscleGroupProgress = muscleGroupProgress,
                         prsWithDetails = prsWithDetails,
+                        exercises = exercises,
                         error = null
                     )
                 } catch (e: Exception) {
@@ -176,9 +188,15 @@ class HistoryViewModel(
             }
         }
     }
-    
+
     fun refresh() {
         loadHistoryData()
+    }
+    
+    fun setDateFilter(filter: String) {
+        _uiState.value = _uiState.value.copy(dateFilter = filter)
+        // In a real app, this would re-query the repository with a date range
+        // For now, we update the UI state so the UI can filter or show the selected range
     }
 }
 
