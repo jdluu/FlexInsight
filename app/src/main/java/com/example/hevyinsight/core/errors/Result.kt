@@ -40,7 +40,7 @@ sealed class Result<out T> {
     /**
      * Gets the data if successful, or returns the default value
      */
-    fun getOrDefault(default: T): T = when (this) {
+    fun getOrDefault(default: @UnsafeVariance T): T = when (this) {
         is Success -> data
         is Error -> default
     }
@@ -80,17 +80,22 @@ sealed class Result<out T> {
         }
         return this
     }
+    
+    /**
+     * Companion object with helper functions for creating Result instances
+     */
+    companion object {
+        /**
+         * Helper function to create a success result
+         */
+        fun <T> success(data: T): Result<T> = Success(data)
+        
+        /**
+         * Helper function to create an error result
+         */
+        fun <T> error(error: ApiError): Result<T> = Error(error)
+    }
 }
-
-/**
- * Helper function to create a success result
- */
-fun <T> Result.success(data: T): Result<T> = Result.Success(data)
-
-/**
- * Helper function to create an error result
- */
-fun <T> Result.error(error: ApiError): Result<T> = Result.Error(error)
 
 /**
  * Helper function to wrap a nullable value in a Result

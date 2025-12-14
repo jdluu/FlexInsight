@@ -5,8 +5,8 @@ package com.example.hevyinsight.core.errors
  * This allows for explicit error handling and type-safe error propagation.
  */
 sealed class ApiError(
-    val message: String,
-    val cause: Throwable? = null
+    open val message: String,
+    open val cause: Throwable? = null
 ) {
     /**
      * Network-related errors (no internet, timeout, connection issues)
@@ -32,15 +32,19 @@ sealed class ApiError(
          * Connection error (unable to reach server)
          */
         data class ConnectionError(
-            override val cause: Throwable? = null
-        ) : NetworkError("Unable to connect to server", cause)
+            val errorCause: Throwable? = null
+        ) : NetworkError("Unable to connect to server", errorCause) {
+            override val cause: Throwable? = errorCause
+        }
         
         /**
          * Unknown network error
          */
         data class Unknown(
-            override val cause: Throwable? = null
-        ) : NetworkError("Unknown network error", cause)
+            val errorCause: Throwable? = null
+        ) : NetworkError("Unknown network error", errorCause) {
+            override val cause: Throwable? = errorCause
+        }
     }
     
     /**
@@ -138,9 +142,12 @@ sealed class ApiError(
      * Unknown or unexpected errors
      */
     data class Unknown(
-        override val message: String,
-        override val cause: Throwable? = null
-    ) : ApiError(message, cause)
+        val errorMessage: String,
+        val errorCause: Throwable? = null
+    ) : ApiError(errorMessage, errorCause) {
+        override val message: String = errorMessage
+        override val cause: Throwable? = errorCause
+    }
     
     /**
      * Returns true if this error should be retried (transient errors)
