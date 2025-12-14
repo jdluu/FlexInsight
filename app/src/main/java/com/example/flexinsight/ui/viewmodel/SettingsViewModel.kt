@@ -85,9 +85,22 @@ class SettingsViewModel(
                     false
                 }
                 
+                val displayName = try {
+                    userPreferencesManager.getDisplayName()
+                } catch (e: Exception) {
+                    null
+                }
+                
+                // Merge display name into profile info if exists
+                val finalProfileInfo = if (displayName != null && profileInfo != null) {
+                    profileInfo.copy(displayName = displayName)
+                } else {
+                    profileInfo
+                }
+                
                 _uiState.value = _uiState.value.copy(
                     loadingState = LoadingState.Success,
-                    profileInfo = profileInfo,
+                    profileInfo = finalProfileInfo,
                     weeklyGoal = weeklyGoal,
                     theme = theme,
                     units = units,
@@ -192,6 +205,26 @@ class SettingsViewModel(
         }
     }
     
+    fun updateDisplayName(name: String) {
+        viewModelScope.launch {
+            try {
+                userPreferencesManager.setDisplayName(name)
+                // Update local state immediately for responsiveness
+                val currentProfile = _uiState.value.profileInfo
+                if (currentProfile != null) {
+                    _uiState.value = _uiState.value.copy(
+                        profileInfo = currentProfile.copy(displayName = name)
+                    )
+                }
+            } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
+                _uiState.value = _uiState.value.copy(
+                    error = UiError.fromApiError(apiError)
+                )
+            }
+        }
+    }
+
     fun refresh() {
         loadSettingsData()
     }

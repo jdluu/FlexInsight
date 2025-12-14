@@ -94,5 +94,24 @@ class UserPreferencesManager(private val context: Context) {
             preferences[VIEW_ONLY_MODE] = enabled
         }
     }
+
+    /**
+     * Get display name preference
+     */
+    private val DISPLAY_NAME = stringPreferencesKey("display_name")
+    
+    val displayNameFlow: Flow<String?> = context.userPreferencesDataStore.data.map { preferences ->
+        preferences[DISPLAY_NAME]
+    }
+    
+    suspend fun getDisplayName(): String? {
+        return displayNameFlow.first()
+    }
+    
+    suspend fun setDisplayName(name: String) {
+        context.userPreferencesDataStore.edit { preferences ->
+            preferences[DISPLAY_NAME] = name
+        }
+    }
 }
 
