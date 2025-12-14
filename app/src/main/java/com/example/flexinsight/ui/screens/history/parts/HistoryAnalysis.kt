@@ -169,11 +169,16 @@ fun AnalysisCard(
                                 modifier = Modifier.size(32.dp)
                             )
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
                             ) {
                                 val colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
                                 muscleGroupProgress.take(3).forEachIndexed { index, muscle ->
-                                    MuscleLegend(muscle.muscleGroup, colors.getOrElse(index) { MaterialTheme.colorScheme.primary })
+                                    MuscleLegend(
+                                        name = muscle.muscleGroup,
+                                        color = colors.getOrElse(index) { MaterialTheme.colorScheme.primary },
+                                        modifier = Modifier.padding(horizontal = 6.dp)
+                                    )
                                 }
                             }
                         }
@@ -191,8 +196,9 @@ fun AnalysisCard(
 }
 
 @Composable
-fun MuscleLegend(name: String, color: Color) {
+fun MuscleLegend(name: String, color: Color, modifier: Modifier = Modifier) {
     Row(
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -204,9 +210,11 @@ fun MuscleLegend(name: String, color: Color) {
         )
         Text(
             text = name,
-            fontSize = 14.sp,
+            fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            softWrap = false
         )
     }
 }
