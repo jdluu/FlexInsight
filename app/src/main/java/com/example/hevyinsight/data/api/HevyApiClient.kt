@@ -14,9 +14,9 @@ import java.util.concurrent.TimeUnit
  */
 class HevyApiClient {
     companion object {
-        private const val BASE_URL = "https://api.hevyapp.com/"
-        private const val TIMEOUT_SECONDS = 30L
-        private const val TAG = "HevyApiClient"
+    private const val BASE_URL = "https://api.hevyapp.com/"
+    private const val TIMEOUT_SECONDS = 30L
+    private const val TAG = "HevyApiClient"
     }
     
     /**
@@ -27,7 +27,7 @@ class HevyApiClient {
             level = HttpLoggingInterceptor.Level.BODY // Change to NONE in production
         }
         
-        val apiKeyInterceptor = Interceptor { chain ->
+            val apiKeyInterceptor = Interceptor { chain ->
             val original = chain.request()
             val requestBuilder = original.newBuilder()
                 // Use 'api-key' header as specified in Hevy API CORS headers
