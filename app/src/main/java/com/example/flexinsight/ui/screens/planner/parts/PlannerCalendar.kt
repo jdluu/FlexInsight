@@ -36,7 +36,8 @@ data class PlannerDayUiModel(
     val date: Int,
     val hasWorkout: Boolean = false,
     val isSelected: Boolean = false,
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
+    val isToday: Boolean = false
 )
 
 @Composable
@@ -45,6 +46,8 @@ fun WeekCalendar(
     selectedDayIndex: Int = 0,
     onDaySelected: (Int) -> Unit = {}
 ) {
+    val today = System.currentTimeMillis()
+    
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -52,12 +55,18 @@ fun WeekCalendar(
     ) {
         items(weekCalendarData.size) { index ->
             val dayData = weekCalendarData[index]
+            // Check if this day is today (same day, ignoring time)
+            val dayStart = dayData.timestamp
+            val dayEnd = dayStart + 24 * 60 * 60 * 1000
+            val isToday = today >= dayStart && today < dayEnd
+            
             val dayUiModel = PlannerDayUiModel(
                 name = dayData.name,
                 date = dayData.date,
                 hasWorkout = dayData.hasWorkout,
                 isSelected = index == selectedDayIndex,
-                isCompleted = dayData.isCompleted
+                isCompleted = dayData.isCompleted,
+                isToday = isToday
             )
             DayCard(
                 day = dayUiModel,
@@ -72,11 +81,14 @@ fun DayCard(day: PlannerDayUiModel, onClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .width(68.dp)
-            .height(90.dp)
+            .height(if (day.isToday) 100.dp else 90.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(24.dp),
         color = if (day.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        border = if (day.isToday && !day.isSelected) 
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.primary) 
+                 else 
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -102,6 +114,17 @@ fun DayCard(day: PlannerDayUiModel, onClick: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                // Today indicator
+                if (day.isToday) {
+                    Text(
+                        text = "Today",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (day.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                        letterSpacing = 0.5.sp
+                    )
+                }
+                
                 Text(
                     text = day.name,
                     fontSize = 12.sp,
