@@ -253,7 +253,10 @@ fun VolumeBar(label: String, percentage: Float, color: Color, isHighlighted: Boo
             fontSize = 10.sp,
             fontWeight = if (isHighlighted) FontWeight.Bold else FontWeight.Medium,
             color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-            letterSpacing = 1.sp
+            letterSpacing = 0.5.sp,
+            maxLines = 1,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
