@@ -50,12 +50,12 @@ fun FlexBottomNavigation(
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            SurfaceCard.copy(alpha = 0.9f),
-                            SurfaceCard.copy(alpha = 0.95f)
+                            MaterialTheme.colorScheme.surfaceContainer,
+                            MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.95f)
                         )
                     )
                 )
-                .border(1.dp, Color.White.copy(alpha = 0.05f), RoundedCornerShape(36.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(36.dp))
                 .padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
@@ -93,7 +93,7 @@ fun BottomNavItem(
                 .width(56.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .background(
-                    if (isSelected) Primary.copy(alpha = 0.2f)
+                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                     else Color.Transparent
                 ),
             contentAlignment = Alignment.Center
@@ -101,7 +101,7 @@ fun BottomNavItem(
             Icon(
                 imageVector = item.icon,
                 contentDescription = item.label,
-                tint = if (isSelected) Primary else TextSecondary,
+                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -110,7 +110,7 @@ fun BottomNavItem(
             text = item.label,
             fontSize = 10.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = if (isSelected) Primary else TextSecondary
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
