@@ -3,6 +3,8 @@ package com.example.flexinsight.ui.screens.aitrainer.parts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ShowChart
@@ -31,13 +33,15 @@ fun QuickActionChips() {
         "Compare to last week" to Icons.AutoMirrored.Filled.ShowChart
     )
     
-    Row(
+    LazyRow(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        quickActions.forEach { (text, icon) ->
+        items(quickActions.size) { index ->
+            val (text, icon) = quickActions[index]
             Surface(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
@@ -47,7 +51,7 @@ fun QuickActionChips() {
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -59,7 +63,7 @@ fun QuickActionChips() {
                     )
                     Text(
                         text = text,
-                        fontSize = 12.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )

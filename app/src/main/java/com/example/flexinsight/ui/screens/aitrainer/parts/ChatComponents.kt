@@ -145,24 +145,27 @@ fun ChatInput(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.background.copy(alpha = 0.95f)
+        color = MaterialTheme.colorScheme.background,
+        shadowElevation = 8.dp
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            // Text input field
             Surface(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.surface,
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -170,7 +173,12 @@ fun ChatInput(
                         value = text,
                         onValueChange = onTextChange,
                         modifier = Modifier.weight(1f),
-                        placeholder = { Text("Ask about your fitness...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        placeholder = { 
+                            Text(
+                                "Ask about your fitness...", 
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            ) 
+                        },
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
@@ -180,9 +188,13 @@ fun ChatInput(
                         textStyle = androidx.compose.ui.text.TextStyle(
                             color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 16.sp
-                        )
+                        ),
+                        singleLine = true
                     )
-                    IconButton(onClick = {}) {
+                    IconButton(
+                        onClick = {},
+                        modifier = Modifier.size(40.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Default.AddPhotoAlternate,
                             contentDescription = "Add photo",
@@ -192,18 +204,18 @@ fun ChatInput(
                 }
             }
             
+            // Send/Mic button
             FloatingActionButton(
                 onClick = onSend,
-                modifier = Modifier
-                    .size(56.dp)
-                    .align(Alignment.End),
+                modifier = Modifier.size(48.dp),
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                elevation = FloatingActionButtonDefaults.elevation(0.dp)
             ) {
                 Icon(
                     imageVector = if (text.isNotBlank()) Icons.AutoMirrored.Filled.Send else Icons.Default.Mic,
                     contentDescription = if (text.isNotBlank()) "Send" else "Voice input",
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }
