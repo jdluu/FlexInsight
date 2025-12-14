@@ -89,8 +89,9 @@ class HistoryViewModel(
                     bestWeekDate = null
                 ))
                 
-            val count = runCatching { repository.getWorkoutCount().first() }
-                .getOrDefault(0)
+            val count = runCatching { 
+                repository.getProfileInfo().totalWorkouts 
+            }.getOrDefault(0)
                 
             val prs = runCatching { repository.getRecentPRs(limit = 10).first() }
                 .getOrDefault(emptyList())

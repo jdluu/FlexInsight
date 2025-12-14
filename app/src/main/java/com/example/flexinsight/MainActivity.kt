@@ -31,6 +31,7 @@ import com.example.flexinsight.ui.theme.FlexInsightTheme
 import com.example.flexinsight.ui.viewmodel.DashboardViewModel
 import com.example.flexinsight.ui.viewmodel.HistoryViewModel
 import kotlinx.coroutines.launch
+import com.example.flexinsight.ui.common.LocalSnackbarHostState
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -123,6 +124,8 @@ fun MainScreen() {
     // API Key Prompt Dialog
     if (showApiKeyPrompt) {
         var apiKeyText by remember { mutableStateOf("") }
+        // Basic validation logic matching ApiKeyManager
+        val isValid = apiKeyText.isNotBlank() && apiKeyText.length >= 10
         var error by remember { mutableStateOf<String?>(null) }
         
         AlertDialog(
@@ -157,7 +160,17 @@ fun MainScreen() {
                             focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
                             unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
-                        singleLine = true
+                        singleLine = true,
+                        isError = !isValid && apiKeyText.isNotEmpty(),
+                        supportingText = {
+                            if (!isValid && apiKeyText.isNotEmpty()) {
+                                Text(
+                                    text = "Must be at least 10 characters",
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
                     )
                     val errorText = error
                     if (errorText != null) {
@@ -172,16 +185,16 @@ fun MainScreen() {
             confirmButton = {
                 Button(
                     onClick = {
-                        if (apiKeyManager.isValidApiKeyFormat(apiKeyText)) {
-                            scope.launch {
-                                apiKeyManager.saveApiKey(apiKeyText)
-                                showApiKeyPrompt = false
-                            }
-                        } else {
-                            error = "API key must be at least 10 characters"
+                         scope.launch {
+                            apiKeyManager.saveApiKey(apiKeyText)
+                            showApiKeyPrompt = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    enabled = isValid,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    )
                 ) {
                     Text("Save", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
                 }
@@ -191,33 +204,39 @@ fun MainScreen() {
         )
     }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            if (showBottomNav) {
-                FlexBottomNavigation(
-                    currentRoute = currentRoute,
-                    onNavigate = { route ->
-                        // Always navigate to the selected tab, clearing any screens on top
-                        navController.navigate(route) {
-                            // Pop up to the start destination, but don't pop the start destination itself
-                            popUpTo(navController.graph.startDestinationId) {
-                                saveState = false
-                                inclusive = false
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    CompositionLocalProvider(
+        LocalSnackbarHostState provides snackbarHostState
+    ) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            bottomBar = {
+                if (showBottomNav) {
+                    FlexBottomNavigation(
+                        currentRoute = currentRoute,
+                        onNavigate = { route ->
+                            // Always navigate to the selected tab, clearing any screens on top
+                            navController.navigate(route) {
+                                // Pop up to the start destination, but don't pop the start destination itself
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = false
+                                    inclusive = false
+                                }
+                                // Avoid multiple copies of the same destination
+                                launchSingleTop = true
                             }
-                            // Avoid multiple copies of the same destination
-                            launchSingleTop = true
                         }
-                    }
-                )
+                    )
+                }
             }
-        }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Dashboard.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Dashboard.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
             composable(Screen.Dashboard.route) {
                 val viewModel: DashboardViewModel = viewModel {
                     DashboardViewModel(application.repository)
@@ -254,15 +273,18 @@ fun MainScreen() {
                         navController.navigate(Screen.WorkoutDetail.createRoute(workoutId))
                     },
                     onNavigateToAnalysis = {
-                        Toast.makeText(context, "detailed analysis coming soon", Toast.LENGTH_SHORT).show()
+                        scope.launch { snackbarHostState.showSnackbar("Detail analysis coming soon") }
                     },
                     onNavigateToPRList = {
-                         Toast.makeText(context, "PR list coming soon", Toast.LENGTH_SHORT).show()
+                         scope.launch { snackbarHostState.showSnackbar("PR list coming soon") }
                     }
                 )
             }
             composable(Screen.AITrainer.route) {
-                AITrainerScreen()
+                val viewModel: com.example.flexinsight.ui.viewmodel.AITrainerViewModel = viewModel {
+                    com.example.flexinsight.ui.viewmodel.AITrainerViewModel(application.repository)
+                }
+                AITrainerScreen(viewModel = viewModel)
             }
                 composable(Screen.Planner.route) {
                     val viewModel: com.example.flexinsight.ui.viewmodel.PlannerViewModel = viewModel {
@@ -271,7 +293,10 @@ fun MainScreen() {
                     PlannerScreen(viewModel = viewModel)
                 }
             composable(Screen.Recovery.route) {
-                RecoveryScreen()
+                val viewModel: com.example.flexinsight.ui.viewmodel.RecoveryViewModel = viewModel {
+                    com.example.flexinsight.ui.viewmodel.RecoveryViewModel(application.repository)
+                }
+                RecoveryScreen(viewModel = viewModel)
             }
             composable(Screen.Settings.route) {
                 val viewModel: com.example.flexinsight.ui.viewmodel.SettingsViewModel = viewModel {
@@ -297,4 +322,5 @@ fun MainScreen() {
             }
         }
     }
+}
 }

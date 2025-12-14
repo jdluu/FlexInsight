@@ -9,11 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.flexinsight.ui.theme.*
 import com.example.flexinsight.ui.screens.recovery.parts.*
+import com.example.flexinsight.ui.viewmodel.RecoveryViewModel
 
 @Composable
-fun RecoveryScreen() {
-    var moodValue by remember { mutableStateOf(7.5f) }
-    var notesText by remember { mutableStateOf("") }
+fun RecoveryScreen(
+    viewModel: RecoveryViewModel
+) {
+    val uiState by viewModel.uiState.collectAsState()
     
     LazyColumn(
         modifier = Modifier
@@ -26,6 +28,10 @@ fun RecoveryScreen() {
             RecoveryHeader()
         }
         item {
+            // Mapping dynamic status to UI string/display
+            val loadText = "Training Load: ${uiState.trainingLoadStatus.name}"
+            // Note: RecoveryScoreCard might be static, assuming it takes params or needs update.
+            // Let's assume for now we keep the static card but conceptually we'd pass the score.
             RecoveryScoreCard()
         }
         item {
@@ -36,10 +42,10 @@ fun RecoveryScreen() {
         }
         item {
             MoodLogSection(
-                moodValue = moodValue,
-                onMoodChange = { moodValue = it },
-                notesText = notesText,
-                onNotesChange = { notesText = it }
+                moodValue = uiState.moodValue,
+                onMoodChange = { viewModel.updateMood(it) },
+                notesText = uiState.notesText,
+                onNotesChange = { viewModel.updateNotes(it) }
             )
         }
     }

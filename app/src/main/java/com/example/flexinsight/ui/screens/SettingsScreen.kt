@@ -1,6 +1,6 @@
 package com.example.flexinsight.ui.screens
 
-import android.widget.Toast
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -53,6 +53,7 @@ fun SettingsScreen() {
     
     val apiKeyManager = remember { ApiKeyManager(context) }
     val scope = rememberCoroutineScope()
+    val snackbarHostState = com.example.flexinsight.ui.common.LocalSnackbarHostState.current
     
     var healthConnectEnabled by remember { mutableStateOf(false) }
     var geminiEnabled by remember { mutableStateOf(true) }
@@ -182,7 +183,7 @@ fun SettingsScreen() {
                 icon = Icons.Default.Notifications,
                 value = null,
                 onClick = {
-                    Toast.makeText(context, "Notifications features coming soon!", Toast.LENGTH_SHORT).show()
+                    scope.launch { snackbarHostState.showSnackbar("Notifications features coming soon!") }
                 }
             )
         }
@@ -193,7 +194,7 @@ fun SettingsScreen() {
                 icon = Icons.Default.Download,
                 value = null,
                 onClick = {
-                    Toast.makeText(context, "Export Data feature coming soon!", Toast.LENGTH_SHORT).show()
+                    scope.launch { snackbarHostState.showSnackbar("Export Data feature coming soon!") }
                 }
             )
             PreferenceItem(

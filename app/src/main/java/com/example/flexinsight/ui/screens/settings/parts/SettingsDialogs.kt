@@ -29,6 +29,8 @@ fun ApiKeyDialog(
     error: String?
 ) {
     var apiKeyText by remember { mutableStateOf(currentApiKey ?: "") }
+    // Basic validation logic matching ApiKeyManager
+    val isValid = apiKeyText.isNotBlank() && apiKeyText.length >= 10
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -62,22 +64,34 @@ fun ApiKeyDialog(
                         focusedLabelColor = TextSecondary,
                         unfocusedLabelColor = TextSecondary
                     ),
-                    singleLine = true
+                    singleLine = true,
+                    isError = !isValid && apiKeyText.isNotEmpty(),
+                    supportingText = {
+                        if (!isValid && apiKeyText.isNotEmpty()) {
+                            Text(
+                                text = "Must be at least 10 characters",
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 12.sp
+                            )
+                        } else if (error != null) {
+                             Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
                 )
-                val errorText = error
-                if (errorText != null) {
-                    Text(
-                        text = errorText,
-                        color = RedAccent,
-                        fontSize = 12.sp
-                    )
-                }
             }
         },
         confirmButton = {
             Button(
                 onClick = { onSave(apiKeyText) },
-                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                enabled = isValid,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Primary,
+                    disabledContainerColor = Primary.copy(alpha = 0.5f)
+                )
             ) {
                 Text("Save", color = BackgroundDark, fontWeight = FontWeight.Bold)
             }

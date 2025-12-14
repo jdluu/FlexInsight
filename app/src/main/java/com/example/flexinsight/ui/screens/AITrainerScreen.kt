@@ -11,27 +11,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.flexinsight.ui.theme.*
 import com.example.flexinsight.ui.screens.aitrainer.parts.*
+import com.example.flexinsight.ui.viewmodel.AITrainerViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun AITrainerScreen() {
-    val messages = remember {
-        mutableStateListOf(
-            ChatMessage("ai", "Good morning! I've analyzed your sleep data. You're 15% more recovered than yesterday. Ready to push for that 5K PR?", false),
-            ChatMessage("user", "Actually, let's look at my last run first. My heart rate felt high.", false),
-            ChatMessage("ai", "You're right. You peaked at 172 BPM near the 3km mark. Here is the breakdown:", true, hasChart = true),
-            ChatMessage("user", "Okay, should I take a rest day then?", false)
-        )
-    }
-    var isTyping by remember { mutableStateOf(false) }
+fun AITrainerScreen(
+    viewModel: AITrainerViewModel
+) {
+    val uiState by viewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
     
-    LaunchedEffect(messages.size) {
-        delay(100)
-        listState.animateScrollToItem(messages.size - 1)
+    LaunchedEffect(uiState.messages.size) {
+        if (uiState.messages.isNotEmpty()) {
+            delay(100)
+            listState.animateScrollToItem(uiState.messages.size - 1)
+        }
     }
     
     Column(
@@ -53,11 +49,11 @@ fun AITrainerScreen() {
                 DateDivider("Today, 9:41 AM")
             }
             
-            items(messages) { message ->
+            items(uiState.messages) { message ->
                 ChatBubble(message)
             }
             
-            if (isTyping) {
+            if (uiState.isTyping) {
                 item {
                     TypingIndicator()
                 }
@@ -70,17 +66,8 @@ fun AITrainerScreen() {
             text = inputText,
             onTextChange = { inputText = it },
             onSend = {
-                if (inputText.isNotBlank()) {
-                    messages.add(ChatMessage("user", inputText, false))
-                    inputText = ""
-                    isTyping = true
-                    // Simulate AI response
-                    scope.launch {
-                        delay(2000)
-                        isTyping = false
-                        messages.add(ChatMessage("ai", "Based on your data, I recommend...", false))
-                    }
-                }
+                viewModel.sendMessage(inputText)
+                inputText = ""
             }
         )
     }
