@@ -38,12 +38,64 @@ class FlexInsightApplication : Application() {
         CacheManager()
     }
     
+    
+    // Core Dependencies
+    private val apiClient by lazy { com.example.flexinsight.data.api.FlexApiClient() }
+    
+    // Repositories
+    private val exerciseRepository: com.example.flexinsight.data.repository.ExerciseRepository by lazy {
+        com.example.flexinsight.data.repository.ExerciseRepositoryImpl(
+            exerciseDao = database.exerciseDao(),
+            apiKeyManager = apiKeyManager,
+            networkMonitor = networkMonitor,
+            apiClient = apiClient,
+            cacheManager = cacheManager
+        )
+    }
+    
+    private val workoutRepository: com.example.flexinsight.data.repository.WorkoutRepository by lazy {
+        com.example.flexinsight.data.repository.WorkoutRepositoryImpl(
+            workoutDao = database.workoutDao(),
+            exerciseDao = database.exerciseDao(),
+            setDao = database.setDao(),
+            apiKeyManager = apiKeyManager,
+            networkMonitor = networkMonitor,
+            apiClient = apiClient,
+            cacheManager = cacheManager
+        )
+    }
+    
+    private val routineRepository: com.example.flexinsight.data.repository.RoutineRepository by lazy {
+        com.example.flexinsight.data.repository.RoutineRepositoryImpl(
+            apiKeyManager = apiKeyManager,
+            networkMonitor = networkMonitor,
+            apiClient = apiClient,
+            cacheManager = cacheManager,
+            exerciseRepository = exerciseRepository
+        )
+    }
+    
+    private val statsRepository: com.example.flexinsight.data.repository.StatsRepository by lazy {
+        com.example.flexinsight.data.repository.StatsRepositoryImpl(
+            workoutDao = database.workoutDao(),
+            exerciseDao = database.exerciseDao(),
+            setDao = database.setDao(),
+            exerciseRepository = exerciseRepository,
+            cacheManager = cacheManager,
+            dispatcherProvider = com.example.flexinsight.core.dispatchers.DefaultDispatcherProvider()
+        )
+    }
+
     val repository: FlexRepository by lazy {
-        FlexRepository(
+        com.example.flexinsight.data.repository.FlexRepositoryImpl(
             database = database,
             apiKeyManager = apiKeyManager,
             networkMonitor = networkMonitor,
-            cacheManager = cacheManager
+            cacheManager = cacheManager,
+            exerciseRepository = exerciseRepository,
+            workoutRepository = workoutRepository,
+            routineRepository = routineRepository,
+            statsRepository = statsRepository
         )
     }
     
