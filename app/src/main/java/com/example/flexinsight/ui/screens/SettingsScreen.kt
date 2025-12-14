@@ -206,6 +206,34 @@ fun SettingsScreen() {
             )
         }
         item {
+            SectionTitle("Help & Feedback")
+            PreferenceItem(
+                title = "Contact Support",
+                icon = Icons.Default.Email,
+                value = null,
+                onClick = {
+                    val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
+                        data = android.net.Uri.parse("mailto:")
+                        putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf("support@example.com"))
+                        putExtra(android.content.Intent.EXTRA_SUBJECT, "FlexInsight Feedback")
+                    }
+                    try {
+                        context.startActivity(android.content.Intent.createChooser(intent, "Send Email"))
+                    } catch (e: Exception) {
+                         scope.launch { snackbarHostState.showSnackbar("No email app found") }
+                    }
+                }
+            )
+             PreferenceItem(
+                title = "Documentation",
+                icon = Icons.Default.Description,
+                value = null,
+                onClick = {
+                    scope.launch { snackbarHostState.showSnackbar("Documentation coming soon") }
+                }
+            )
+        }
+        item {
             SectionTitle("About")
             PreferenceItem(
                 title = "Version",

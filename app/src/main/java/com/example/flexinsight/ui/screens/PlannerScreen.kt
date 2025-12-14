@@ -1,6 +1,6 @@
 package com.example.flexinsight.ui.screens
 
-import android.widget.Toast
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +24,8 @@ fun PlannerScreen(
     viewModel: PlannerViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = com.example.flexinsight.ui.common.LocalSnackbarHostState.current
     
     if (uiState.isLoading) {
         Box(
@@ -77,7 +79,7 @@ fun PlannerScreen(
                 workout.id?.let { id ->
                     viewModel.rescheduleWorkout(id, calendar.timeInMillis)
                 }
-                Toast.makeText(context, "Moved to tomorrow", Toast.LENGTH_SHORT).show()
+                scope.launch { snackbarHostState.showSnackbar("Moved to tomorrow") }
                 showRescheduleDialog = null
             },
             onDismiss = { showRescheduleDialog = null }
@@ -121,7 +123,7 @@ fun PlannerScreen(
                 volumeBalance = uiState.volumeBalance,
                 muscleGroupProgress = uiState.muscleGroupProgress,
                 onGeneratePlan = {
-                    Toast.makeText(context, "AI Plan Generation coming soon", Toast.LENGTH_SHORT).show()
+                    scope.launch { snackbarHostState.showSnackbar("AI Plan Generation coming soon") }
                     viewModel.generateAIWorkout()
                 }
             )
