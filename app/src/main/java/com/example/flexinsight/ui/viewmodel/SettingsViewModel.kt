@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import com.example.flexinsight.ui.utils.safeLaunch
 
 data class SettingsUiState(
     val loadingState: LoadingState = LoadingState.Idle,
@@ -150,76 +151,51 @@ class SettingsViewModel(
     }
     
     fun updateTheme(theme: String) {
-        viewModelScope.launch {
-            try {
-                userPreferencesManager.setTheme(theme)
-                _uiState.value = _uiState.value.copy(theme = theme)
-            } catch (e: Exception) {
-                val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(
-                    error = UiError.fromApiError(apiError)
-                )
-            }
+        safeLaunch(onError = { error ->
+            _uiState.value = _uiState.value.copy(error = error)
+        }) {
+            userPreferencesManager.setTheme(theme)
+            _uiState.value = _uiState.value.copy(theme = theme)
         }
     }
     
     fun updateUnits(units: String) {
-        viewModelScope.launch {
-            try {
-                userPreferencesManager.setUnits(units)
-                _uiState.value = _uiState.value.copy(units = units)
-            } catch (e: Exception) {
-                val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(
-                    error = UiError.fromApiError(apiError)
-                )
-            }
+        safeLaunch(onError = { error ->
+            _uiState.value = _uiState.value.copy(error = error)
+        }) {
+            userPreferencesManager.setUnits(units)
+            _uiState.value = _uiState.value.copy(units = units)
         }
     }
     
     fun updateViewOnlyMode(enabled: Boolean) {
-        viewModelScope.launch {
-            try {
-                userPreferencesManager.setViewOnlyMode(enabled)
-                _uiState.value = _uiState.value.copy(viewOnlyMode = enabled)
-            } catch (e: Exception) {
-                val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(
-                    error = UiError.fromApiError(apiError)
-                )
-            }
+        safeLaunch(onError = { error ->
+            _uiState.value = _uiState.value.copy(error = error)
+        }) {
+            userPreferencesManager.setViewOnlyMode(enabled)
+            _uiState.value = _uiState.value.copy(viewOnlyMode = enabled)
         }
     }
     
     fun clearCache() {
-        viewModelScope.launch {
-            try {
-                repository.clearCache()
-                _uiState.value = _uiState.value.copy(error = null)
-            } catch (e: Exception) {
-                val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(
-                    error = UiError.fromApiError(apiError)
-                )
-            }
+        safeLaunch(onError = { error ->
+            _uiState.value = _uiState.value.copy(error = error)
+        }) {
+            repository.clearCache()
+            _uiState.value = _uiState.value.copy(error = null)
         }
     }
     
     fun updateDisplayName(name: String) {
-        viewModelScope.launch {
-            try {
-                userPreferencesManager.setDisplayName(name)
-                // Update local state immediately for responsiveness
-                val currentProfile = _uiState.value.profileInfo
-                if (currentProfile != null) {
-                    _uiState.value = _uiState.value.copy(
-                        profileInfo = currentProfile.copy(displayName = name)
-                    )
-                }
-            } catch (e: Exception) {
-                val apiError = ErrorHandler.handleError(e)
+        safeLaunch(onError = { error ->
+            _uiState.value = _uiState.value.copy(error = error)
+        }) {
+            userPreferencesManager.setDisplayName(name)
+            // Update local state immediately for responsiveness
+            val currentProfile = _uiState.value.profileInfo
+            if (currentProfile != null) {
                 _uiState.value = _uiState.value.copy(
-                    error = UiError.fromApiError(apiError)
+                    profileInfo = currentProfile.copy(displayName = name)
                 )
             }
         }
