@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import com.example.flexinsight.ui.utils.safeLaunch
 
 data class HistoryUiState(
     val loadingState: LoadingState = LoadingState.Idle,
@@ -59,133 +60,72 @@ class HistoryViewModel(
     }
     
     private fun loadHistoryData() {
-        viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
+        safeLaunch(onError = { error ->
+            _uiState.value = _uiState.value.copy(
+                loadingState = LoadingState.Error(error.toApiError()),
+                error = error
+            )
+        }) {
+            _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
+            
+            // Critical data: Workouts
+            // If this fails, safeLaunch handles it as a critical error
+            val workouts = repository.getWorkouts().first()
+            
+            // Optional data: Load with fail-safe defaults using runCatching
+            
+            val stats = runCatching { repository.calculateStats() }
+                .getOrDefault(WorkoutStats(
+                    totalWorkouts = 0,
+                    totalVolume = 0.0,
+                    averageVolume = 0.0,
+                    totalSets = 0,
+                    totalDuration = 0L,
+                    averageDuration = 0L,
+                    currentStreak = 0,
+                    longestStreak = 0,
+                    bestWeekVolume = 0.0,
+                    bestWeekDate = null
+                ))
                 
-                // Load all workouts - use first() to get initial value instead of continuous collection
-                val workouts = try {
-                    repository.getWorkouts().first()
-                } catch (e: Exception) {
-                    val apiError = ErrorHandler.handleError(e)
-                    _uiState.value = _uiState.value.copy(
-                        error = UiError.fromApiError(apiError),
-                        loadingState = LoadingState.Error(apiError)
-                    )
-                    return@launch
-                }
+            val count = runCatching { repository.getWorkoutCount().first() }
+                .getOrDefault(0)
                 
-                try {
-                    // Load stats
-                    val stats = try {
-                        repository.calculateStats()
-                    } catch (e: Exception) {
-                        WorkoutStats(
-                            totalWorkouts = 0,
-                            totalVolume = 0.0,
-                            averageVolume = 0.0,
-                            totalSets = 0,
-                            totalDuration = 0L,
-                            averageDuration = 0L,
-                            currentStreak = 0,
-                            longestStreak = 0,
-                            bestWeekVolume = 0.0,
-                            bestWeekDate = null
-                        )
-                    }
-                    
-                    // Load workout count
-                    var count = 0
-                    try {
-                        count = repository.getWorkoutCount().first()
-                    } catch (e: Exception) {
-                        // Continue with 0 if it fails
-                    }
-                    
-                    // Load recent PRs
-                    var prs = emptyList<com.example.flexinsight.data.model.Set>()
-                    try {
-                        prs = repository.getRecentPRs(limit = 10).first()
-                    } catch (e: Exception) {
-                        // Continue with empty list if it fails
-                    }
-                    
-                    // Load PRs with details
-                    var prsWithDetails = emptyList<PRDetails>()
-                    try {
-                        prsWithDetails = repository.getPRsWithDetails(limit = 10)
-                    } catch (e: Exception) {
-                        // Continue with empty list if it fails
-                    }
-                    
-                    // Load volume trend
-                    var volumeTrend: VolumeTrend? = null
-                    try {
-                        volumeTrend = repository.calculateVolumeTrend(weeks = 4)
-                    } catch (e: Exception) {
-                        // Continue with null if it fails
-                    }
-                    
-                    // Load weekly volume data
-                    var weeklyVolumeData = emptyList<WeeklyVolumeData>()
-                    try {
-                        weeklyVolumeData = repository.getWeeklyVolumeData(weeks = 4)
-                    } catch (e: Exception) {
-                        // Continue with empty list if it fails
-                    }
-                    
-                    // Load duration trend
-                    var durationTrend = emptyList<DailyDurationData>()
-                    try {
-                        durationTrend = repository.getDurationTrend(weeks = 6)
-                    } catch (e: Exception) {
-                        // Continue with empty list if it fails
-                    }
-                    
-                    // Load muscle group progress
-                    var muscleGroupProgress = emptyList<MuscleGroupProgress>()
-                    try {
-                        muscleGroupProgress = repository.getMuscleGroupProgress(weeks = 4)
-                    } catch (e: Exception) {
-                        // Continue with empty list if it fails
-                    }
-
-                    // Load exercises
-                    var exercises = emptyList<Exercise>()
-                    try {
-                        exercises = repository.getAllExercises().first()
-                    } catch (e: Exception) {
-                        // Continue
-                    }
-                    
-                    _uiState.value = _uiState.value.copy(
-                        loadingState = LoadingState.Success,
-                        workouts = workouts,
-                        workoutStats = stats,
-                        recentPRs = prs,
-                        workoutCount = count,
-                        volumeTrend = volumeTrend,
-                        weeklyVolumeData = weeklyVolumeData,
-                        durationTrend = durationTrend,
-                        muscleGroupProgress = muscleGroupProgress,
-                        prsWithDetails = prsWithDetails,
-                        exercises = exercises,
-                        error = null
-                    )
-                } catch (e: Exception) {
-                    val apiError = ErrorHandler.handleError(e)
-                    _uiState.value = _uiState.value.copy(
-                        loadingState = LoadingState.Error(apiError),
-                        error = UiError.fromApiError(apiError)
-                    )
-                }
-            } catch (e: Exception) {
-                val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(
-                    loadingState = LoadingState.Error(apiError),
-                    error = UiError.fromApiError(apiError)
-                )
-            }
+            val prs = runCatching { repository.getRecentPRs(limit = 10).first() }
+                .getOrDefault(emptyList())
+                
+            val prsWithDetails = runCatching { repository.getPRsWithDetails(limit = 10) }
+                .getOrDefault(emptyList())
+                
+            val volumeTrend = runCatching { repository.calculateVolumeTrend(weeks = 4) }
+                .getOrNull()
+                
+            val weeklyVolumeData = runCatching { repository.getWeeklyVolumeData(weeks = 4) }
+                .getOrDefault(emptyList())
+                
+            val durationTrend = runCatching { repository.getDurationTrend(weeks = 6) }
+                .getOrDefault(emptyList())
+                
+            val muscleGroupProgress = runCatching { repository.getMuscleGroupProgress(weeks = 4) }
+                .getOrDefault(emptyList())
+                
+            val exercises = runCatching { repository.getAllExercises().first() }
+                .getOrDefault(emptyList())
+            
+            _uiState.value = _uiState.value.copy(
+                loadingState = LoadingState.Success,
+                workouts = workouts,
+                workoutStats = stats,
+                recentPRs = prs,
+                workoutCount = count,
+                volumeTrend = volumeTrend,
+                weeklyVolumeData = weeklyVolumeData,
+                durationTrend = durationTrend,
+                muscleGroupProgress = muscleGroupProgress,
+                prsWithDetails = prsWithDetails,
+                exercises = exercises,
+                error = null
+            )
         }
     }
 
