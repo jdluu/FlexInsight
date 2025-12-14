@@ -182,34 +182,58 @@ fun TotalVolumeCard(
             }
             
             // Weekly volume chart
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                ) {
+                    if (weeklyVolumeData.isNotEmpty()) {
+                        val maxVolume = weeklyVolumeData.maxOfOrNull { it.volume } ?: 1.0
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            weeklyVolumeData.take(4).forEach { weekData ->
+                                val height = if (maxVolume > 0) {
+                                    ((weekData.volume / maxVolume) * 108).coerceAtLeast(4.0).dp
+                                } else {
+                                    4.dp
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .width(24.dp)
+                                        .height(height)
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(MaterialTheme.colorScheme.primary)
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                // Week labels
                 if (weeklyVolumeData.isNotEmpty()) {
-                    val maxVolume = weeklyVolumeData.maxOfOrNull { it.volume } ?: 1.0
                     Row(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.Bottom
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        weeklyVolumeData.take(4).forEach { weekData ->
-                            val height = if (maxVolume > 0) {
-                                ((weekData.volume / maxVolume) * 128).coerceAtLeast(4.0).dp
-                            } else {
-                                4.dp
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .width(24.dp)
-                                    .height(height)
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(MaterialTheme.colorScheme.primary)
+                        weeklyVolumeData.take(4).forEachIndexed { index, _ ->
+                            Text(
+                                text = "Week ${4 - index}",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.width(24.dp)
                             )
                         }
                     }

@@ -37,7 +37,7 @@ fun AnalysisBreakdown(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Analysis Breakdown",
+            text = "Training Insights",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
