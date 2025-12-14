@@ -198,12 +198,15 @@ fun MainScreen() {
                 FlexBottomNavigation(
                     currentRoute = currentRoute,
                     onNavigate = { route ->
+                        // Always navigate to the selected tab, clearing any screens on top
                         navController.navigate(route) {
+                            // Pop up to the start destination, but don't pop the start destination itself
                             popUpTo(navController.graph.startDestinationId) {
-                                saveState = true
+                                saveState = false
+                                inclusive = false
                             }
+                            // Avoid multiple copies of the same destination
                             launchSingleTop = true
-                            restoreState = true
                         }
                     }
                 )
