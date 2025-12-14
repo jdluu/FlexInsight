@@ -5,7 +5,6 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.net.NetworkInfo
 import android.os.Build
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -81,6 +80,7 @@ class NetworkMonitor(private val context: Context) {
     /**
      * Checks if network is currently available
      */
+    @Suppress("DEPRECATION")
     fun isNetworkAvailable(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val network = connectivityManager.activeNetwork ?: return false
@@ -88,9 +88,9 @@ class NetworkMonitor(private val context: Context) {
             capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
                 capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
         } else {
-            @Suppress("DEPRECATION")
-            val networkInfo: NetworkInfo? = connectivityManager.activeNetworkInfo
-            networkInfo?.state == NetworkInfo.State.CONNECTED
+            // Use deprecated API for Android versions below M (API 23)
+            val networkInfo: android.net.NetworkInfo? = connectivityManager.activeNetworkInfo
+            networkInfo?.state == android.net.NetworkInfo.State.CONNECTED
         }
     }
     
