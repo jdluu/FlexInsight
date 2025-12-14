@@ -102,6 +102,7 @@ object CacheKeys {
     const val EXERCISE_TEMPLATES = "exercise_templates"
     const val EXERCISE_TEMPLATES_FROM_EVENTS = "exercise_templates_from_events"
     const val ROUTINES = "routines"
+    const val ROUTINE_FOLDERS = "routine_folders"
 }
 
 /**
@@ -114,4 +115,5 @@ object CacheTTL {
     const val EXERCISE_TEMPLATES = 24 * 60 * 60 * 1000L // 24 hours
     const val EXERCISE_TEMPLATES_FROM_EVENTS = 24 * 60 * 60 * 1000L // 24 hours
     const val ROUTINES = 60 * 60 * 1000L // 1 hour
+    const val ROUTINE_FOLDERS = 60 * 60 * 1000L // 1 hour
 }

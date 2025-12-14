@@ -15,4 +15,6 @@ interface RoutineRepository {
     fun getRoutines(): Flow<List<Routine>>
     
     suspend fun getRoutineById(routineId: String): Result<Routine>
+
+    suspend fun getRoutineFolders(): Result<List<com.example.flexinsight.data.model.RoutineFolder>>
 }

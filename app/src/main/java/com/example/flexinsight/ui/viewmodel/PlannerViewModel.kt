@@ -24,6 +24,7 @@ data class PlannerUiState(
     val selectedDayIndex: Int = 0,
     val selectedDayWorkouts: List<PlannedWorkout> = emptyList(),
     val routines: List<Routine> = emptyList(),
+    val routineFolders: List<RoutineFolder> = emptyList(),
     val volumeBalance: VolumeBalance? = null,
     val muscleGroupProgress: List<MuscleGroupProgress> = emptyList()
 ) {
@@ -73,8 +74,15 @@ class PlannerViewModel(
             }
             
             // Load routines
-            val routines = try {
+            val routinesRequest = try {
                 repository.getRoutines().first()
+            } catch (e: Exception) {
+                emptyList()
+            }
+            
+            // Load routine folders
+            val routineFolders = try {
+                repository.getRoutineFolders()
             } catch (e: Exception) {
                 emptyList()
             }
@@ -128,7 +136,9 @@ class PlannerViewModel(
                 weekCalendarData = weekCalendarData,
                 selectedDayIndex = selectedDayIndex,
                 selectedDayWorkouts = selectedDayWorkouts,
-                routines = routines,
+                selectedDayWorkouts = selectedDayWorkouts,
+                routines = routinesRequest,
+                routineFolders = routineFolders,
                 volumeBalance = volumeBalance,
                 muscleGroupProgress = muscleGroupProgress,
                 error = null
