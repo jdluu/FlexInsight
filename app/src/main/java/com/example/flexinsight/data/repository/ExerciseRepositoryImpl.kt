@@ -156,68 +156,22 @@ class ExerciseRepositoryImpl(
     }
     
     /**
-     * Get muscle group for an exercise by looking up its template ID
-     * Falls back to name-based mapping if template not found
+     * Get muscle group for an exercise by looking up its template ID.
+     * Returns null if template not found - we only use accurate API data.
      */
     override suspend fun getMuscleGroupForExercise(exercise: Exercise): String? {
-        // First try to get from exercise template
+        // Look up from exercise template
         if (exercise.exerciseTemplateId != null) {
             val templateMappingResult = getExerciseTemplateMapping()
             if (templateMappingResult is Result.Success) {
-                templateMappingResult.data[exercise.exerciseTemplateId]?.let { return it }
+                return templateMappingResult.data[exercise.exerciseTemplateId]
             }
         }
         
-        // Fall back to name-based mapping
-        return getMuscleGroupFromExerciseName(exercise.name)
-    }
-    
-    /**
-     * Get muscle group from exercise name (fallback method)
-     */
-    private fun getMuscleGroupFromExerciseName(exerciseName: String): String? {
-        val name = exerciseName.lowercase()
-        
-        // Chest exercises
-        if (name.contains("bench") || name.contains("chest") || name.contains("pec") ||
-            name.contains("fly") || (name.contains("press") && (name.contains("incline") || name.contains("decline")))) {
-            return "Chest"
-        }
-        
-        // Back exercises
-        if (name.contains("row") || name.contains("pull") || name.contains("lat") ||
-            name.contains("deadlift") || name.contains("shrug") || name.contains("rear delt")) {
-            return "Back"
-        }
-        
-        // Legs exercises
-        if (name.contains("squat") || name.contains("leg") || name.contains("quad") ||
-            name.contains("hamstring") || name.contains("calf") || name.contains("lunge") ||
-            name.contains("extension") || (name.contains("curl") && name.contains("leg"))) {
-            return "Legs"
-        }
-        
-        // Shoulders
-        if (name.contains("shoulder") || name.contains("delt") || 
-            (name.contains("press") && name.contains("shoulder")) ||
-            name.contains("lateral") || name.contains("front raise")) {
-            return "Shoulders"
-        }
-        
-        // Arms
-        if (name.contains("bicep") || name.contains("tricep") || name.contains("curl") ||
-            (name.contains("extension") && name.contains("tricep")) || name.contains("preacher")) {
-            return "Arms"
-        }
-        
-        // Core/Abs
-        if (name.contains("ab") || name.contains("core") || name.contains("crunch") ||
-            name.contains("plank") || name.contains("sit-up")) {
-            return "Core"
-        }
-        
+        // Return null - don't guess based on name
         return null
     }
+    
     
     /**
      * Get exercises by workout ID

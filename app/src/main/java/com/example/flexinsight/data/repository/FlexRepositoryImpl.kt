@@ -166,18 +166,19 @@ class FlexRepositoryImpl(
     
     /**
      * Sync all data from API (workouts, routines, exercise templates)
+     * Exercise templates are synced FIRST to ensure muscle group data is available
      */
     override suspend fun syncAllData() {
-        // Sync workouts
-        workoutRepository.syncWorkouts()
-        
-        // Sync routines
-        routineRepository.syncRoutines()
-        
-        // Sync exercise templates (happens automatically when needed)
+        // 1. Sync exercise templates FIRST (needed for accurate muscle group data)
         exerciseRepository.getExerciseTemplateMapping()
         
-        // Invalidate stats cache after sync
+        // 2. Sync workouts
+        workoutRepository.syncWorkouts()
+        
+        // 3. Sync routines
+        routineRepository.syncRoutines()
+        
+        // 4. Invalidate stats cache after sync to recalculate with new data
         statsRepository.invalidateStatsCache()
     }
     
