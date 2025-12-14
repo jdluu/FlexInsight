@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -75,7 +76,6 @@ fun SettingsScreen() {
     var apiKeyError by remember { mutableStateOf<String?>(null) }
     var showWeeklyGoalDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
-    var showUnitsDialog by remember { mutableStateOf(false) }
     var showClearCacheDialog by remember { mutableStateOf(false) }
     
     // Load API key
@@ -176,11 +176,13 @@ fun SettingsScreen() {
                 value = uiState.theme,
                 onClick = { showThemeDialog = true }
             )
-            PreferenceItem(
-                title = "Units",
+            ToggleItem(
+                title = "Use Metric System",
                 icon = Icons.Default.Straighten,
-                value = uiState.units,
-                onClick = { showUnitsDialog = true }
+                checked = uiState.units == "Metric",
+                onToggleChange = { isMetric ->
+                    viewModel.updateUnits(if (isMetric) "Metric" else "Imperial")
+                }
             )
             PreferenceItem(
                 title = "Weekly Goal",
@@ -285,18 +287,6 @@ fun SettingsScreen() {
             onSelect = { theme ->
                 viewModel.updateTheme(theme)
                 showThemeDialog = false
-            }
-        )
-    }
-    
-    // Units Dialog
-    if (showUnitsDialog) {
-        UnitsDialog(
-            currentUnits = uiState.units,
-            onDismiss = { showUnitsDialog = false },
-            onSelect = { units ->
-                viewModel.updateUnits(units)
-                showUnitsDialog = false
             }
         )
     }
@@ -1013,68 +1003,50 @@ fun ThemeDialog(
 }
 
 @Composable
-fun UnitsDialog(
-    currentUnits: String,
-    onDismiss: () -> Unit,
-    onSelect: (String) -> Unit
+fun ToggleItem(
+    title: String,
+    icon: ImageVector,
+    checked: Boolean,
+    onToggleChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val units = listOf("Metric", "Imperial")
-    
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                text = "Units",
-                color = Color.White,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onToggleChange(!checked) },
+        shape = RoundedCornerShape(12.dp),
+        color = SurfaceCardAlt
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                units.forEach { unit ->
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onSelect(unit) },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (unit == currentUnits) Primary.copy(alpha = 0.2f) else SurfaceCardAlt,
-                        border = if (unit == currentUnits) BorderStroke(1.dp, Primary) else null
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = unit,
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                fontWeight = if (unit == currentUnits) FontWeight.Bold else FontWeight.Normal
-                            )
-                            if (unit == currentUnits) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = Primary
-                                )
-                            }
-                        }
-                    }
-                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Text(
+                    text = title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White
+                )
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextSecondary)
-            }
-        },
-        containerColor = SurfaceCardAlt,
-        shape = RoundedCornerShape(16.dp)
-    )
+            Switch(
+                checked = checked,
+                onCheckedChange = onToggleChange
+            )
+        }
+    }
 }
 
 @Composable
