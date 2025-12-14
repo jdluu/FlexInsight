@@ -135,7 +135,7 @@ class StatsRepository(
     /**
      * Get recent PRs
      */
-    fun getRecentPRs(limit: Int = 10): Flow<List<Set>> {
+    fun getRecentPRs(limit: Int = 10): Flow<List<com.example.hevyinsight.data.model.Set>> {
         return setDao.getRecentPRsFlow(limit)
     }
     
@@ -650,7 +650,7 @@ class StatsRepository(
     private suspend fun calculateTotalVolumeOptimized(
         workouts: List<Workout>,
         allExercises: List<Exercise>,
-        allSets: List<Set>
+        allSets: List<com.example.hevyinsight.data.model.Set>
     ): Double {
         // Create maps for efficient lookup
         val exercisesByWorkout = allExercises.groupBy { it.workoutId }
@@ -660,7 +660,7 @@ class StatsRepository(
             val exercises = exercisesByWorkout[workout.id] ?: emptyList()
             exercises.sumOf { exercise ->
                 val sets = setsByExercise[exercise.id] ?: emptyList()
-                sets.sumOf { set ->
+                sets.sumOf { set: com.example.hevyinsight.data.model.Set ->
                     (set.weight ?: 0.0) * (set.reps ?: 0)
                 }
             }

@@ -38,7 +38,8 @@ class HevyRepository(
         setDao = setDao,
         apiKeyManager = apiKeyManager,
         networkMonitor = networkMonitor,
-        apiClient = apiClient
+        apiClient = apiClient,
+        cacheManager = cacheManager
     )
     
     private val routineRepository = RoutineRepository(
@@ -103,7 +104,7 @@ class HevyRepository(
         return statsRepository.calculateWorkoutStats(workout)
     }
     
-    fun getRecentPRs(limit: Int = 10): Flow<List<Set>> {
+    fun getRecentPRs(limit: Int = 10): Flow<List<com.example.hevyinsight.data.model.Set>> {
         return statsRepository.getRecentPRs(limit)
     }
     
