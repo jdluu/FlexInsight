@@ -21,7 +21,7 @@ import com.example.flexinsight.FlexInsightApplication
 import com.example.flexinsight.data.preferences.ApiKeyManager
 import com.example.flexinsight.ui.components.ErrorBanner
 import com.example.flexinsight.ui.components.NetworkStatusIndicator
-import com.example.flexinsight.ui.screens.settings.*
+import com.example.flexinsight.ui.screens.settings.parts.*
 import com.example.flexinsight.ui.theme.*
 import com.example.flexinsight.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch

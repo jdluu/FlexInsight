@@ -1,4 +1,4 @@
-package com.example.flexinsight.ui.screens.history
+package com.example.flexinsight.ui.screens.history.parts
 
 import java.text.SimpleDateFormat
 import java.util.*

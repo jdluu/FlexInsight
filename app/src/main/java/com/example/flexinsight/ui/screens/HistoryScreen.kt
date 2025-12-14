@@ -16,8 +16,8 @@ import androidx.compose.ui.unit.sp
 import com.example.flexinsight.ui.theme.*
 import com.example.flexinsight.ui.utils.rememberUnitPreference
 import com.example.flexinsight.ui.viewmodel.HistoryViewModel
-import com.example.flexinsight.ui.screens.history.components.*
-import com.example.flexinsight.ui.screens.history.formatDateShort
+import com.example.flexinsight.ui.screens.history.parts.*
+import com.example.flexinsight.ui.screens.history.parts.formatDateShort
 
 @Composable
 fun HistoryScreen(

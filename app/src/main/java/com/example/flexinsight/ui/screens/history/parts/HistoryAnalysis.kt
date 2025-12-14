@@ -1,4 +1,4 @@
-package com.example.flexinsight.ui.screens.history.components
+package com.example.flexinsight.ui.screens.history.parts
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

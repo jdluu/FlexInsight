@@ -1,4 +1,4 @@
-package com.example.flexinsight.ui.screens.planner.components
+package com.example.flexinsight.ui.screens.planner.parts
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi

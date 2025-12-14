@@ -1,4 +1,4 @@
-package com.example.flexinsight.ui.screens.history.components
+package com.example.flexinsight.ui.screens.history.parts
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape

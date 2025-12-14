@@ -1,4 +1,4 @@
-package com.example.flexinsight.ui.screens.settings
+package com.example.flexinsight.ui.screens.settings.parts
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

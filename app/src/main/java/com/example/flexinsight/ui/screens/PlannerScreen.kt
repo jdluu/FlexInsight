@@ -17,7 +17,7 @@ import com.example.flexinsight.data.model.PlannedWorkout
 import com.example.flexinsight.ui.theme.*
 import com.example.flexinsight.ui.utils.rememberViewOnlyMode
 import com.example.flexinsight.ui.viewmodel.PlannerViewModel
-import com.example.flexinsight.ui.screens.planner.components.*
+import com.example.flexinsight.ui.screens.planner.parts.*
 import java.util.Calendar
 
 @Composable

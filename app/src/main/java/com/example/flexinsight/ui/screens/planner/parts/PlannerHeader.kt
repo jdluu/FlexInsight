@@ -1,4 +1,4 @@
-package com.example.flexinsight.ui.screens.planner.components
+package com.example.flexinsight.ui.screens.planner.parts
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

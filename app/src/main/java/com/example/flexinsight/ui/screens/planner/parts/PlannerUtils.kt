@@ -1,4 +1,4 @@
-package com.example.flexinsight.ui.screens.planner.components
+package com.example.flexinsight.ui.screens.planner.parts
 
 /**
  * Format duration in minutes as "X min"
