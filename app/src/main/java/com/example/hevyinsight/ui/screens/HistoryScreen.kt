@@ -60,6 +60,7 @@ fun HistoryScreen(
     onNavigateToWorkoutDetail: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val useMetric = rememberUnitPreference()
     
     if (uiState.isLoading) {
         Box(
@@ -128,9 +129,9 @@ fun HistoryScreen(
                 avgVolume = uiState.workoutStats?.averageVolume?.toInt() ?: 0,
                 bestWeek = uiState.workoutStats?.bestWeekDate?.let { 
                     java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault()).format(java.util.Date(it))
-                } ?: "N/A"
+                } ?: "N/A",
+                useMetric = useMetric
             )
-        }
         item {
             TotalVolumeCard(
                 workoutStats = uiState.workoutStats,
@@ -311,9 +312,9 @@ fun AIInsightsCard(
 fun StatsGrid(
     workoutCount: Int = 0,
     avgVolume: Int = 0,
-    bestWeek: String = "N/A"
+    bestWeek: String = "N/A",
+    useMetric: Boolean = false
 ) {
-    val useMetric = rememberUnitPreference()
     val avgVolumeConverted = UnitConverter.convertVolume(avgVolume.toDouble(), useMetric)
     val avgVolumeFormatted = if (avgVolumeConverted >= 1000) {
         "${(avgVolumeConverted / 1000).toInt()}k"

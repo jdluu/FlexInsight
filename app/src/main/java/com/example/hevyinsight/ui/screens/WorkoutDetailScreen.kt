@@ -40,6 +40,7 @@ fun WorkoutDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val viewOnlyMode = rememberViewOnlyMode()
+    val useMetric = rememberUnitPreference()
     
     if (uiState.isLoading) {
         Box(
