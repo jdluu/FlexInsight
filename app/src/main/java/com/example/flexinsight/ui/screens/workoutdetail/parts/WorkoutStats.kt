@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,8 +58,8 @@ fun WorkoutStatsCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCard),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(
             modifier = Modifier
@@ -66,7 +67,7 @@ fun WorkoutStatsCard(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Primary.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             Color.Transparent
                         ),
                         radius = 200f
@@ -92,14 +93,14 @@ fun WorkoutStatsCard(
                     StatItem(repsText, "Reps", modifier = Modifier.weight(1f))
                 }
                 
-                HorizontalDivider(color = Color.White.copy(alpha = 0.1f))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (hasPR) {
-                        TagChip("PR DAY", Primary, Icons.Default.EmojiEvents)
+                        TagChip("PR DAY", MaterialTheme.colorScheme.primary, Icons.Default.EmojiEvents)
                     }
                     TagChip("AI Summary", Color(0xFF9333EA), Icons.Default.AutoAwesome)
                 }
@@ -118,13 +119,13 @@ fun StatItem(value: String, label: String, modifier: Modifier = Modifier) {
             text = value,
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = label.uppercase(),
             fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             letterSpacing = 1.sp
         )
     }
@@ -152,7 +153,7 @@ fun TagChip(text: String, color: Color, icon: ImageVector) {
                 text = text,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

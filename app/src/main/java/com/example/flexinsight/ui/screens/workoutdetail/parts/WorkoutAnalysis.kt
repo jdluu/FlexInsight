@@ -29,7 +29,7 @@ fun AICoachReflectionCard() {
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF111111)),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(
             modifier = Modifier
@@ -37,7 +37,7 @@ fun AICoachReflectionCard() {
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            Primary.copy(alpha = 0.05f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
                             Color.Transparent
                         )
                     )
@@ -75,12 +75,12 @@ fun AICoachReflectionCard() {
                         text = "AI Coach Reflection",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "Great intensity! Your volume is up 5% from last week. Specifically, your Squat strength is trending upwards. Consider resting tomorrow to maximize recovery.",
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.8f),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                         lineHeight = 20.sp
                     )
                 }

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +55,7 @@ fun ExercisesSection(
                 text = "Exercises",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onSurface
             )
             if (!viewOnlyMode) {
                 TextButton(onClick = {}) {
@@ -62,7 +63,7 @@ fun ExercisesSection(
                         text = "Edit workout",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Primary
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -124,8 +125,8 @@ fun ExpandableExerciseCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCard),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Column {
             Row(
@@ -143,14 +144,14 @@ fun ExpandableExerciseCard(
                     Surface(
                         modifier = Modifier.size(40.dp),
                         shape = RoundedCornerShape(8.dp),
-                        color = Color.White.copy(alpha = 0.05f)
+                        color = MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
                                 text = number.toString(),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -159,12 +160,12 @@ fun ExpandableExerciseCard(
                             text = exerciseName,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "$sets sets • $equipment",
                             fontSize = 12.sp,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -176,13 +177,13 @@ fun ExpandableExerciseCard(
                     if (bestSet != null) {
                         Surface(
                             shape = RoundedCornerShape(4.dp),
-                            color = Color.White.copy(alpha = 0.05f)
+                            color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
                             Text(
                                 text = bestSet,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = TextSecondary,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
@@ -190,7 +191,7 @@ fun ExpandableExerciseCard(
                     Icon(
                         imageVector = Icons.Default.ExpandMore,
                         contentDescription = if (expanded) "Collapse" else "Expand",
-                        tint = TextSecondary,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
                             .size(24.dp)
                             .then(
@@ -217,7 +218,7 @@ fun ExpandableExerciseCard(
                             text = "Set",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.width(40.dp),
                             letterSpacing = 1.sp
                         )
@@ -225,7 +226,7 @@ fun ExpandableExerciseCard(
                             text = UnitConverter.getWeightUnit(useMetric),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f),
                             textAlign = TextAlign.Center,
                             letterSpacing = 1.sp
@@ -234,7 +235,7 @@ fun ExpandableExerciseCard(
                             text = "Reps",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f),
                             textAlign = TextAlign.Center,
                             letterSpacing = 1.sp
@@ -243,7 +244,7 @@ fun ExpandableExerciseCard(
                             text = "RPE",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.width(40.dp),
                             textAlign = TextAlign.End,
                             letterSpacing = 1.sp
@@ -265,14 +266,14 @@ fun ExpandableExerciseCard(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                                 contentDescription = null,
-                                tint = Primary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(14.dp)
                             )
                             Text(
                                 text = improvement,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = Primary
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -287,14 +288,14 @@ fun SetRow(set: SetData) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
-        color = if (set.isPR) Primary.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.03f),
-        border = if (set.isPR) BorderStroke(1.dp, Primary.copy(alpha = 0.2f)) else null
+        color = if (set.isPR) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.03f),
+        border = if (set.isPR) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)) else null
     ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .then(
-                        if (set.isPR) Modifier.border(2.dp, Primary, RoundedCornerShape(8.dp))
+                        if (set.isPR) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
                         else Modifier
                     )
             ) {
@@ -309,14 +310,14 @@ fun SetRow(set: SetData) {
                     text = set.number.toString(),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.width(40.dp)
                 )
                 Text(
                     text = set.weight,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center
                 )
@@ -324,7 +325,7 @@ fun SetRow(set: SetData) {
                     text = set.reps,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.weight(1f),
                     textAlign = TextAlign.Center
                 )
@@ -337,14 +338,14 @@ fun SetRow(set: SetData) {
                         Icon(
                             imageVector = Icons.Default.EmojiEvents,
                             contentDescription = null,
-                            tint = Primary,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
                             text = "PR",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Primary
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 } else {
@@ -352,7 +353,7 @@ fun SetRow(set: SetData) {
                         text = set.rpe,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.width(40.dp),
                         textAlign = TextAlign.End
                     )

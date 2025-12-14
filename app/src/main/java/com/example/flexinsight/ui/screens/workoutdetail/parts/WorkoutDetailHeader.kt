@@ -44,7 +44,7 @@ fun WorkoutDetailHeader(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
             Row(
@@ -54,7 +54,7 @@ fun WorkoutDetailHeader(
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "More",
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -72,14 +72,14 @@ fun WorkoutDetailHeader(
                     text = title,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = date,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             IconButton(
@@ -87,12 +87,12 @@ fun WorkoutDetailHeader(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(SurfaceCard)
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
             ) {
                 Icon(
                     imageVector = Icons.Default.Share,
                     contentDescription = "Share",
-                    tint = Primary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
