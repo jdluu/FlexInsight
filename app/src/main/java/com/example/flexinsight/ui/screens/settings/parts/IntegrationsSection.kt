@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,8 +66,8 @@ fun IntegrationItem(
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .then(if (!isToggle) Modifier.clickable(onClick = onClick) else Modifier),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCardAlt),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -89,7 +90,7 @@ fun IntegrationItem(
                             } else {
                                 Modifier.background(
                                     brush = Brush.linearGradient(
-                                        colors = listOf(Color(0xFF3B82F6), Color(0xFF9333EA))
+                                        colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary)
                                     )
                                 )
                             }
@@ -99,7 +100,7 @@ fun IntegrationItem(
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = iconColor ?: Color.White,
+                        tint = iconColor ?: MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -112,7 +113,7 @@ fun IntegrationItem(
                             text = name,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
                         if (badge != null) {
                             Box(
@@ -121,18 +122,18 @@ fun IntegrationItem(
                                     .background(
                                         brush = Brush.linearGradient(
                                             colors = listOf(
-                                                Color(0xFF3B82F6).copy(alpha = 0.2f),
-                                                Color(0xFF9333EA).copy(alpha = 0.2f)
+                                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
                                             )
                                         )
                                     )
-                                    .border(1.dp, Color(0xFF3B82F6).copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
                             ) {
                                 Text(
                                     text = badge.uppercase(),
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF60A5FA),
+                                    color = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                     letterSpacing = 1.sp
                                 )
@@ -144,7 +145,7 @@ fun IntegrationItem(
                             text = if (isConnected) "● $description" else description,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = if (isConnected) Primary else TextSecondary
+                            color = if (isConnected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -155,17 +156,17 @@ fun IntegrationItem(
                     checked = toggleState,
                     onCheckedChange = onToggleChange,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = Primary,
-                        uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = Color.Gray.copy(alpha = 0.3f)
+                        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                        checkedTrackColor = MaterialTheme.colorScheme.primary,
+                        uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
+                        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 )
             } else {
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
                     contentDescription = null,
-                    tint = TextSecondary
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

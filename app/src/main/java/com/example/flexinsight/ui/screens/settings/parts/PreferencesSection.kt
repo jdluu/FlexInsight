@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,8 +45,8 @@ fun PreferenceItem(
             .padding(horizontal = 16.dp, vertical = 4.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCardAlt),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -61,14 +62,14 @@ fun PreferenceItem(
                 Surface(
                     modifier = Modifier.size(48.dp),
                     shape = CircleShape,
-                    color = if (isDestructive) RedAccent.copy(alpha = 0.1f)
-                    else Color.White.copy(alpha = 0.05f)
+                    color = if (isDestructive) MaterialTheme.colorScheme.error.copy(alpha = 0.1f)
+                    else MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = if (isDestructive) RedAccent else Color.White,
+                            tint = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSecondaryContainer,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -77,7 +78,7 @@ fun PreferenceItem(
                     text = title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = if (isDestructive) RedAccent else Color.White
+                    color = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
             
@@ -86,7 +87,7 @@ fun PreferenceItem(
                     text = value ?: "",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontFamily = FontFamily.Monospace
                 )
             } else if (value != null) {
@@ -99,12 +100,12 @@ fun PreferenceItem(
                             text = value,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Primary
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = null,
-                            tint = TextSecondary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     } else {
@@ -112,12 +113,12 @@ fun PreferenceItem(
                             text = value,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Icon(
                             imageVector = Icons.Default.ExpandMore,
                             contentDescription = null,
-                            tint = TextSecondary,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -126,7 +127,7 @@ fun PreferenceItem(
                 Icon(
                     imageVector = if (isDestructive) Icons.AutoMirrored.Filled.OpenInNew else Icons.Default.ChevronRight,
                     contentDescription = null,
-                    tint = TextSecondary
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -148,8 +149,8 @@ fun ToggleItem(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCardAlt),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -165,13 +166,13 @@ fun ToggleItem(
                 Surface(
                     modifier = Modifier.size(48.dp),
                     shape = CircleShape,
-                    color = Color.White.copy(alpha = 0.05f)
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
                             modifier = Modifier.size(24.dp)
                         )
                     }
@@ -180,7 +181,7 @@ fun ToggleItem(
                     text = title,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
             
@@ -188,10 +189,10 @@ fun ToggleItem(
                 checked = checked,
                 onCheckedChange = onToggleChange,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = Primary,
-                    uncheckedThumbColor = Color.White,
-                    uncheckedTrackColor = Color.Gray.copy(alpha = 0.3f)
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurface,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             )
         }
@@ -207,7 +208,7 @@ fun SectionTitle(title: String) {
         text = title,
         fontSize = 12.sp,
         fontWeight = FontWeight.Bold,
-        color = TextSecondary,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         letterSpacing = 1.sp,
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
     )

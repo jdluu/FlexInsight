@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,8 +65,8 @@ fun ProfileSection(
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 shape = CircleShape,
-                color = Color.Gray.copy(alpha = 0.3f),
-                border = BorderStroke(4.dp, SurfaceCardAlt)
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                border = BorderStroke(4.dp, MaterialTheme.colorScheme.secondaryContainer)
             ) {}
             if (!viewOnlyMode) {
                 Surface(
@@ -73,8 +74,8 @@ fun ProfileSection(
                         .align(Alignment.BottomEnd)
                         .size(32.dp),
                     shape = CircleShape,
-                    color = Primary,
-                    border = BorderStroke(4.dp, BackgroundDarkAlt)
+                    color = MaterialTheme.colorScheme.primary,
+                    border = BorderStroke(4.dp, MaterialTheme.colorScheme.background)
                 ) {
                     Box(
                         contentAlignment = Alignment.Center,
@@ -85,7 +86,7 @@ fun ProfileSection(
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = "Edit profile",
-                            tint = BackgroundDarkAlt,
+                            tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -97,13 +98,13 @@ fun ProfileSection(
             text = getDisplayName(profileInfo),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = if (profileInfo?.isProMember == true) "Pro Member" else "Free Member",
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            color = TextSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         
         // Profile stats
@@ -121,13 +122,13 @@ fun ProfileSection(
                         text = formatNumber(profileInfo.totalWorkouts),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "Workouts",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 if (profileInfo.memberSince != null) {
@@ -139,13 +140,13 @@ fun ProfileSection(
                             text = formatMemberSince(profileInfo.memberSince),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = "Member since",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -157,21 +158,21 @@ fun ProfileSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 320.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Primary),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             shape = RoundedCornerShape(12.dp),
             enabled = !isSyncing
         ) {
             if (isSyncing) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = BackgroundDarkAlt,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     strokeWidth = 2.dp
                 )
             } else {
                 Icon(
                     imageVector = Icons.Default.Sync,
                     contentDescription = null,
-                    tint = BackgroundDarkAlt
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
@@ -179,7 +180,7 @@ fun ProfileSection(
                 text = if (isSyncing) "Syncing..." else "Sync Hevy Data",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = BackgroundDarkAlt
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
         
