@@ -63,3 +63,16 @@ data class RoutineResponse(
     }
 }
 
+/**
+ * Paginated response wrapper for routines
+ * Actual API response structure: {"page":1,"page_count":5,"routines":[...]}
+ */
+data class PaginatedRoutineResponse(
+    @SerializedName("page")
+    val page: Int,
+    @SerializedName("page_count")
+    val pageCount: Int,
+    @SerializedName("routines")
+    val routines: List<RoutineResponse>?
+)
+
