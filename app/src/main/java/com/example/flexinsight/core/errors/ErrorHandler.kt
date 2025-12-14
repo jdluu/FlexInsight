@@ -25,13 +25,18 @@ object ErrorHandler {
                 if (throwable.message?.contains("Expected BEGIN_ARRAY") == true ||
                     throwable.message?.contains("Expected BEGIN_OBJECT") == true) {
                     AppLogger.e("JSON deserialization error - API response structure mismatch", throwable, TAG)
-                    ApiError.Server(
-                        message = "Server response format error",
-                        originalError = throwable
-                    )
+                    // ApiError.ServerError.Other(code) is the only subclass that takes a code?
+                    // Or explicit subclass? 
+                    // ApiError.ServerError is sealed.
+                    // We need a specific instance.
+                    // Use ApiError.Unknown for format error if no specific ServerError fits, 
+                    // or define a new one. Or use Other(500).
+                    // ApiError.Server doesn't exist. Use Unknown or ServerError.Other.
+                    // Given the message "Server response format error", let's use Unknown for now as it captures the message best
+                    ApiError.Unknown("Server response format error", throwable)
                 } else {
                     AppLogger.e("Unknown error", throwable, TAG)
-                    ApiError.Unknown(throwable)
+                    ApiError.Unknown(throwable.message ?: "Unknown error", throwable)
                 }
             }
             is SocketTimeoutException -> ApiError.NetworkError.Timeout(30L)
@@ -39,7 +44,8 @@ object ErrorHandler {
             is IOException -> ApiError.NetworkError.ConnectionError(throwable)
             else -> {
                 AppLogger.e("Unknown error", throwable, TAG)
-                ApiError.Unknown(throwable)
+                // ApiError.Unknown takes (errorMessage: String, errorCause: Throwable?)
+                ApiError.Unknown(throwable.message ?: "Unknown error", throwable)
             }
         }
     }
@@ -83,22 +89,24 @@ object ErrorHandler {
         val prefix = if (context.isNotEmpty()) "[$context] " else ""
         
         when (error) {
-            is ApiError.NetworkError -> { // This case was likely intended for the first AppLogger.e call
-                AppLogger.e("$prefix${error.message}", error.cause, TAG)
-            }
-            is ApiError.NetworkError.Timeout, is ApiError.ServerError -> { // Grouping NetworkError.Timeout and ServerError
-                AppLogger.e("$prefix${error.message} (HTTP ${error.httpCode})", tag = TAG)
+            is ApiError.NetworkError, is ApiError.NetworkError.Timeout, is ApiError.ServerError -> {
+                // ServerError and ClientError have httpCode property, NetworkError does not (except indirectly?)
+                // NetworkError does NOT have httpCode. ServerError DOES.
+                // We need to split them or cast carefully.
+                if (error is ApiError.ServerError) {
+                    AppLogger.e("$prefix${error.message} (HTTP ${error.httpCode})", tag = TAG)
+                } else {
+                     AppLogger.e("$prefix${error.message}", tag = TAG)
+                }
             }
             is ApiError.AuthError -> {
                 AppLogger.w("$prefix${error.message} (HTTP ${error.httpCode})", tag = TAG)
             }
             is ApiError.ClientError -> {
                 AppLogger.w("$prefix${error.message} (HTTP ${error.httpCode})", tag = TAG)
-                // Assuming ApiError.ClientError might have validationErrors based on the edit
-                // If not, this line might cause a compilation error and needs adjustment
-                // error.validationErrors?.forEach { (field, message) ->
-                //     AppLogger.d("Validation Error - $field: $message", tag = TAG)
-                // }
+                // ClientError doesn't seem to have validationErrors in the definition I saw?
+                // Checking ApiError.kt again... ClientError subclasses don't show validationErrors. 
+                // It was likely removed or never there. I will remove the validation loop.
             }
             is ApiError.Unknown -> {
                 AppLogger.w("$prefix${error.message}", error.cause, TAG)

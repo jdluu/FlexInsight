@@ -40,9 +40,18 @@ class StatsRepositoryImpl(
             CacheKeys.WORKOUT_STATS,
             CacheTTL.STATS
         )
-        cached?.let { return it }
+        if (cached != null) {
+            return cached
+        }
         
         return withContext(dispatcherProvider.default) {
+            val cachedInContext = cacheManager.get<WorkoutStats>(
+                CacheKeys.WORKOUT_STATS,
+                CacheTTL.STATS
+            )
+            if (cachedInContext != null) {
+                return@withContext cachedInContext
+            }
             val workouts = workoutDao.getAllWorkoutsFlow().first()
         
             if (workouts.isEmpty()) {
@@ -147,7 +156,9 @@ class StatsRepositoryImpl(
         // Check cache
         val cacheKey = "${CacheKeys.PRS_WITH_DETAILS}_$limit"
         val cached = cacheManager.get<List<PRDetails>>(cacheKey, CacheTTL.PRS)
-        cached?.let { return it }
+        if (cached != null) {
+            return@withContext cached
+        }
         
         val prSets = setDao.getRecentPRsFlow(limit).first()
         if (prSets.isEmpty()) {
@@ -194,7 +205,9 @@ class StatsRepositoryImpl(
     override suspend fun getMuscleGroupProgress(weeks: Int): List<MuscleGroupProgress> = withContext(dispatcherProvider.default) {
         val cacheKey = "${CacheKeys.MUSCLE_GROUP_PROGRESS}$weeks"
         val cached = cacheManager.get<List<MuscleGroupProgress>>(cacheKey, CacheTTL.PROGRESS)
-        cached?.let { return it }
+        if (cached != null) {
+            return@withContext cached
+        }
         
         val now = Instant.now()
         val endDate = now.toEpochMilli()
@@ -259,7 +272,9 @@ class StatsRepositoryImpl(
     override suspend fun calculateVolumeTrend(weeks: Int): VolumeTrend = withContext(dispatcherProvider.default) {
         val cacheKey = "${CacheKeys.VOLUME_TREND}_$weeks"
         val cached = cacheManager.get<VolumeTrend>(cacheKey, CacheTTL.PROGRESS)
-        cached?.let { return it }
+        if (cached != null) {
+            return@withContext cached
+        }
         
         val now = Instant.now()
         val currentPeriodEnd = now.toEpochMilli()
@@ -303,7 +318,9 @@ class StatsRepositoryImpl(
     override suspend fun getDurationTrend(weeks: Int): List<DailyDurationData> = withContext(dispatcherProvider.default) {
         val cacheKey = "${CacheKeys.DURATION_TREND}$weeks"
         val cached = cacheManager.get<List<DailyDurationData>>(cacheKey, CacheTTL.PROGRESS)
-        cached?.let { return it }
+        if (cached != null) {
+            return@withContext cached
+        }
         
         val now = Instant.now()
         val endDate = now.toEpochMilli()

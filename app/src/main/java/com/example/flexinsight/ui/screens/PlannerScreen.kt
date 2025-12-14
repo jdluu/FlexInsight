@@ -82,8 +82,7 @@ fun PlannerScreen(
                 Toast.makeText(context, "Moved to tomorrow", Toast.LENGTH_SHORT).show()
                 showRescheduleDialog = null
             },
-            onDismiss = { showRescheduleDialog = null },
-            initialDate = System.currentTimeMillis() // Default to today/now
+            onDismiss = { showRescheduleDialog = null }
         )
     }
     
