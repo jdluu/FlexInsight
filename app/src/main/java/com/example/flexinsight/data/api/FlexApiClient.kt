@@ -1,6 +1,7 @@
 package com.example.flexinsight.data.api
 
 import android.util.Log
+import com.example.flexinsight.core.logger.AppLogger
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -39,10 +40,11 @@ class FlexApiClient {
             
             // Log API errors for debugging (body is already logged by HttpLoggingInterceptor)
             if (!response.isSuccessful) {
-                Log.e(TAG, "API request failed: ${response.code} ${response.message}")
-                Log.e(TAG, "Request URL: ${request.url}")
+                AppLogger.e("API request failed: ${response.code} ${response.message}", tag = TAG)
+                AppLogger.e("Request URL: ${request.url}", tag = TAG)
+                
                 if (response.code == 401) {
-                    Log.e(TAG, "Invalid API key - check your API key in settings")
+                    AppLogger.e("Invalid API key - check your API key in settings", tag = TAG)
                 }
             }
             

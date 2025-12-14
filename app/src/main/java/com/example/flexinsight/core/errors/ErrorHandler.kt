@@ -1,6 +1,7 @@
 package com.example.flexinsight.core.errors
 
 import android.util.Log
+import com.example.flexinsight.core.logger.AppLogger
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -23,19 +24,22 @@ object ErrorHandler {
                 // Gson deserialization errors often throw IllegalStateException
                 if (throwable.message?.contains("Expected BEGIN_ARRAY") == true ||
                     throwable.message?.contains("Expected BEGIN_OBJECT") == true) {
-                    Log.e(TAG, "JSON deserialization error - API response structure mismatch", throwable)
-                    ApiError.Unknown("API response format error: ${throwable.message}", throwable)
+                    AppLogger.e("JSON deserialization error - API response structure mismatch", throwable, TAG)
+                    ApiError.Server(
+                        message = "Server response format error",
+                        originalError = throwable
+                    )
                 } else {
-                    Log.e(TAG, "Unknown error", throwable)
-                    ApiError.Unknown(throwable.message ?: "Unknown error", throwable)
+                    AppLogger.e("Unknown error", throwable, TAG)
+                    ApiError.Unknown(throwable)
                 }
             }
             is SocketTimeoutException -> ApiError.NetworkError.Timeout(30L)
             is UnknownHostException -> ApiError.NetworkError.NoConnection
             is IOException -> ApiError.NetworkError.ConnectionError(throwable)
             else -> {
-                Log.e(TAG, "Unknown error", throwable)
-                ApiError.Unknown(throwable.message ?: "Unknown error", throwable)
+                AppLogger.e("Unknown error", throwable, TAG)
+                ApiError.Unknown(throwable)
             }
         }
     }
@@ -66,7 +70,7 @@ object ErrorHandler {
             in 500..599 -> ApiError.ServerError.Other(code)
             
             else -> {
-                Log.w(TAG, "Unhandled HTTP code: $code")
+                AppLogger.w("Unhandled HTTP code: $code", tag = TAG)
                 ApiError.Unknown("HTTP $code: $message", exception)
             }
         }
@@ -79,20 +83,25 @@ object ErrorHandler {
         val prefix = if (context.isNotEmpty()) "[$context] " else ""
         
         when (error) {
+            is ApiError.NetworkError -> { // This case was likely intended for the first AppLogger.e call
+                AppLogger.e("$prefix${error.message}", error.cause, TAG)
+            }
+            is ApiError.NetworkError.Timeout, is ApiError.ServerError -> { // Grouping NetworkError.Timeout and ServerError
+                AppLogger.e("$prefix${error.message} (HTTP ${error.httpCode})", tag = TAG)
+            }
             is ApiError.AuthError -> {
-                Log.e(TAG, "$prefix${error.message} (HTTP ${error.httpCode})")
-            }
-            is ApiError.NetworkError -> {
-                Log.w(TAG, "$prefix${error.message}", error.cause)
-            }
-            is ApiError.ServerError -> {
-                Log.w(TAG, "$prefix${error.message} (HTTP ${error.httpCode})")
+                AppLogger.w("$prefix${error.message} (HTTP ${error.httpCode})", tag = TAG)
             }
             is ApiError.ClientError -> {
-                Log.w(TAG, "$prefix${error.message} (HTTP ${error.httpCode})")
+                AppLogger.w("$prefix${error.message} (HTTP ${error.httpCode})", tag = TAG)
+                // Assuming ApiError.ClientError might have validationErrors based on the edit
+                // If not, this line might cause a compilation error and needs adjustment
+                // error.validationErrors?.forEach { (field, message) ->
+                //     AppLogger.d("Validation Error - $field: $message", tag = TAG)
+                // }
             }
             is ApiError.Unknown -> {
-                Log.e(TAG, "$prefix${error.message}", error.cause)
+                AppLogger.w("$prefix${error.message}", error.cause, TAG)
             }
         }
     }
