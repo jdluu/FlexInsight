@@ -30,13 +30,13 @@ fun HistoryHeader(onFilterClick: () -> Unit = {}) {
             text = "Workout History",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onBackground
         )
         IconButton(onClick = onFilterClick) {
             Icon(
                 imageVector = Icons.Default.Tune,
                 contentDescription = "Filter",
-                tint = Primary
+                tint = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -51,7 +51,7 @@ fun TabSelector(selectedTab: Int, onTabSelected: (Int) -> Unit) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        color = SurfaceCardAlt
+        color = MaterialTheme.colorScheme.secondaryContainer
     ) {
         Row(
             modifier = Modifier
@@ -63,14 +63,14 @@ fun TabSelector(selectedTab: Int, onTabSelected: (Int) -> Unit) {
                 Surface(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    color = if (selectedTab == index) Primary else Color.Transparent,
+                    color = if (selectedTab == index) MaterialTheme.colorScheme.primary else Color.Transparent,
                     onClick = { onTabSelected(index) }
                 ) {
                     Text(
                         text = tab,
                         fontSize = 14.sp,
                         fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium,
-                        color = if (selectedTab == index) BackgroundDarkAlt else TextSecondary,
+                        color = if (selectedTab == index) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
                         modifier = Modifier.padding(vertical = 12.dp),
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )

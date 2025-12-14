@@ -60,7 +60,7 @@ fun StatCard(value: String, label: String, modifier: Modifier = Modifier, isHigh
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        color = SurfaceCardAlt
+        color = MaterialTheme.colorScheme.secondaryContainer
     ) {
         Column(
             modifier = Modifier
@@ -78,13 +78,13 @@ fun StatCard(value: String, label: String, modifier: Modifier = Modifier, isHigh
                         text = value.substringBefore("k"),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isHighlighted) Primary else Color.White
+                        color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "k",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isHighlighted) Primary else TextSecondary
+                        color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else {
@@ -92,14 +92,14 @@ fun StatCard(value: String, label: String, modifier: Modifier = Modifier, isHigh
                     text = value,
                     fontSize = if (isHighlighted) 20.sp else 32.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isHighlighted) Primary else Color.White
+                    color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
             }
             Text(
                 text = label,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = TextSecondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -117,7 +117,7 @@ fun TotalVolumeCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCardAlt)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Column(
             modifier = Modifier.padding(24.dp),
@@ -133,7 +133,7 @@ fun TotalVolumeCard(
                         text = "Total Volume",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
@@ -144,20 +144,20 @@ fun TotalVolumeCard(
                             text = workoutStats?.let { formatVolumeWithCommas(UnitConverter.convertVolume(it.totalVolume, useMetric)) } ?: "0",
                             fontSize = 32.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = UnitConverter.getWeightUnit(useMetric),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Normal,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
                 if (volumeTrend != null && volumeTrend.percentageChange != 0.0) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = Primary.copy(alpha = 0.1f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -167,14 +167,14 @@ fun TotalVolumeCard(
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                                 contentDescription = null,
-                                tint = Primary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
                                 text = formatPercentageChange(volumeTrend.percentageChange),
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Primary
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -187,7 +187,7 @@ fun TotalVolumeCard(
                     .fillMaxWidth()
                     .height(160.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color.White.copy(alpha = 0.05f))
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
             ) {
                 if (weeklyVolumeData.isNotEmpty()) {
                     val maxVolume = weeklyVolumeData.maxOfOrNull { it.volume } ?: 1.0
@@ -209,7 +209,7 @@ fun TotalVolumeCard(
                                     .width(24.dp)
                                     .height(height)
                                     .clip(RoundedCornerShape(4.dp))
-                                    .background(Primary)
+                                    .background(MaterialTheme.colorScheme.primary)
                             )
                         }
                     }
@@ -231,8 +231,8 @@ fun AIInsightsCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCardAlt),
-        border = BorderStroke(1.dp, Primary.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
     ) {
         Box(
             modifier = Modifier
@@ -240,7 +240,7 @@ fun AIInsightsCard(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Primary.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             Color.Transparent
                         ),
                         radius = 200f
@@ -258,14 +258,14 @@ fun AIInsightsCard(
                     Icon(
                         imageVector = Icons.Default.AutoAwesome,
                         contentDescription = null,
-                        tint = Primary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
                         text = "AI INSIGHTS",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Primary,
+                        color = MaterialTheme.colorScheme.primary,
                         letterSpacing = 1.sp
                     )
                 }
@@ -273,14 +273,14 @@ fun AIInsightsCard(
                     text = "AI Insights coming soon! We're building tools to help you analyze your training patterns.",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     lineHeight = 22.sp
                 )
                 Button(
                     onClick = onAnalyzeClick,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Primary.copy(alpha = 0.1f),
-                        contentColor = Primary
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        contentColor = MaterialTheme.colorScheme.primary
                     ),
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier.wrapContentWidth()

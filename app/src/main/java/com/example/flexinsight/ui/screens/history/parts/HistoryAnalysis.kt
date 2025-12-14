@@ -40,7 +40,7 @@ fun AnalysisBreakdown(
             text = "Analysis Breakdown",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onSurface
         )
         
         Row(
@@ -76,7 +76,7 @@ fun AnalysisCard(
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCardAlt)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Column(
             modifier = Modifier
@@ -88,7 +88,7 @@ fun AnalysisCard(
                 text = title,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onSurface
             )
             
             if (title == "Duration Trend") {
@@ -102,7 +102,7 @@ fun AnalysisCard(
                     text = durationStr,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 if (durationTrend.isNotEmpty()) {
@@ -129,15 +129,15 @@ fun AnalysisCard(
                                         .height(height)
                                         .clip(RoundedCornerShape(6.dp))
                                         .background(
-                                            if (isHighlighted) Primary
-                                            else SurfaceHighlight
+                                            if (isHighlighted) MaterialTheme.colorScheme.primary
+                                            else MaterialTheme.colorScheme.surfaceVariant
                                         )
                                 )
                                 Text(
                                     text = dayData.dayOfWeek,
                                     fontSize = 10.sp,
                                     fontWeight = if (isHighlighted) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isHighlighted) Color.White else TextSecondary
+                                    color = if (isHighlighted) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -146,7 +146,7 @@ fun AnalysisCard(
                     Text(
                         text = "No duration data",
                         fontSize = 12.sp,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else {
@@ -165,15 +165,15 @@ fun AnalysisCard(
                             Icon(
                                 imageVector = Icons.Default.FitnessCenter,
                                 contentDescription = null,
-                                tint = TextSecondary,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(32.dp)
                             )
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                val colors = listOf(Primary, PrimaryDark, Color(0xFF065F24))
+                                val colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
                                 muscleGroupProgress.take(3).forEachIndexed { index, muscle ->
-                                    MuscleLegend(muscle.muscleGroup, colors.getOrElse(index) { Primary })
+                                    MuscleLegend(muscle.muscleGroup, colors.getOrElse(index) { MaterialTheme.colorScheme.primary })
                                 }
                             }
                         }
@@ -181,7 +181,7 @@ fun AnalysisCard(
                         Text(
                             text = "No muscle group data",
                             fontSize = 12.sp,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -206,7 +206,7 @@ fun MuscleLegend(name: String, color: Color) {
             text = name,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

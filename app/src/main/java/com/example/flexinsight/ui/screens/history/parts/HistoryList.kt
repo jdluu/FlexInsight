@@ -51,14 +51,14 @@ fun RecentPRsSection(
                 text = "Recent PRs",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onSurface
             )
             TextButton(onClick = onViewAllClick) {
                 Text(
                     text = "View All",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Primary
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -67,7 +67,7 @@ fun RecentPRsSection(
             Text(
                 text = "No personal records yet. Keep training to set PRs!",
                 fontSize = 14.sp,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 16.dp)
             )
         } else {
@@ -108,20 +108,20 @@ fun EmptyStateMessage(message: String, isPlaceholder: Boolean = false) {
         Surface(
             modifier = Modifier.size(64.dp),
             shape = CircleShape,
-            color = Color.White.copy(alpha = 0.05f)
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = Icons.Default.Info,
                     contentDescription = null,
-                    tint = TextSecondary,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(32.dp)
                 )
             }
         }
         Text(
             text = message,
-            color = TextSecondary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 16.sp,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             fontWeight = FontWeight.Medium
@@ -136,7 +136,7 @@ fun ExerciseHistoryItem(exercise: Exercise) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCardAlt)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Row(
             modifier = Modifier
@@ -152,13 +152,13 @@ fun ExerciseHistoryItem(exercise: Exercise) {
                     text = exercise.name,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 if (!exercise.notes.isNullOrBlank()) {
                     Text(
                         text = exercise.notes,
                         fontSize = 14.sp,
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
@@ -167,12 +167,12 @@ fun ExerciseHistoryItem(exercise: Exercise) {
             if (exercise.restDuration != null && exercise.restDuration > 0) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Color.White.copy(alpha = 0.05f)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
                 ) {
                     Text(
                         text = "${exercise.restDuration}s rest",
                         fontSize = 12.sp,
-                        color = TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -196,7 +196,7 @@ fun PRCard(
             .fillMaxWidth()
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCardAlt)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
     ) {
         Row(
             modifier = Modifier
@@ -208,13 +208,13 @@ fun PRCard(
             Surface(
                 modifier = Modifier.size(48.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = SurfaceHighlight
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = if (muscle == "Chest") Icons.Default.FitnessCenter else Icons.AutoMirrored.Filled.DirectionsRun,
                         contentDescription = null,
-                        tint = if (isNewPR) Primary else TextSecondary,
+                        tint = if (isNewPR) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -228,12 +228,12 @@ fun PRCard(
                     text = exercise,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "$date • $muscle",
                     fontSize = 12.sp,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             
@@ -243,7 +243,7 @@ fun PRCard(
                     .width(64.dp)
                     .height(32.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(Color.White.copy(alpha = 0.05f))
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
             )
             
             Column(
@@ -258,13 +258,13 @@ fun PRCard(
                         text = weight,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = unit,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Normal,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 if (isNewPR) {
@@ -272,13 +272,13 @@ fun PRCard(
                         text = "NEW 1RM",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Primary
+                        color = MaterialTheme.colorScheme.primary
                     )
                 } else {
                     Text(
                         text = "Vol: 4.2k",
                         fontSize = 10.sp,
-                        color = TextSecondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
