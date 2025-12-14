@@ -21,4 +21,6 @@ interface ExerciseRepository {
     suspend fun getExercisesByWorkoutIdSuspend(workoutId: String): List<Exercise>
     
     suspend fun getExerciseById(exerciseId: String): Exercise?
+    
+    suspend fun getExerciseHistory(templateId: String): Result<com.example.flexinsight.data.model.ExerciseHistoryResponse>
 }

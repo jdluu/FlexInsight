@@ -21,6 +21,8 @@ interface WorkoutRepository {
     
     fun getWorkoutCount(): Flow<Int>
     
+    suspend fun getRemoteWorkoutCount(): Result<Int>
+    
     fun getWorkoutsByDateRange(startTimestamp: Long, endTimestamp: Long): Flow<List<Workout>>
     
     suspend fun syncWorkouts(): Result<Unit>

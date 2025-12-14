@@ -137,6 +137,40 @@ class WorkoutRepositoryImpl(
     override fun getWorkoutCount(): Flow<Int> {
         return workoutDao.getWorkoutCountFlow()
     }
+
+    /**
+     * Get remote workout count from API
+     */
+    override suspend fun getRemoteWorkoutCount(): Result<Int> {
+        val apiServiceResult = getApiService()
+        if (apiServiceResult is Result.Error) {
+            return Result.error(apiServiceResult.error)
+        }
+
+        val apiService = (apiServiceResult as Result.Success).data
+        
+        return try {
+            if (!networkMonitor.hasNetworkConnection()) {
+                return Result.error(ApiError.NetworkError.NoConnection)
+            }
+            
+            val response = apiService.getWorkoutCount()
+            if (response.isSuccessful) {
+                val countResponse = response.body()
+                if (countResponse != null) {
+                    Result.success(countResponse.count)
+                } else {
+                    Result.error(ApiError.Unknown("Empty response body"))
+                }
+            } else {
+                 val error = ErrorHandler.handleHttpException(retrofit2.HttpException(response))
+                 Result.error(error)
+            }
+        } catch (e: Exception) {
+            val error = ErrorHandler.handleError(e)
+            Result.error(error)
+        }
+    }
     
     /**
      * Get workouts by date range
@@ -171,10 +205,9 @@ class WorkoutRepositoryImpl(
                 return eventsResult
             }
             // If events endpoint fails (404, etc.), fall through to regular sync
-            // Don't treat this as a critical error - just fallback
         }
         
-        // Fallback to regular workouts endpoint (for initial sync or if events failed)
+        // Fallback to regular workouts endpoint
         val apiService = (apiServiceResult as Result.Success).data
         
         return try {
@@ -214,30 +247,38 @@ class WorkoutRepositoryImpl(
                         }
                     }
                     
-                    // Save workouts, exercises, and sets
-                    workoutsList.forEach { workoutResponse ->
-                        saveWorkoutWithExercisesAndSets(workoutResponse)
-                    }
-                    
-                    // Extract exercise template IDs from workouts for caching
-                    val templateIdToNameMap = mutableMapOf<String, String>()
-                    workoutsList.forEach { workoutResponse ->
-                        workoutResponse.exercises?.forEach { exerciseResponse ->
-                            exerciseResponse.exerciseTemplateId?.let { templateId ->
-                                templateIdToNameMap[templateId] = exerciseResponse.title
+                    // Save workouts (fetch full details for each)
+                    workoutsList.forEach { workoutSummary ->
+                        // Check if we need to fetch details (if not incremental, or if missing locally)
+                        val shouldFetch = !isIncrementalSync || workoutDao.getWorkoutById(workoutSummary.id) == null
+                        
+                        if (shouldFetch) {
+                            try {
+                                val detailResponse = apiService.getWorkoutById(workoutSummary.id)
+                                if (detailResponse.isSuccessful) {
+                                    val fullWorkout = detailResponse.body()
+                                    if (fullWorkout != null) {
+                                        saveWorkoutWithExercisesAndSets(fullWorkout)
+                                        
+                                        // Cache exercise templates if present
+                                        fullWorkout.exercises?.forEach { exercise ->
+                                            exercise.exerciseTemplateId?.let { templateId ->
+                                                // We don't get muscle group here, just name (title), so we cache that mapping
+                                                val cacheKey = CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS
+                                                val currentCache = cacheManager.get<Map<String, String>>(cacheKey, CacheTTL.EXERCISE_TEMPLATES_FROM_EVENTS) ?: emptyMap()
+                                                if (!currentCache.containsKey(templateId)) {
+                                                    cacheManager.put(cacheKey, currentCache + (templateId to exercise.title))
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    com.example.flexinsight.core.logger.AppLogger.e("Failed to fetch details for workout ${workoutSummary.id}")
+                                }
+                            } catch (e: Exception) {
+                                com.example.flexinsight.core.logger.AppLogger.e("Exception fetching details for workout ${workoutSummary.id}: ${e.message}")
                             }
                         }
-                    }
-                    
-                    // Cache exercise template data extracted from workouts
-                    if (templateIdToNameMap.isNotEmpty()) {
-                        val cachedTemplateMap = cacheManager.get<Map<String, String>>(
-                            CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS,
-                            CacheTTL.EXERCISE_TEMPLATES_FROM_EVENTS
-                        ) ?: emptyMap()
-                        
-                        val mergedMap = (cachedTemplateMap + templateIdToNameMap).toMap()
-                        cacheManager.put(CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS, mergedMap)
                     }
                     
                     // Check if there are more pages
@@ -250,7 +291,6 @@ class WorkoutRepositoryImpl(
                         ErrorHandler.handleHttpException(retrofit2.HttpException(response))
                     }
                     
-                    // Invalidate API service on auth error
                     if (error is ApiError.AuthError) {
                         invalidateApiService()
                     }
@@ -330,8 +370,6 @@ class WorkoutRepositoryImpl(
             
             var page = 1
             var hasMore = true
-            val exerciseTemplateIds = mutableSetOf<String>()
-            val templateIdToNameMap = mutableMapOf<String, String>()
             
             while (hasMore) {
                 val response = apiService.getWorkoutEvents(page = page, pageSize = 10, since = sinceParam)
@@ -349,24 +387,37 @@ class WorkoutRepositoryImpl(
                     
                     // Process each event
                     events.forEach { event ->
-                        when (event.type) {
-                            "created", "updated" -> {
-                                // Save workout with exercises and sets
-                                event.workout?.let { workoutResponse ->
-                                    saveWorkoutWithExercisesAndSets(workoutResponse)
-                                    
-                                    // Extract exercise template IDs and names
-                                    workoutResponse.exercises?.forEach { exerciseResponse ->
-                                        exerciseResponse.exerciseTemplateId?.let { templateId ->
-                                            exerciseTemplateIds.add(templateId)
-                                            templateIdToNameMap[templateId] = exerciseResponse.title
+                        val workoutId = event.workoutId
+                        if (workoutId != null) {
+                            when (event.type) {
+                                "created", "updated" -> {
+                                    // Fetch full details for the workout
+                                    try {
+                                        val detailResponse = apiService.getWorkoutById(workoutId)
+                                        if (detailResponse.isSuccessful) {
+                                            val fullWorkout = detailResponse.body()
+                                            if (fullWorkout != null) {
+                                                saveWorkoutWithExercisesAndSets(fullWorkout)
+                                                
+                                                // Cache exercise templates
+                                                fullWorkout.exercises?.forEach { exercise ->
+                                                    exercise.exerciseTemplateId?.let { templateId ->
+                                                        val cacheKey = CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS
+                                                        val currentCache = cacheManager.get<Map<String, String>>(cacheKey, CacheTTL.EXERCISE_TEMPLATES_FROM_EVENTS) ?: emptyMap()
+                                                        if (!currentCache.containsKey(templateId)) {
+                                                            cacheManager.put(cacheKey, currentCache + (templateId to exercise.title))
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            com.example.flexinsight.core.logger.AppLogger.e("Failed to fetch details for event workout $workoutId")
                                         }
+                                    } catch (e: Exception) {
+                                         com.example.flexinsight.core.logger.AppLogger.e("Exception fetching details for event workout $workoutId: ${e.message}")
                                     }
                                 }
-                            }
-                            "deleted" -> {
-                                // Remove workout from database (cascade delete will handle exercises and sets)
-                                event.workout?.id?.let { workoutId ->
+                                "deleted" -> {
                                     workoutDao.deleteWorkoutById(workoutId)
                                 }
                             }
@@ -383,26 +434,12 @@ class WorkoutRepositoryImpl(
                         ErrorHandler.handleHttpException(retrofit2.HttpException(response))
                     }
                     
-                    // Invalidate API service on auth error
                     if (error is ApiError.AuthError) {
                         invalidateApiService()
                     }
                     
                     return Result.error(error)
                 }
-            }
-            
-            // Cache exercise template data extracted from events
-            // Build a map of exercise_template_id -> exercise_name
-            if (templateIdToNameMap.isNotEmpty()) {
-                val cachedTemplateMap: Map<String, String> = cacheManager.get<Map<String, String>>(
-                    CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS,
-                    CacheTTL.EXERCISE_TEMPLATES_FROM_EVENTS
-                ) ?: emptyMap()
-                
-                // Merge with existing cache (new data takes precedence)
-                val mergedMap: Map<String, String> = cachedTemplateMap + templateIdToNameMap
-                cacheManager.put(CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS, mergedMap)
             }
             
             Result.success(Unit)

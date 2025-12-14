@@ -254,4 +254,37 @@ class ExerciseRepositoryImpl(
     override suspend fun getExerciseById(exerciseId: String): Exercise? {
         return exerciseDao.getExerciseById(exerciseId)
     }
+
+    /**
+     * Get exercise history from API
+     */
+    override suspend fun getExerciseHistory(templateId: String): Result<com.example.flexinsight.data.model.ExerciseHistoryResponse> {
+        val apiServiceResult = getApiService()
+        if (apiServiceResult is Result.Error) {
+            return Result.error(apiServiceResult.error)
+        }
+        
+        if (!networkMonitor.hasNetworkConnection()) {
+            return Result.error(ApiError.NetworkError.NoConnection)
+        }
+
+        val apiService = (apiServiceResult as Result.Success).data
+        
+        return try {
+            val response = apiService.getExerciseHistory(templateId)
+            
+            if (response.isSuccessful) {
+                val historyResponse = response.body() ?: return Result.error(
+                    ApiError.Unknown("Empty response body")
+                )
+                Result.success(historyResponse)
+            } else {
+                val error = ErrorHandler.handleHttpException(retrofit2.HttpException(response))
+                Result.error(error)
+            }
+        } catch (e: Exception) {
+            val error = ErrorHandler.handleError(e)
+            Result.error(error)
+        }
+    }
 }

@@ -516,9 +516,9 @@ class StatsRepositoryImpl(
     /**
      * Get profile information
      */
-    override suspend fun getProfileInfo(hasApiKey: Boolean): ProfileInfo = withContext(dispatcherProvider.default) {
+    override suspend fun getProfileInfo(hasApiKey: Boolean, remoteWorkoutCount: Int?): ProfileInfo = withContext(dispatcherProvider.default) {
         val workouts = workoutDao.getAllWorkoutsFlow().first()
-        val totalWorkouts = workouts.size
+        val totalWorkouts = remoteWorkoutCount ?: workouts.size
         val memberSince = getMemberSinceDate()
         val accountAgeDays = calculateAccountAgeDays()
         

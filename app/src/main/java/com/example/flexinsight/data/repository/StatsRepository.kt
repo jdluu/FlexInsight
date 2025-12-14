@@ -39,5 +39,5 @@ interface StatsRepository {
     
     suspend fun calculateAccountAgeDays(): Int
     
-    suspend fun getProfileInfo(hasApiKey: Boolean): ProfileInfo
+    suspend fun getProfileInfo(hasApiKey: Boolean, remoteWorkoutCount: Int? = null): ProfileInfo
 }
