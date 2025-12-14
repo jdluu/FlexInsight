@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -106,13 +107,27 @@ fun WorkoutListSection(
         }
         
         if (selectedDayWorkouts.isNotEmpty()) {
-            Text(
-                text = "Long press to reschedule",
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
-                textAlign = TextAlign.Center
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.TouchApp,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Long press to reschedule",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
