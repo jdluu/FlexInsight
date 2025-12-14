@@ -37,7 +37,6 @@ data class SetData(
 @Composable
 fun ExercisesSection(
     exercisesWithSets: List<ExerciseWithSets>,
-    viewOnlyMode: Boolean = false,
     useMetric: Boolean = false
 ) {
     Column(
@@ -46,28 +45,12 @@ fun ExercisesSection(
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Exercises",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            if (!viewOnlyMode) {
-                TextButton(onClick = {}) {
-                    Text(
-                        text = "Edit workout",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-        }
+        Text(
+            text = "Exercises",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
         
         exercisesWithSets.forEachIndexed { index, exerciseWithSets ->
             val exercise = exerciseWithSets.exercise

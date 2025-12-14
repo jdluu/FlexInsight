@@ -109,7 +109,6 @@ fun SettingsScreen() {
                 profileInfo = uiState.profileInfo,
                 syncState = uiState.syncState,
                 syncError = uiState.syncError,
-                viewOnlyMode = uiState.viewOnlyMode,
                 onSyncClick = { viewModel.syncData() },
                 onEditProfileClick = { showEditProfileDialog = true }
             )
@@ -185,16 +184,6 @@ fun SettingsScreen() {
                 onClick = {
                     Toast.makeText(context, "Notifications features coming soon!", Toast.LENGTH_SHORT).show()
                 }
-            )
-            IntegrationItem(
-                name = "View Only Mode",
-                description = "Hide edit/create buttons",
-                icon = Icons.Default.Visibility,
-                iconColor = MaterialTheme.colorScheme.secondary,
-                isConnected = false,
-                isToggle = true,
-                toggleState = uiState.viewOnlyMode,
-                onToggleChange = { viewModel.updateViewOnlyMode(it) }
             )
         }
         item {

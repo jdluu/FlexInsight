@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flexinsight.data.model.PlannedWorkout
 import com.example.flexinsight.ui.theme.*
-import com.example.flexinsight.ui.utils.rememberViewOnlyMode
 import com.example.flexinsight.ui.viewmodel.PlannerViewModel
 import com.example.flexinsight.ui.screens.planner.parts.*
 import java.util.Calendar
@@ -25,7 +24,6 @@ fun PlannerScreen(
     viewModel: PlannerViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val viewOnlyMode = rememberViewOnlyMode()
     
     if (uiState.isLoading) {
         Box(
@@ -94,12 +92,7 @@ fun PlannerScreen(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         item {
-            PlannerHeader(
-                viewOnlyMode = viewOnlyMode,
-                onAddWorkout = {
-                    Toast.makeText(context, "Create Workout feature coming soon", Toast.LENGTH_SHORT).show()
-                }
-            )
+            PlannerHeader()
         }
         item {
             WeeklyGoalCard(weeklyGoalProgress = uiState.weeklyGoalProgress)

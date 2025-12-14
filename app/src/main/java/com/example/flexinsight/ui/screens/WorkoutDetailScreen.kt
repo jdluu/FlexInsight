@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.flexinsight.ui.theme.*
-import com.example.flexinsight.ui.utils.rememberViewOnlyMode
 import com.example.flexinsight.ui.utils.rememberUnitPreference
 import com.example.flexinsight.ui.viewmodel.WorkoutDetailViewModel
 import androidx.compose.runtime.collectAsState
@@ -25,7 +24,6 @@ fun WorkoutDetailScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val viewOnlyMode = rememberViewOnlyMode()
     val useMetric = rememberUnitPreference()
     
     if (uiState.isLoading) {
@@ -114,7 +112,6 @@ fun WorkoutDetailScreen(
         item {
             ExercisesSection(
                 exercisesWithSets = uiState.exercisesWithSets,
-                viewOnlyMode = viewOnlyMode,
                 useMetric = useMetric
             )
         }

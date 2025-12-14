@@ -24,7 +24,6 @@ import com.example.flexinsight.ui.screens.dashboard.parts.*
 import com.example.flexinsight.ui.theme.BackgroundDark
 import com.example.flexinsight.ui.theme.Primary
 import com.example.flexinsight.ui.utils.rememberUnitPreference
-import com.example.flexinsight.ui.utils.rememberViewOnlyMode
 import com.example.flexinsight.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.flow.flowOf
 
@@ -39,7 +38,6 @@ fun DashboardScreen(
     onNavigateToSettings: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val viewOnlyMode = rememberViewOnlyMode()
     val useMetric = rememberUnitPreference()
     val listState = rememberLazyListState()
     var isRefreshing by remember { mutableStateOf(false) }
@@ -149,14 +147,6 @@ fun DashboardScreen(
                 DailyInsightCard(
                     onChatClick = { onNavigateToAITrainer() }
                 )
-            }
-            if (!viewOnlyMode) {
-                item {
-                    QuickActionsGrid(
-                        onStartClick = { onNavigateToPlanner() },
-                        onAnalyticsClick = { onNavigateToHistory() }
-                    )
-                }
             }
         }
         

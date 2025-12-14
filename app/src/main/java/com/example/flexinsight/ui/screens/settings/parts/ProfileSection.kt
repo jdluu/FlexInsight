@@ -38,7 +38,6 @@ import java.util.Locale
  * @param profileInfo User profile information
  * @param syncState Current synchronization state
  * @param syncError Synchronization error if any
- * @param viewOnlyMode Whether the app is in view-only mode
  * @param onSyncClick Callback when sync button is clicked
  * @param onEditProfileClick Callback when edit profile is clicked
  */
@@ -47,7 +46,6 @@ fun ProfileSection(
     profileInfo: ProfileInfo?,
     syncState: LoadingState,
     syncError: UiError?,
-    viewOnlyMode: Boolean,
     onSyncClick: () -> Unit,
     onEditProfileClick: () -> Unit
 ) {
@@ -68,28 +66,27 @@ fun ProfileSection(
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 border = BorderStroke(4.dp, MaterialTheme.colorScheme.secondaryContainer)
             ) {}
-            if (!viewOnlyMode) {
-                Surface(
+            // Edit profile button - always visible (edits local display name)
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .size(32.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary,
+                border = BorderStroke(4.dp, MaterialTheme.colorScheme.background)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(32.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
-                    border = BorderStroke(4.dp, MaterialTheme.colorScheme.background)
+                        .fillMaxSize()
+                        .clickable(onClick = onEditProfileClick)
                 ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clickable(onClick = onEditProfileClick)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit profile",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit profile",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
         }

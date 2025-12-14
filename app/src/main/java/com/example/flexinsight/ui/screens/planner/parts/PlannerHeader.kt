@@ -20,10 +20,7 @@ import com.example.flexinsight.ui.theme.Primary
 import com.example.flexinsight.ui.theme.TextSecondary
 
 @Composable
-fun PlannerHeader(
-    viewOnlyMode: Boolean = false,
-    onAddWorkout: () -> Unit = {}
-) {
+fun PlannerHeader() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -37,20 +34,6 @@ fun PlannerHeader(
             fontWeight = FontWeight.ExtraBold,
             color = MaterialTheme.colorScheme.onBackground
         )
-        if (!viewOnlyMode) {
-            FloatingActionButton(
-                onClick = onAddWorkout,
-                modifier = Modifier.size(48.dp),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add workout",
-                    modifier = Modifier.size(28.dp)
-                )
-            }
-        }
     }
 }
 

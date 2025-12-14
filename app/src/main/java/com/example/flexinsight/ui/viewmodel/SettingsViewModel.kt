@@ -23,7 +23,6 @@ data class SettingsUiState(
     val weeklyGoal: Int = 5,
     val theme: String = "System",
     val units: String = "Imperial",
-    val viewOnlyMode: Boolean = false,
     val syncState: LoadingState = LoadingState.Idle,
     val syncError: UiError? = null
 ) {
@@ -80,12 +79,6 @@ class SettingsViewModel(
                     "Imperial"
                 }
                 
-                val viewOnlyMode = try {
-                    userPreferencesManager.getViewOnlyMode()
-                } catch (e: Exception) {
-                    false
-                }
-                
                 val displayName = try {
                     userPreferencesManager.getDisplayName()
                 } catch (e: Exception) {
@@ -105,7 +98,6 @@ class SettingsViewModel(
                     weeklyGoal = weeklyGoal,
                     theme = theme,
                     units = units,
-                    viewOnlyMode = viewOnlyMode,
                     error = null
                 )
             } catch (e: Exception) {
@@ -168,14 +160,7 @@ class SettingsViewModel(
         }
     }
     
-    fun updateViewOnlyMode(enabled: Boolean) {
-        safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
-        }) {
-            userPreferencesManager.setViewOnlyMode(enabled)
-            _uiState.value = _uiState.value.copy(viewOnlyMode = enabled)
-        }
-    }
+
     
     fun clearCache() {
         safeLaunch(onError = { apiError ->
