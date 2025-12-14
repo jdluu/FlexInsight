@@ -60,20 +60,39 @@ fun TabSelector(selectedTab: Int, onTabSelected: (Int) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             tabs.forEachIndexed { index, tab ->
+                val isComingSoon = index > 0 // Exercises and Compare tabs
                 Surface(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    color = if (selectedTab == index) MaterialTheme.colorScheme.primary else Color.Transparent,
-                    onClick = { onTabSelected(index) }
+                    color = if (selectedTab == index) MaterialTheme.colorScheme.primary 
+                           else if (isComingSoon) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                           else Color.Transparent,
+                    onClick = { if (!isComingSoon) onTabSelected(index) }
                 ) {
-                    Text(
-                        text = tab,
-                        fontSize = 14.sp,
-                        fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium,
-                        color = if (selectedTab == index) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
+                    Column(
                         modifier = Modifier.padding(vertical = 12.dp),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = tab,
+                            fontSize = 14.sp,
+                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium,
+                            color = if (selectedTab == index) MaterialTheme.colorScheme.onPrimary 
+                                   else if (isComingSoon) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                   else MaterialTheme.colorScheme.onSecondaryContainer,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        if (isComingSoon) {
+                            Text(
+                                text = "Soon",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
         }
