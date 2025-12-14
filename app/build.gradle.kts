@@ -6,13 +6,13 @@ plugins {
 }
 
 android {
-    namespace = "com.example.hevyinsight"
+    namespace = "com.example.flexinsight"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.hevyinsight"
+        applicationId = "com.example.flexinsight"
         minSdk = 36
         targetSdk = 36
         versionCode = 1

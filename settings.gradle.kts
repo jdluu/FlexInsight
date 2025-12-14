@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "HevyInsight"
+rootProject.name = "FlexInsight"
 include(":app")
