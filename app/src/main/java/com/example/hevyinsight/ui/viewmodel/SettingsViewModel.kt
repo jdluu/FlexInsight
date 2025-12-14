@@ -21,7 +21,7 @@ data class SettingsUiState(
     val profileInfo: ProfileInfo? = null,
     val weeklyGoal: Int = 5,
     val theme: String = "Dark",
-    val units: String = "Metric",
+    val units: String = "Imperial",
     val viewOnlyMode: Boolean = false,
     val syncState: LoadingState = LoadingState.Idle,
     val syncError: UiError? = null
@@ -76,7 +76,7 @@ class SettingsViewModel(
                 val units = try {
                     userPreferencesManager.getUnits()
                 } catch (e: Exception) {
-                    "Metric"
+                    "Imperial"
                 }
                 
                 val viewOnlyMode = try {
