@@ -107,7 +107,9 @@ fun SettingsScreen() {
         }
         item {
             // Network status indicator
-            val networkState by application.networkMonitor.networkState.collectAsState()
+            val networkState by application.networkMonitor.networkState.collectAsState(
+                initial = com.example.hevyinsight.core.network.NetworkState.Unknown
+            )
             NetworkStatusIndicator(
                 networkState = networkState,
                 modifier = Modifier
@@ -835,9 +837,10 @@ fun ApiKeyDialog(
                     ),
                     singleLine = true
                 )
-                if (error != null) {
+                val errorText = error
+                if (errorText != null) {
                     Text(
-                        text = error,
+                        text = errorText,
                         color = RedAccent,
                         fontSize = 12.sp
                     )
@@ -909,9 +912,10 @@ fun WeeklyGoalDialog(
                     singleLine = true,
                     keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
-                if (error != null) {
+                val errorText = error
+                if (errorText != null) {
                     Text(
-                        text = error,
+                        text = errorText,
                         color = RedAccent,
                         fontSize = 12.sp
                     )

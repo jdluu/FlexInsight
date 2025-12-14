@@ -108,6 +108,18 @@ fun DashboardScreen(
         return
     }
     
+    // Network status indicator - get context and application outside LazyColumn
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val application = context.applicationContext as? com.example.hevyinsight.HevyInsightApplication
+    val networkStateFlow = remember(application) {
+        if (application != null) {
+            application.networkMonitor.networkState
+        } else {
+            kotlinx.coroutines.flow.flowOf(com.example.hevyinsight.core.network.NetworkState.Unknown)
+        }
+    }
+    val networkState by networkStateFlow.collectAsState(initial = com.example.hevyinsight.core.network.NetworkState.Unknown)
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -124,17 +136,6 @@ fun DashboardScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-        // Network status indicator
-        val context = androidx.compose.ui.platform.LocalContext.current
-        val application = context.applicationContext as? com.example.hevyinsight.HevyInsightApplication
-        val networkState by remember {
-            if (application != null) {
-                application.networkMonitor.networkState
-            } else {
-                kotlinx.coroutines.flow.flowOf(com.example.hevyinsight.core.network.NetworkState.Unknown)
-            }
-        }.collectAsState(initial = com.example.hevyinsight.core.network.NetworkState.Unknown)
-        
         if (networkState is com.example.hevyinsight.core.network.NetworkState.Unavailable) {
             item {
                 NetworkStatusIndicator(

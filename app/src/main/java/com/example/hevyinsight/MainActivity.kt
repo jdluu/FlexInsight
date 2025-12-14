@@ -143,9 +143,10 @@ fun MainScreen() {
                         ),
                         singleLine = true
                     )
-                    if (error != null) {
+                    val errorText = error
+                    if (errorText != null) {
                         Text(
-                            text = error,
+                            text = errorText,
                             color = com.example.hevyinsight.ui.theme.RedAccent,
                             fontSize = 12.sp
                         )
