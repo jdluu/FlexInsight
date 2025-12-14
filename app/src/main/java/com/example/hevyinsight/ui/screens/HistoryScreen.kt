@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hevyinsight.ui.theme.*
+import com.example.hevyinsight.ui.utils.rememberUnitPreference
+import com.example.hevyinsight.ui.utils.UnitConverter
 import com.example.hevyinsight.ui.viewmodel.HistoryViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -116,7 +118,8 @@ fun HistoryScreen(
         item {
             AIInsightsCard(
                 volumeTrend = uiState.volumeTrend,
-                muscleGroupProgress = uiState.muscleGroupProgress
+                muscleGroupProgress = uiState.muscleGroupProgress,
+                useMetric = useMetric
             )
         }
         item {
@@ -132,7 +135,8 @@ fun HistoryScreen(
             TotalVolumeCard(
                 workoutStats = uiState.workoutStats,
                 volumeTrend = uiState.volumeTrend,
-                weeklyVolumeData = uiState.weeklyVolumeData
+                weeklyVolumeData = uiState.weeklyVolumeData,
+                useMetric = useMetric
             )
         }
         item {
@@ -217,7 +221,8 @@ fun TabSelector(selectedTab: Int, onTabSelected: (Int) -> Unit) {
 @Composable
 fun AIInsightsCard(
     volumeTrend: com.example.hevyinsight.data.model.VolumeTrend? = null,
-    muscleGroupProgress: List<com.example.hevyinsight.data.model.MuscleGroupProgress> = emptyList()
+    muscleGroupProgress: List<com.example.hevyinsight.data.model.MuscleGroupProgress> = emptyList(),
+    useMetric: Boolean = false
 ) {
     Card(
         modifier = Modifier
@@ -269,12 +274,9 @@ fun AIInsightsCard(
                         }
                         muscleGroupProgress.isNotEmpty() -> {
                             val topMuscle = muscleGroupProgress.first()
-                            val volumeStr = if (topMuscle.volume >= 1000) {
-                                String.format("%.1fk", topMuscle.volume / 1000)
-                            } else {
-                                String.format("%.0f", topMuscle.volume)
-                            }
-                            "Your ${topMuscle.muscleGroup} volume is $volumeStr lbs. Focus on balanced training across all muscle groups."
+                            val volumeStr = UnitConverter.formatVolume(topMuscle.volume, useMetric)
+                            val unit = UnitConverter.getWeightUnit(useMetric)
+                            "Your ${topMuscle.muscleGroup} volume is $volumeStr $unit. Focus on balanced training across all muscle groups."
                         }
                         else -> {
                             "Keep tracking your workouts to see insights and progress over time!"
@@ -311,6 +313,15 @@ fun StatsGrid(
     avgVolume: Int = 0,
     bestWeek: String = "N/A"
 ) {
+    val useMetric = rememberUnitPreference()
+    val avgVolumeConverted = UnitConverter.convertVolume(avgVolume.toDouble(), useMetric)
+    val avgVolumeFormatted = if (avgVolumeConverted >= 1000) {
+        "${(avgVolumeConverted / 1000).toInt()}k"
+    } else {
+        avgVolumeConverted.toInt().toString()
+    }
+    val unitLabel = UnitConverter.getWeightUnit(useMetric)
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -318,7 +329,7 @@ fun StatsGrid(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         StatCard("$workoutCount", "Workouts", modifier = Modifier.weight(1f))
-        StatCard("${avgVolume / 1000}k", "Avg Vol (kg)", modifier = Modifier.weight(1f))
+        StatCard(avgVolumeFormatted, "Avg Vol ($unitLabel)", modifier = Modifier.weight(1f))
         StatCard(bestWeek, "Best Week", modifier = Modifier.weight(1f), isHighlighted = true)
     }
 }
@@ -377,7 +388,8 @@ fun StatCard(value: String, label: String, modifier: Modifier = Modifier, isHigh
 fun TotalVolumeCard(
     workoutStats: com.example.hevyinsight.data.model.WorkoutStats? = null,
     volumeTrend: com.example.hevyinsight.data.model.VolumeTrend? = null,
-    weeklyVolumeData: List<com.example.hevyinsight.data.model.WeeklyVolumeData> = emptyList()
+    weeklyVolumeData: List<com.example.hevyinsight.data.model.WeeklyVolumeData> = emptyList(),
+    useMetric: Boolean = false
 ) {
     Card(
         modifier = Modifier
@@ -408,13 +420,13 @@ fun TotalVolumeCard(
                             verticalAlignment = Alignment.Bottom
                         ) {
                             Text(
-                                text = workoutStats?.let { formatVolumeWithCommas(it.totalVolume) } ?: "0",
+                                text = workoutStats?.let { UnitConverter.formatVolumeWithCommas(it.totalVolume, useMetric) } ?: "0",
                                 fontSize = 32.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
                             Text(
-                                text = "kg",
+                                text = UnitConverter.getWeightUnit(useMetric),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = TextSecondary
@@ -706,6 +718,8 @@ fun RecentPRsSection(
     prsWithDetails: List<com.example.hevyinsight.data.model.PRDetails> = emptyList(),
     onNavigateToWorkoutDetail: (String) -> Unit = {}
 ) {
+    val useMetric = rememberUnitPreference()
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -750,12 +764,13 @@ fun RecentPRsSection(
                 
                 prsWithDetails.forEach { prDetails ->
                     val isNewPR = newestPRPerExercise[prDetails.exerciseName]?.setId == prDetails.setId
+                    val convertedWeight = UnitConverter.convertWeight(prDetails.weight, useMetric)
                     PRCard(
                         exercise = prDetails.exerciseName,
                         date = formatDateShort(prDetails.date),
                         muscle = prDetails.muscleGroup,
-                        weight = prDetails.weight.toInt().toString(),
-                        unit = "lbs",
+                        weight = convertedWeight?.toInt()?.toString() ?: "-",
+                        unit = UnitConverter.getWeightUnit(useMetric),
                         isNewPR = isNewPR,
                         onClick = { onNavigateToWorkoutDetail(prDetails.workoutId) }
                     )
