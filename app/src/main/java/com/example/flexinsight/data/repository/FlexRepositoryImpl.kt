@@ -53,6 +53,10 @@ class FlexRepositoryImpl(
         return exerciseRepository.getAllExercises()
     }
     
+    override suspend fun getExerciseHistory(templateId: String): Result<ExerciseHistoryResponse> {
+        return exerciseRepository.getExerciseHistory(templateId)
+    }
+    
     override suspend fun getWorkoutById(workoutId: String): Workout? {
         return when (val result = workoutRepository.getWorkoutById(workoutId)) {
             is Result.Success -> result.data
@@ -140,7 +144,14 @@ class FlexRepositoryImpl(
     
     override suspend fun getProfileInfo(): ProfileInfo {
         val hasApiKey = apiKeyManager.hasApiKey()
-        return statsRepository.getProfileInfo(hasApiKey)
+        
+        // Try getting remote count if authorized and network available
+        val remoteCount = if (hasApiKey) {
+             val result = workoutRepository.getRemoteWorkoutCount()
+             if (result is Result.Success) result.data else null
+        } else null
+        
+        return statsRepository.getProfileInfo(hasApiKey, remoteCount)
     }
     
     // Routine operations
@@ -153,6 +164,13 @@ class FlexRepositoryImpl(
         return when (val result = routineRepository.getRoutineById(routineId)) {
             is Result.Success -> result.data
             is Result.Error -> null
+        }
+    }
+
+    override suspend fun getRoutineFolders(): List<RoutineFolder> {
+        return when (val result = routineRepository.getRoutineFolders()) {
+            is Result.Success -> result.data
+            is Result.Error -> emptyList()
         }
     }
     

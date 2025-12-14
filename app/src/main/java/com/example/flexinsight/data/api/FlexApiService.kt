@@ -23,7 +23,7 @@ interface FlexApiService {
     @GET("v1/workouts")
     suspend fun getWorkouts(
         @Query("page") page: Int,
-        @Query("per_page") perPage: Int
+        @Query("pageSize") pageSize: Int
     ): Response<PaginatedWorkoutResponse>
     
     /**
@@ -100,6 +100,18 @@ interface FlexApiService {
     suspend fun getRoutineById(
         @Path("routineId") routineId: String
     ): Response<RoutineResponse>
+
+    /**
+     * Get routine folders
+     * API key is added automatically by the interceptor
+     * @param page Page number (default: 1)
+     * @param pageSize Number of items per page (default: 50)
+     */
+    @GET("v1/routine_folders")
+    suspend fun getRoutineFolders(
+        @Query("page") page: Int = 1,
+        @Query("pageSize") pageSize: Int = 50
+    ): Response<com.example.flexinsight.data.model.PaginatedRoutineFolderResponse>
 }
 
 /**

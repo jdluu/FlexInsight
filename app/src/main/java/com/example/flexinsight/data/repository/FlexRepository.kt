@@ -17,7 +17,9 @@ interface FlexRepository {
     // Workout operations
     fun getWorkouts(): Flow<List<Workout>>
     fun getRecentWorkouts(limit: Int = 10): Flow<List<Workout>>
+
     fun getAllExercises(): Flow<List<Exercise>>
+    suspend fun getExerciseHistory(templateId: String): Result<ExerciseHistoryResponse>
     suspend fun getWorkoutById(workoutId: String): Workout?
     fun getWorkoutByIdFlow(workoutId: String): Flow<Workout?>
     fun getWorkoutCount(): Flow<Int>
@@ -45,6 +47,7 @@ interface FlexRepository {
     // Routine operations
     fun getRoutines(): Flow<List<Routine>>
     suspend fun getRoutineById(routineId: String): Routine?
+    suspend fun getRoutineFolders(): List<RoutineFolder>
     
     // Sync operations
     suspend fun syncAllData()
