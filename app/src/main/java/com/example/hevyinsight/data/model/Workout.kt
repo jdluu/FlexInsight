@@ -103,3 +103,27 @@ data class PaginatedWorkoutResponse(
     val workouts: List<WorkoutResponse>?
 )
 
+/**
+ * Response for workout events endpoint
+ * Returns paginated list of workout events (created, updated, deleted) since a given date
+ */
+data class PaginatedWorkoutEventsResponse(
+    @SerializedName("page")
+    val page: Int,
+    @SerializedName("page_count")
+    val pageCount: Int,
+    @SerializedName("events")
+    val events: List<WorkoutEvent>?
+)
+
+/**
+ * Individual workout event (created, updated, or deleted)
+ * Per API docs: events can be "created", "updated", or "deleted"
+ */
+data class WorkoutEvent(
+    @SerializedName("type")
+    val type: String, // "created", "updated", or "deleted"
+    @SerializedName("workout")
+    val workout: WorkoutResponse?  // Full workout data embedded in event (null for deleted events)
+)
+

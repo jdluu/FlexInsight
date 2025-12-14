@@ -9,9 +9,13 @@ import com.example.hevyinsight.data.api.HevyApiService
 import com.example.hevyinsight.data.local.dao.ExerciseDao
 import com.example.hevyinsight.data.local.dao.SetDao
 import com.example.hevyinsight.data.local.dao.WorkoutDao
+import com.example.hevyinsight.data.cache.CacheKeys
+import com.example.hevyinsight.data.cache.CacheManager
+import com.example.hevyinsight.data.cache.CacheTTL
 import com.example.hevyinsight.data.model.Exercise
 import com.example.hevyinsight.data.model.Set
 import com.example.hevyinsight.data.model.Workout
+import com.example.hevyinsight.data.model.WorkoutEvent
 import com.example.hevyinsight.data.model.WorkoutResponse
 import com.example.hevyinsight.data.preferences.ApiKeyManager
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +30,8 @@ class WorkoutRepository(
     private val setDao: SetDao,
     private val apiKeyManager: ApiKeyManager,
     private val networkMonitor: NetworkMonitor,
-    private val apiClient: HevyApiClient
+    private val apiClient: HevyApiClient,
+    private val cacheManager: CacheManager
 ) {
     private var apiService: HevyApiService? = null
     private var currentApiKey: String? = null
@@ -142,7 +147,7 @@ class WorkoutRepository(
     
     /**
      * Sync workouts from API
-     * Implements incremental sync: only fetches new workouts if database already has data
+     * Tries events endpoint first for incremental sync, falls back to regular workouts endpoint
      */
     suspend fun syncWorkouts(): Result<Unit> {
         val apiServiceResult = getApiService()
@@ -155,12 +160,24 @@ class WorkoutRepository(
             return Result.error(ApiError.NetworkError.NoConnection)
         }
         
+        // Check if we have any workouts in the database (for incremental sync)
+        val mostRecentSynced = workoutDao.getMostRecentSyncedTimestamp()
+        val isIncrementalSync = mostRecentSynced != null
+        
+        // Try events endpoint first for incremental sync
+        if (isIncrementalSync) {
+            val eventsResult = syncWorkoutsFromEvents()
+            if (eventsResult is Result.Success) {
+                return eventsResult
+            }
+            // If events endpoint fails (404, etc.), fall through to regular sync
+            // Don't treat this as a critical error - just fallback
+        }
+        
+        // Fallback to regular workouts endpoint (for initial sync or if events failed)
         val apiService = (apiServiceResult as Result.Success).data
         
         return try {
-            // Check if we have any workouts in the database
-            val mostRecentSynced = workoutDao.getMostRecentSyncedTimestamp()
-            val isIncrementalSync = mostRecentSynced != null
             
             var page = 1
             var hasMore = true
@@ -200,6 +217,27 @@ class WorkoutRepository(
                     // Save workouts, exercises, and sets
                     workoutsList.forEach { workoutResponse ->
                         saveWorkoutWithExercisesAndSets(workoutResponse)
+                    }
+                    
+                    // Extract exercise template IDs from workouts for caching
+                    val templateIdToNameMap = mutableMapOf<String, String>()
+                    workoutsList.forEach { workoutResponse ->
+                        workoutResponse.exercises?.forEach { exerciseResponse ->
+                            exerciseResponse.exerciseTemplateId?.let { templateId ->
+                                templateIdToNameMap[templateId] = exerciseResponse.title
+                            }
+                        }
+                    }
+                    
+                    // Cache exercise template data extracted from workouts
+                    if (templateIdToNameMap.isNotEmpty()) {
+                        val cachedTemplateMap = cacheManager.get<Map<String, String>>(
+                            CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS,
+                            CacheTTL.EXERCISE_TEMPLATES_FROM_EVENTS
+                        ) ?: emptyMap()
+                        
+                        val mergedMap = (cachedTemplateMap + templateIdToNameMap).toMap()
+                        cacheManager.put(CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS, mergedMap)
                     }
                     
                     // Check if there are more pages
@@ -252,5 +290,125 @@ class WorkoutRepository(
      */
     suspend fun getMostRecentSyncedTimestamp(): Long? {
         return workoutDao.getMostRecentSyncedTimestamp()
+    }
+    
+    /**
+     * Converts timestamp (milliseconds) to ISO 8601 format for API
+     */
+    private fun timestampToIso8601(timestampMillis: Long): String {
+        val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
+        dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+        return dateFormat.format(java.util.Date(timestampMillis))
+    }
+    
+    /**
+     * Sync workouts from events endpoint
+     * Uses incremental sync with 'since' parameter based on lastSynced timestamp
+     */
+    suspend fun syncWorkoutsFromEvents(): Result<Unit> {
+        val apiServiceResult = getApiService()
+        if (apiServiceResult is Result.Error) {
+            return Result.error(apiServiceResult.error)
+        }
+        
+        // Check network before syncing
+        if (!networkMonitor.hasNetworkConnection()) {
+            return Result.error(ApiError.NetworkError.NoConnection)
+        }
+        
+        val apiService = (apiServiceResult as Result.Success).data
+        
+        return try {
+            // Get most recent synced timestamp
+            val mostRecentSynced = workoutDao.getMostRecentSyncedTimestamp()
+            val sinceParam = mostRecentSynced?.let { timestampToIso8601(it) }
+            
+            // If no previous sync, return error to fallback to regular sync
+            if (sinceParam == null) {
+                return Result.error(ApiError.Unknown("No previous sync timestamp, use regular sync"))
+            }
+            
+            var page = 1
+            var hasMore = true
+            val exerciseTemplateIds = mutableSetOf<String>()
+            val templateIdToNameMap = mutableMapOf<String, String>()
+            
+            while (hasMore) {
+                val response = apiService.getWorkoutEvents(page = page, pageSize = 10, since = sinceParam)
+                
+                if (response.isSuccessful) {
+                    val eventsResponse = response.body() ?: return Result.error(
+                        ApiError.Unknown("Empty response body")
+                    )
+                    val events = eventsResponse.events
+                    
+                    if (events == null || events.isEmpty()) {
+                        hasMore = false
+                        continue
+                    }
+                    
+                    // Process each event
+                    events.forEach { event ->
+                        when (event.type) {
+                            "created", "updated" -> {
+                                // Save workout with exercises and sets
+                                event.workout?.let { workoutResponse ->
+                                    saveWorkoutWithExercisesAndSets(workoutResponse)
+                                    
+                                    // Extract exercise template IDs and names
+                                    workoutResponse.exercises?.forEach { exerciseResponse ->
+                                        exerciseResponse.exerciseTemplateId?.let { templateId ->
+                                            exerciseTemplateIds.add(templateId)
+                                            templateIdToNameMap[templateId] = exerciseResponse.title
+                                        }
+                                    }
+                                }
+                            }
+                            "deleted" -> {
+                                // Remove workout from database (cascade delete will handle exercises and sets)
+                                event.workout?.id?.let { workoutId ->
+                                    workoutDao.deleteWorkoutById(workoutId)
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Check if there are more pages
+                    hasMore = page < eventsResponse.pageCount
+                    page++
+                } else {
+                    val error = if (response.code() == 401 || response.code() == 403) {
+                        ApiError.AuthError.InvalidApiKey
+                    } else {
+                        ErrorHandler.handleHttpException(retrofit2.HttpException(response))
+                    }
+                    
+                    // Invalidate API service on auth error
+                    if (error is ApiError.AuthError) {
+                        invalidateApiService()
+                    }
+                    
+                    return Result.error(error)
+                }
+            }
+            
+            // Cache exercise template data extracted from events
+            // Build a map of exercise_template_id -> exercise_name
+            if (templateIdToNameMap.isNotEmpty()) {
+                val cachedTemplateMap: Map<String, String> = cacheManager.get<Map<String, String>>(
+                    CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS,
+                    CacheTTL.EXERCISE_TEMPLATES_FROM_EVENTS
+                ) ?: emptyMap()
+                
+                // Merge with existing cache (new data takes precedence)
+                val mergedMap: Map<String, String> = cachedTemplateMap + templateIdToNameMap
+                cacheManager.put(CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS, mergedMap)
+            }
+            
+            Result.success(Unit)
+        } catch (e: Exception) {
+            val error = ErrorHandler.handleError(e)
+            Result.error(error)
+        }
     }
 }
