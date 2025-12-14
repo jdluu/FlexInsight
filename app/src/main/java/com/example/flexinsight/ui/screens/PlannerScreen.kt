@@ -30,6 +30,11 @@ import com.example.flexinsight.ui.viewmodel.PlannerViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import com.example.flexinsight.data.model.PlannedWorkout
 import java.util.*
 
 @Composable
@@ -79,6 +84,38 @@ fun PlannerScreen(
         return
     }
     
+    val context = LocalContext.current
+    var showRescheduleDialog by remember { mutableStateOf<PlannedWorkout?>(null) }
+    
+    if (showRescheduleDialog != null) {
+        AlertDialog(
+            onDismissRequest = { showRescheduleDialog = null },
+            title = { Text("Reschedule Workout") },
+            text = { Text("Move '${showRescheduleDialog?.name}' to tomorrow?") },
+            containerColor = BackgroundDarkAlt,
+            titleContentColor = Color.White,
+            textContentColor = TextSecondary,
+            confirmButton = {
+                TextButton(onClick = {
+                    showRescheduleDialog?.let { workout ->
+                        val calendar = Calendar.getInstance()
+                        calendar.add(Calendar.DAY_OF_YEAR, 1)
+                        viewModel.rescheduleWorkout(workout.id, calendar.timeInMillis)
+                        Toast.makeText(context, "Moved to tomorrow", Toast.LENGTH_SHORT).show()
+                    }
+                    showRescheduleDialog = null
+                }) {
+                    Text("Move", color = Primary)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRescheduleDialog = null }) {
+                    Text("Cancel", color = TextSecondary)
+                }
+            }
+        )
+    }
+    
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -87,7 +124,12 @@ fun PlannerScreen(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         item {
-            PlannerHeader(viewOnlyMode = viewOnlyMode)
+            PlannerHeader(
+                viewOnlyMode = viewOnlyMode,
+                onAddWorkout = {
+                    Toast.makeText(context, "Create Workout feature coming soon", Toast.LENGTH_SHORT).show()
+                }
+            )
         }
         item {
             WeeklyGoalCard(weeklyGoalProgress = uiState.weeklyGoalProgress)
@@ -102,20 +144,33 @@ fun PlannerScreen(
         item {
             WorkoutListSection(
                 selectedDayWorkouts = uiState.selectedDayWorkouts,
-                selectedDayName = uiState.weekCalendarData.getOrNull(uiState.selectedDayIndex)?.name ?: "Day"
+                selectedDayName = uiState.weekCalendarData.getOrNull(uiState.selectedDayIndex)?.name ?: "Day",
+                onWorkoutComplete = { id, completed -> 
+                    viewModel.markWorkoutAsComplete(id, completed) 
+                },
+                onReschedule = { workout ->
+                    showRescheduleDialog = workout
+                }
             )
         }
         item {
-            AIInsightsSection(
+             AIInsightsSection(
                 volumeBalance = uiState.volumeBalance,
-                muscleGroupProgress = uiState.muscleGroupProgress
+                muscleGroupProgress = uiState.muscleGroupProgress,
+                onGeneratePlan = {
+                    Toast.makeText(context, "AI Plan Generation coming soon", Toast.LENGTH_SHORT).show()
+                    viewModel.generateAIWorkout()
+                }
             )
         }
     }
 }
 
 @Composable
-fun PlannerHeader(viewOnlyMode: Boolean = false) {
+fun PlannerHeader(
+    viewOnlyMode: Boolean = false,
+    onAddWorkout: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -131,7 +186,7 @@ fun PlannerHeader(viewOnlyMode: Boolean = false) {
         )
         if (!viewOnlyMode) {
             FloatingActionButton(
-                onClick = {},
+                onClick = onAddWorkout,
                 modifier = Modifier.size(48.dp),
                 containerColor = Primary,
                 contentColor = BackgroundDarkAlt
@@ -366,7 +421,9 @@ fun formatDuration(minutes: Long?): String {
 @Composable
 fun WorkoutListSection(
     selectedDayWorkouts: List<com.example.flexinsight.data.model.PlannedWorkout> = emptyList(),
-    selectedDayName: String = "Day"
+    selectedDayName: String = "Day",
+    onWorkoutComplete: (String, Boolean) -> Unit = { _, _ -> },
+    onReschedule: (PlannedWorkout) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -428,7 +485,9 @@ fun WorkoutListSection(
                     isCompleted = workout.isCompleted,
                     icon = icon,
                     iconColor = iconColor,
-                    hasCheckbox = !workout.isCompleted
+                    hasCheckbox = !workout.isCompleted,
+                    onCheckedChange = { isChecked -> onWorkoutComplete(workout.id, isChecked) },
+                    onLongClick = { onReschedule(workout) }
                 )
             }
         }
@@ -445,6 +504,7 @@ fun WorkoutListSection(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun WorkoutItem(
     title: String,
@@ -453,12 +513,18 @@ fun WorkoutItem(
     isCompleted: Boolean,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     iconColor: Color,
-    hasCheckbox: Boolean = false
+    hasCheckbox: Boolean = false,
+    onCheckedChange: (Boolean) -> Unit = {},
+    onLongClick: () -> Unit = {}
 ) {
-    var checked by remember { mutableStateOf(false) }
-    
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .combinedClickable(
+                onClick = {}, // No-op, just for ripple
+                onLongClick = onLongClick
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFE8ECE9)),
         border = BorderStroke(1.dp, if (isCompleted) Primary.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.05f))
@@ -548,8 +614,8 @@ fun WorkoutItem(
                     }
                 } else if (hasCheckbox) {
                     Checkbox(
-                        checked = checked,
-                        onCheckedChange = { checked = it },
+                        checked = isCompleted,
+                        onCheckedChange = onCheckedChange,
                         colors = CheckboxDefaults.colors(
                             checkedColor = Primary,
                             uncheckedColor = Color.Gray
@@ -561,10 +627,12 @@ fun WorkoutItem(
     }
 }
 
+
 @Composable
 fun AIInsightsSection(
     volumeBalance: com.example.flexinsight.data.model.VolumeBalance? = null,
-    muscleGroupProgress: List<com.example.flexinsight.data.model.MuscleGroupProgress> = emptyList()
+    muscleGroupProgress: List<com.example.flexinsight.data.model.MuscleGroupProgress> = emptyList(),
+    onGeneratePlan: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -610,7 +678,10 @@ fun AIInsightsSection(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    RecommendedWorkoutCard(muscleGroupProgress = muscleGroupProgress)
+                    RecommendedWorkoutCard(
+                        muscleGroupProgress = muscleGroupProgress,
+                        onGeneratePlan = onGeneratePlan
+                    )
                     VolumeBalanceChart(volumeBalance = volumeBalance)
                 }
             }
@@ -618,9 +689,11 @@ fun AIInsightsSection(
     }
 }
 
+
 @Composable
 fun RecommendedWorkoutCard(
-    muscleGroupProgress: List<com.example.flexinsight.data.model.MuscleGroupProgress> = emptyList()
+    muscleGroupProgress: List<com.example.flexinsight.data.model.MuscleGroupProgress> = emptyList(),
+    onGeneratePlan: () -> Unit = {}
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -686,6 +759,22 @@ fun RecommendedWorkoutCard(
                 color = TextSecondary,
                 lineHeight = 18.sp
             )
+            
+            Button(
+                onClick = onGeneratePlan,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint = BackgroundDark,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Generate Optimized Plan", color = BackgroundDark)
+            }
         }
     }
 }
