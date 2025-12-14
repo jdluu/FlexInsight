@@ -70,21 +70,20 @@ fun PlannerScreen(
     val context = LocalContext.current
     var showRescheduleDialog by remember { mutableStateOf<PlannedWorkout?>(null) }
     
-    if (showRescheduleDialog != null) {
+    showRescheduleDialog?.let { workout ->
         PlannerRescheduleDialog(
-            workout = showRescheduleDialog!!,
+            workout = workout,
             onConfirm = {
-                showRescheduleDialog?.let { workout ->
-                    val calendar = Calendar.getInstance()
-                    calendar.add(Calendar.DAY_OF_YEAR, 1)
-                    workout.id?.let { id ->
-                        viewModel.rescheduleWorkout(id, calendar.timeInMillis)
-                    }
-                    Toast.makeText(context, "Moved to tomorrow", Toast.LENGTH_SHORT).show()
+                val calendar = Calendar.getInstance()
+                calendar.add(Calendar.DAY_OF_YEAR, 1)
+                workout.id?.let { id ->
+                    viewModel.rescheduleWorkout(id, calendar.timeInMillis)
                 }
+                Toast.makeText(context, "Moved to tomorrow", Toast.LENGTH_SHORT).show()
                 showRescheduleDialog = null
             },
-            onDismiss = { showRescheduleDialog = null }
+            onDismiss = { showRescheduleDialog = null },
+            initialDate = System.currentTimeMillis() // Default to today/now
         )
     }
     

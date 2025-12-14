@@ -40,9 +40,7 @@ class StatsRepositoryImpl(
             CacheKeys.WORKOUT_STATS,
             CacheTTL.STATS
         )
-        if (cached != null) {
-            return cached
-        }
+        cached?.let { return it }
         
         return withContext(dispatcherProvider.default) {
             val workouts = workoutDao.getAllWorkoutsFlow().first()
@@ -124,11 +122,9 @@ class StatsRepositoryImpl(
             (set.weight ?: 0.0) * (set.reps ?: 0)
         }
         
-        val durationMinutes = if (workout.endTime != null) {
-            (workout.endTime - workout.startTime) / (1000 * 60)
-        } else {
-            0L
-        }
+        val durationMinutes = workout.endTime?.let { endTime ->
+            (endTime - workout.startTime) / (1000 * 60)
+        } ?: 0L
         
         SingleWorkoutStats(
             durationMinutes = durationMinutes,
@@ -151,9 +147,7 @@ class StatsRepositoryImpl(
         // Check cache
         val cacheKey = "${CacheKeys.PRS_WITH_DETAILS}_$limit"
         val cached = cacheManager.get<List<PRDetails>>(cacheKey, CacheTTL.PRS)
-        if (cached != null) {
-            return@withContext cached
-        }
+        cached?.let { return it }
         
         val prSets = setDao.getRecentPRsFlow(limit).first()
         if (prSets.isEmpty()) {
@@ -175,7 +169,7 @@ class StatsRepositoryImpl(
             val exercise = exercises.find { it.id == set.exerciseId } ?: return@mapNotNull null
             val workout = workouts[exercise.workoutId] ?: return@mapNotNull null
             
-            if (set.weight == null) return@mapNotNull null
+            val weight = set.weight ?: return@mapNotNull null
             
             val muscleGroup = exerciseRepository.getMuscleGroupForExercise(exercise) ?: "Unknown"
             
@@ -183,7 +177,7 @@ class StatsRepositoryImpl(
                 exerciseName = exercise.name,
                 date = workout.startTime,
                 muscleGroup = muscleGroup,
-                weight = set.weight,
+                weight = weight,
                 workoutId = workout.id,
                 setId = set.id
             )
@@ -200,9 +194,7 @@ class StatsRepositoryImpl(
     override suspend fun getMuscleGroupProgress(weeks: Int): List<MuscleGroupProgress> = withContext(dispatcherProvider.default) {
         val cacheKey = "${CacheKeys.MUSCLE_GROUP_PROGRESS}$weeks"
         val cached = cacheManager.get<List<MuscleGroupProgress>>(cacheKey, CacheTTL.PROGRESS)
-        if (cached != null) {
-            return@withContext cached
-        }
+        cached?.let { return it }
         
         val now = Instant.now()
         val endDate = now.toEpochMilli()
@@ -267,9 +259,7 @@ class StatsRepositoryImpl(
     override suspend fun calculateVolumeTrend(weeks: Int): VolumeTrend = withContext(dispatcherProvider.default) {
         val cacheKey = "${CacheKeys.VOLUME_TREND}_$weeks"
         val cached = cacheManager.get<VolumeTrend>(cacheKey, CacheTTL.PROGRESS)
-        if (cached != null) {
-            return@withContext cached
-        }
+        cached?.let { return it }
         
         val now = Instant.now()
         val currentPeriodEnd = now.toEpochMilli()
@@ -313,9 +303,7 @@ class StatsRepositoryImpl(
     override suspend fun getDurationTrend(weeks: Int): List<DailyDurationData> = withContext(dispatcherProvider.default) {
         val cacheKey = "${CacheKeys.DURATION_TREND}$weeks"
         val cached = cacheManager.get<List<DailyDurationData>>(cacheKey, CacheTTL.PROGRESS)
-        if (cached != null) {
-            return@withContext cached
-        }
+        cached?.let { return it }
         
         val now = Instant.now()
         val endDate = now.toEpochMilli()
@@ -396,10 +384,8 @@ class StatsRepositoryImpl(
         
         workouts.map { workout ->
             val exercises = exerciseDao.getExercisesByWorkoutId(workout.id)
-            val duration = if (workout.endTime != null) {
-                (workout.endTime - workout.startTime) / (1000 * 60)
-            } else {
-                null
+            val duration = workout.endTime?.let { endTime ->
+                (endTime - workout.startTime) / (1000 * 60)
             }
             
             // Determine intensity based on volume
