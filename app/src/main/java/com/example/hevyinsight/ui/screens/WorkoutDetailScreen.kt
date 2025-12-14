@@ -24,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hevyinsight.ui.theme.*
 import com.example.hevyinsight.ui.utils.rememberViewOnlyMode
+import com.example.hevyinsight.ui.utils.rememberUnitPreference
+import com.example.hevyinsight.ui.utils.UnitConverter
 import com.example.hevyinsight.ui.viewmodel.WorkoutDetailViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -118,13 +120,15 @@ fun WorkoutDetailScreen(
         item {
             WorkoutStatsCard(
                 stats = uiState.workoutStats,
-                totalReps = uiState.exercisesWithSets.sumOf { it.sets.sumOf { set -> set.reps ?: 0 } }
+                totalReps = uiState.exercisesWithSets.sumOf { it.sets.sumOf { set -> set.reps ?: 0 } },
+                useMetric = useMetric
             )
         }
         item {
             ExercisesSection(
                 exercisesWithSets = uiState.exercisesWithSets,
-                viewOnlyMode = viewOnlyMode
+                viewOnlyMode = viewOnlyMode,
+                useMetric = useMetric
             )
         }
         if (workout.notes != null && workout.notes.isNotBlank()) {
@@ -217,7 +221,8 @@ fun WorkoutDetailHeader(
 @Composable
 fun WorkoutStatsCard(
     stats: com.example.hevyinsight.data.model.SingleWorkoutStats?,
-    totalReps: Int
+    totalReps: Int,
+    useMetric: Boolean = false
 ) {
     val durationText = if (stats?.durationMinutes != null && stats.durationMinutes > 0) {
         val hours = stats.durationMinutes / 60
@@ -232,7 +237,7 @@ fun WorkoutStatsCard(
     }
     
     val volumeText = if (stats?.totalVolume != null && stats.totalVolume > 0) {
-        formatVolumeWithCommas(stats.totalVolume)
+        UnitConverter.formatVolumeWithCommas(stats.totalVolume, useMetric)
     } else {
         "0"
     }
@@ -351,7 +356,8 @@ fun TagChip(text: String, color: Color, icon: androidx.compose.ui.graphics.vecto
 @Composable
 fun ExercisesSection(
     exercisesWithSets: List<com.example.hevyinsight.ui.viewmodel.ExerciseWithSets>,
-    viewOnlyMode: Boolean = false
+    viewOnlyMode: Boolean = false,
+    useMetric: Boolean = false
 ) {
     Column(
         modifier = Modifier
@@ -390,7 +396,7 @@ fun ExercisesSection(
             val setsData = sets.map { set ->
                 SetData(
                     number = set.number,
-                    weight = if (set.weight != null) String.format("%.0f", set.weight) else "-",
+                    weight = UnitConverter.formatWeight(set.weight, useMetric),
                     reps = set.reps?.toString() ?: "-",
                     rpe = if (set.rpe != null) String.format("%.1f", set.rpe) else "-",
                     isPR = set.isPersonalRecord
@@ -400,7 +406,7 @@ fun ExercisesSection(
             // Find best set (highest weight * reps)
             val bestSet = sets.maxByOrNull { (it.weight ?: 0.0) * (it.reps ?: 0) }
             val bestSetText = bestSet?.let {
-                val weight = it.weight ?: 0.0
+                val weight = UnitConverter.convertWeight(it.weight, useMetric) ?: 0.0
                 val reps = it.reps ?: 0
                 if (weight > 0 && reps > 0) {
                     "Best: ${String.format("%.0f", weight)}x$reps"
@@ -414,7 +420,8 @@ fun ExercisesSection(
                 equipment = "Exercise", // TODO: Get equipment from exercise template if available
                 isExpanded = index == 0, // Expand first exercise by default
                 setsData = setsData,
-                bestSet = bestSetText
+                bestSet = bestSetText,
+                useMetric = useMetric
             )
         }
     }
@@ -429,7 +436,8 @@ fun ExpandableExerciseCard(
     isExpanded: Boolean,
     setsData: List<SetData> = emptyList(),
     improvement: String? = null,
-    bestSet: String? = null
+    bestSet: String? = null,
+    useMetric: Boolean = false
 ) {
     var expanded by remember { mutableStateOf(isExpanded) }
     
@@ -534,7 +542,7 @@ fun ExpandableExerciseCard(
                             letterSpacing = 1.sp
                         )
                         Text(
-                            text = "lbs",
+                            text = UnitConverter.getWeightUnit(useMetric),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = TextSecondary,
