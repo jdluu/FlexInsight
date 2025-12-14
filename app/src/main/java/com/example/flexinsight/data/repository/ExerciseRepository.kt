@@ -225,6 +225,13 @@ class ExerciseRepository(
     fun getExercisesByWorkoutId(workoutId: String): Flow<List<Exercise>> {
         return exerciseDao.getExercisesByWorkoutIdFlow(workoutId)
     }
+
+    /**
+     * Get all exercises
+     */
+    fun getAllExercises(): Flow<List<Exercise>> {
+        return exerciseDao.getAllExercises()
+    }
     
     /**
      * Get exercises by workout ID (suspend)

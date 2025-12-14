@@ -78,6 +78,10 @@ class FlexRepository(
     fun getRecentWorkouts(limit: Int = 10): Flow<List<Workout>> {
         return workoutRepository.getRecentWorkouts(limit)
     }
+
+    fun getAllExercises(): Flow<List<Exercise>> {
+        return exerciseRepository.getAllExercises()
+    }
     
     suspend fun getWorkoutById(workoutId: String): Workout? {
         return when (val result = workoutRepository.getWorkoutById(workoutId)) {
