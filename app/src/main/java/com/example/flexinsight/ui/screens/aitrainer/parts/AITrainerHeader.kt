@@ -2,6 +2,10 @@ package com.example.flexinsight.ui.screens.aitrainer.parts
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -25,8 +29,8 @@ import com.example.flexinsight.ui.theme.TextSecondary
 fun AITrainerHeader() {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = BackgroundDarkAlt.copy(alpha = 0.8f),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        color = MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Row(
             modifier = Modifier
@@ -53,7 +57,7 @@ fun AITrainerHeader() {
                     Icon(
                         imageVector = Icons.Default.AutoAwesome,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -62,7 +66,7 @@ fun AITrainerHeader() {
                         text = "AI Trainer",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -72,13 +76,13 @@ fun AITrainerHeader() {
                             modifier = Modifier
                                 .size(8.dp)
                                 .clip(CircleShape)
-                                .background(Primary)
+                                .background(MaterialTheme.colorScheme.primary)
                         )
                         Text(
                             text = "Online",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -87,7 +91,7 @@ fun AITrainerHeader() {
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
-                    tint = TextSecondary
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

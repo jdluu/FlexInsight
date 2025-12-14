@@ -41,13 +41,13 @@ fun DateDivider(text: String) {
     ) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = Color.White.copy(alpha = 0.05f)
+            color = MaterialTheme.colorScheme.outlineVariant
         ) {
             Text(
                 text = text,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
             )
         }
@@ -69,7 +69,7 @@ fun ChatBubble(message: ChatMessage) {
                     .clip(CircleShape)
                     .background(
                         brush = Brush.linearGradient(
-                            colors = listOf(Color(0xFF3B82F6), Primary)
+                            colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary)
                         )
                     ),
                 contentAlignment = Alignment.Center
@@ -77,7 +77,7 @@ fun ChatBubble(message: ChatMessage) {
                 Icon(
                     imageVector = Icons.Default.SmartToy,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -95,8 +95,8 @@ fun ChatBubble(message: ChatMessage) {
                     bottomEnd = if (isUser) 0.dp else 16.dp,
                     bottomStart = if (isUser) 16.dp else 0.dp
                 ),
-                color = if (isUser) Primary else SurfaceHighlight,
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+                color = if (isUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -105,7 +105,7 @@ fun ChatBubble(message: ChatMessage) {
                     Text(
                         text = message.text,
                         fontSize = 14.sp,
-                        color = if (isUser) BackgroundDarkAlt else Color.White,
+                        color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 20.sp
                     )
                     
@@ -119,7 +119,7 @@ fun ChatBubble(message: ChatMessage) {
                 Text(
                     text = "Read 9:43 AM",
                     fontSize = 10.sp,
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 4.dp, top = 4.dp)
                 )
             }
@@ -130,8 +130,8 @@ fun ChatBubble(message: ChatMessage) {
             Surface(
                 modifier = Modifier.size(32.dp),
                 shape = CircleShape,
-                color = Color.Gray.copy(alpha = 0.3f),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {}
         }
     }
@@ -145,7 +145,7 @@ fun ChatInput(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = BackgroundDarkAlt.copy(alpha = 0.95f)
+        color = MaterialTheme.colorScheme.background.copy(alpha = 0.95f)
     ) {
         Column(
             modifier = Modifier
@@ -156,8 +156,8 @@ fun ChatInput(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(24.dp),
-                color = SurfaceCard,
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
             ) {
                 Row(
                     modifier = Modifier
@@ -170,7 +170,7 @@ fun ChatInput(
                         value = text,
                         onValueChange = onTextChange,
                         modifier = Modifier.weight(1f),
-                        placeholder = { Text("Ask about your fitness...", color = TextSecondary) },
+                        placeholder = { Text("Ask about your fitness...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
@@ -178,7 +178,7 @@ fun ChatInput(
                             unfocusedIndicatorColor = Color.Transparent
                         ),
                         textStyle = androidx.compose.ui.text.TextStyle(
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onSurface,
                             fontSize = 16.sp
                         )
                     )
@@ -186,7 +186,7 @@ fun ChatInput(
                         Icon(
                             imageVector = Icons.Default.AddPhotoAlternate,
                             contentDescription = "Add photo",
-                            tint = TextSecondary
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -197,8 +197,8 @@ fun ChatInput(
                 modifier = Modifier
                     .size(56.dp)
                     .align(Alignment.End),
-                containerColor = Primary,
-                contentColor = BackgroundDarkAlt
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
                 Icon(
                     imageVector = if (text.isNotBlank()) Icons.AutoMirrored.Filled.Send else Icons.Default.Mic,
@@ -222,7 +222,7 @@ fun TypingIndicator() {
                 .clip(CircleShape)
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(Color(0xFF3B82F6), Primary)
+                        colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.tertiary)
                     )
                 ),
             contentAlignment = Alignment.Center
@@ -230,7 +230,7 @@ fun TypingIndicator() {
             Icon(
                 imageVector = Icons.Default.SmartToy,
                 contentDescription = null,
-                tint = Color.White,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.size(16.dp)
             )
         }
@@ -242,8 +242,8 @@ fun TypingIndicator() {
                 bottomEnd = 16.dp,
                 bottomStart = 0.dp
             ),
-            color = SurfaceHighlight,
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Row(
                 modifier = Modifier.padding(12.dp),
@@ -254,7 +254,7 @@ fun TypingIndicator() {
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(Color.Gray.copy(alpha = 0.5f))
+                            .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
                     )
                 }
             }
