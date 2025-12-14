@@ -120,9 +120,6 @@ fun DashboardScreen(
                 )
             }
             item {
-                StreakIndicator(streak = uiState.currentStreak)
-            }
-            item {
                 uiState.latestWorkout?.let { workout ->
                     FeaturedWorkoutCard(
                         workout = workout,
