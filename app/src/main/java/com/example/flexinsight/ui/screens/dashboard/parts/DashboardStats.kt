@@ -40,8 +40,8 @@ fun StreakIndicator(streak: Int = 0) {
             modifier = Modifier
                 .wrapContentWidth(),
             shape = RoundedCornerShape(24.dp),
-            color = SurfaceCard,
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -51,20 +51,20 @@ fun StreakIndicator(streak: Int = 0) {
                 Icon(
                     imageVector = Icons.Default.LocalFireDepartment,
                     contentDescription = null,
-                    tint = OrangeAccent,
+                    tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
                     text = if (streak > 0) "Day $streak" else "No streak",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "streak",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 if (streak > 0) {
                     Spacer(modifier = Modifier.width(8.dp))
@@ -73,7 +73,7 @@ fun StreakIndicator(streak: Int = 0) {
                             .width(64.dp)
                             .height(6.dp)
                             .clip(RoundedCornerShape(3.dp))
-                            .background(Color.Gray.copy(alpha = 0.3f))
+                            .background(MaterialTheme.colorScheme.outlineVariant)
                     ) {
                         // Progress bar based on streak (max 7 days for visual)
                         val progress = (streak.coerceAtMost(7) / 7f).coerceIn(0f, 1f)
@@ -82,7 +82,7 @@ fun StreakIndicator(streak: Int = 0) {
                                 .fillMaxHeight()
                                 .fillMaxWidth(progress)
                                 .clip(RoundedCornerShape(3.dp))
-                                .background(OrangeAccent)
+                                .background(MaterialTheme.colorScheme.tertiary)
                         )
                     }
                 }
@@ -112,14 +112,14 @@ fun WeeklyProgressSection(
                 text = "Weekly Progress",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onSurface
             )
             TextButton(onClick = onSeeAllClick) {
                 Text(
                     text = "See All",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Primary
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -129,8 +129,8 @@ fun WeeklyProgressSection(
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceCard),
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
@@ -146,7 +146,7 @@ fun WeeklyProgressSection(
                             text = "Volume Trend",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(
@@ -158,13 +158,13 @@ fun WeeklyProgressSection(
                                 text = formatVolume(totalVolume),
                                 fontSize = 32.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = UnitConverter.getWeightUnit(useMetric),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Normal,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -196,8 +196,8 @@ fun WeeklyProgressSection(
                                     .height(height)
                                     .clip(RoundedCornerShape(3.dp))
                                     .background(
-                                        if (isCurrent) Primary
-                                        else Primary.copy(alpha = 0.2f)
+                                        if (isCurrent) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                                     )
                             )
                         }
@@ -212,7 +212,7 @@ fun WeeklyProgressSection(
                         Text(
                             text = "No muscle group data available",
                             fontSize = 12.sp,
-                            color = TextSecondary,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     } else {
@@ -256,13 +256,13 @@ fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon:
         Surface(
             modifier = Modifier.size(40.dp),
             shape = RoundedCornerShape(12.dp),
-            color = Color.White.copy(alpha = 0.05f)
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = TextSecondary,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -280,13 +280,13 @@ fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon:
                     text = muscle,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "$percentage%",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
-                    color = TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Box(
@@ -294,7 +294,7 @@ fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon:
                     .fillMaxWidth()
                     .height(8.dp)
                     .clip(RoundedCornerShape(4.dp))
-                    .background(Color.White.copy(alpha = 0.05f))
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
             ) {
                 Box(
                     modifier = Modifier
@@ -302,9 +302,9 @@ fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon:
                         .fillMaxWidth(percentage / 100f)
                         .clip(RoundedCornerShape(4.dp))
                         .background(
-                            if (percentage >= 70) Primary
-                            else if (percentage >= 40) Primary.copy(alpha = 0.7f)
-                            else Primary.copy(alpha = 0.4f)
+                            if (percentage >= 70) MaterialTheme.colorScheme.primary
+                            else if (percentage >= 40) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                            else MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
                         )
                 )
             }
@@ -314,7 +314,7 @@ fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon:
             text = intensity,
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
-            color = TextSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

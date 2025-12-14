@@ -1,6 +1,7 @@
 package com.example.flexinsight.ui.screens.dashboard.parts
 
 import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -53,15 +54,15 @@ fun DashboardHeader(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color.Gray.copy(alpha = 0.3f))
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f))
             ) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .size(12.dp)
                         .clip(CircleShape)
-                        .background(Primary)
-                        .border(2.dp, BackgroundDark, CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                        .border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
                 )
             }
             Column {
@@ -69,14 +70,14 @@ fun DashboardHeader(
                     text = dateFormat.format(Date()).uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 1.sp
                 )
                 Text(
                     text = "${greeting}, ${profileInfo?.displayName ?: "User"}",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
@@ -87,14 +88,14 @@ fun DashboardHeader(
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = "Refresh",
-                    tint = TextSecondary
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             IconButton(onClick = onNotificationsClick) {
                 Icon(
                     imageVector = Icons.Default.Notifications,
                     contentDescription = "Notifications",
-                    tint = TextSecondary
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

@@ -44,8 +44,8 @@ fun FeaturedWorkoutCard(
             .padding(horizontal = 20.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCard),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(
             modifier = Modifier
@@ -59,8 +59,8 @@ fun FeaturedWorkoutCard(
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                Color.Gray.copy(alpha = 0.2f),
-                                SurfaceCard
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                                MaterialTheme.colorScheme.surface
                             )
                         )
                     )
@@ -83,18 +83,18 @@ fun FeaturedWorkoutCard(
                         text = workout.name ?: "Workout",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = Color.White.copy(alpha = 0.1f),
-                        border = BorderStroke(1.dp, Primary.copy(alpha = 0.2f))
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
                     ) {
                         Text(
                             text = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault()).format(Date(workout.startTime)),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Primary,
+                            color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
                     }
@@ -129,8 +129,8 @@ fun FeaturedWorkoutCard(
                 // AI Summary
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = BackgroundDark.copy(alpha = 0.5f),
-                    border = BorderStroke(2.dp, Primary)
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
                 ) {
                     Column(
                         modifier = Modifier.padding(12.dp)
@@ -142,14 +142,14 @@ fun FeaturedWorkoutCard(
                             Icon(
                                 imageVector = Icons.Default.AutoAwesome,
                                 contentDescription = null,
-                                tint = Primary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
                                 text = "AI SUMMARY",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Primary,
+                                color = MaterialTheme.colorScheme.primary,
                                 letterSpacing = 0.5.sp
                             )
                         }
@@ -158,7 +158,7 @@ fun FeaturedWorkoutCard(
                         Text(
                             text = "AI workout insights coming soon. Complete your workout to see personalized recommendations and analysis.",
                             fontSize = 13.sp,
-                            color = Color.White.copy(alpha = 0.6f),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 18.sp,
                             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                         )
@@ -170,19 +170,19 @@ fun FeaturedWorkoutCard(
                 Button(
                     onClick = onClick,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "View Details",
-                        color = Color.Black,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(end = 8.dp)
                     )
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -197,8 +197,8 @@ fun FeaturedWorkoutCardPlaceholder() {
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceCard),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(
             modifier = Modifier
@@ -221,8 +221,8 @@ fun StatBox(label: String, value: String, icon: ImageVector, modifier: Modifier 
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        color = Color.White.copy(alpha = 0.05f),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -235,14 +235,14 @@ fun StatBox(label: String, value: String, icon: ImageVector, modifier: Modifier 
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = TextSecondary,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(14.dp)
                 )
                 Text(
                     text = label.uppercase(),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextSecondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 1.sp
                 )
             }
@@ -250,7 +250,7 @@ fun StatBox(label: String, value: String, icon: ImageVector, modifier: Modifier 
                 text = value,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

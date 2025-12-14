@@ -34,8 +34,8 @@ fun DailyInsightCard(
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF111111)),
-        border = BorderStroke(1.dp, Primary.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
     ) {
         Box(
             modifier = Modifier
@@ -43,7 +43,7 @@ fun DailyInsightCard(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Primary.copy(alpha = 0.2f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
                             Color.Transparent
                         ),
                         radius = 200f
@@ -63,8 +63,8 @@ fun DailyInsightCard(
                         .background(
                             brush = Brush.linearGradient(
                                 colors = listOf(
-                                    Color(0xFF6366F1),
-                                    Color(0xFF9333EA)
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.tertiary
                                 )
                             )
                         ),
@@ -73,7 +73,7 @@ fun DailyInsightCard(
                     Icon(
                         imageVector = Icons.Default.AutoAwesome,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -86,13 +86,13 @@ fun DailyInsightCard(
                         text = "Daily Insight",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                     // TODO: Implement AI-powered daily insights and tips
                     Text(
                         text = "AI-powered daily insights coming soon. Get personalized tips and recommendations based on your training data.",
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.6f),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
                         lineHeight = 20.sp,
                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                     )
@@ -104,12 +104,12 @@ fun DailyInsightCard(
                             text = "Chat with Trainer",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF818CF8)
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                             contentDescription = null,
-                            tint = Color(0xFF818CF8),
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(14.dp)
                         )
                     }
@@ -133,7 +133,7 @@ fun QuickActionsGrid(
             text = "Quick Actions",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 12.dp)
         )
         
@@ -141,8 +141,8 @@ fun QuickActionsGrid(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            QuickActionButton("Start", Icons.Default.PlayArrow, Primary, onClick = onStartClick, modifier = Modifier.weight(1f))
-            QuickActionButton("Analytics", Icons.Default.Analytics, Color.White, onClick = onAnalyticsClick, modifier = Modifier.weight(1f))
+            QuickActionButton("Start", Icons.Default.PlayArrow, MaterialTheme.colorScheme.onPrimary, containerColor = MaterialTheme.colorScheme.primary, onClick = onStartClick, modifier = Modifier.weight(1f))
+            QuickActionButton("Analytics", Icons.Default.Analytics, MaterialTheme.colorScheme.onSurface, containerColor = MaterialTheme.colorScheme.surface, onClick = onAnalyticsClick, modifier = Modifier.weight(1f))
         }
     }
 }
@@ -152,6 +152,7 @@ fun QuickActionButton(
     label: String,
     icon: ImageVector,
     iconColor: Color,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -166,8 +167,8 @@ fun QuickActionButton(
                 .aspectRatio(1f)
                 .clickable(onClick = onClick),
             shape = RoundedCornerShape(16.dp),
-            color = SurfaceCard,
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+            color = containerColor,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
@@ -182,7 +183,7 @@ fun QuickActionButton(
             text = label,
             fontSize = 10.sp,
             fontWeight = FontWeight.Medium,
-            color = TextSecondary
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
