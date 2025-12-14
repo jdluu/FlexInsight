@@ -59,9 +59,18 @@ class ExerciseRepository(
     /**
      * Fetch and cache exercise templates from API
      * Returns mapping of templateId -> muscleGroup
+     * Prefers data extracted from workout events, falls back to API cache, then API call
      */
     suspend fun getExerciseTemplateMapping(): Result<Map<String, String>> {
-        // Check cache first
+        // 1. First check event-extracted templates (from workout events)
+        // Note: Events data has templateId -> exerciseName, not muscleGroup
+        // But we check it to see if we have template IDs available
+        val eventsCached = cacheManager.get<Map<String, String>>(
+            CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS,
+            CacheTTL.EXERCISE_TEMPLATES_FROM_EVENTS
+        )
+        
+        // 2. Check regular API cache (has templateId -> muscleGroup)
         val cached = cacheManager.get<Map<String, String>>(
             CacheKeys.EXERCISE_TEMPLATES,
             CacheTTL.EXERCISE_TEMPLATES
@@ -70,43 +79,79 @@ class ExerciseRepository(
             return Result.success(cached)
         }
         
+        // 3. If we have events data but no API cache, and network is available, try API
+        // Otherwise, if no network, return empty map (we can't get muscle groups without API)
+        if (!networkMonitor.hasNetworkConnection()) {
+            // If we have events data, return empty map (we have IDs but not muscle groups)
+            // This allows the code to continue without failing
+            return if (eventsCached != null) {
+                Result.success(emptyMap())
+            } else {
+                Result.error(ApiError.NetworkError.NoConnection)
+            }
+        }
+        
         val apiServiceResult = getApiService()
         if (apiServiceResult is Result.Error) {
             return apiServiceResult
         }
         
-        // Check network
-        if (!networkMonitor.hasNetworkConnection()) {
-            return Result.error(ApiError.NetworkError.NoConnection)
-        }
-        
         val apiService = (apiServiceResult as Result.Success).data
         
         return try {
-            val response = apiService.getExerciseTemplates()
+            var page = 1
+            var hasMore = true
+            val allTemplates = mutableListOf<ExerciseTemplateResponse>()
             
-            if (response.isSuccessful) {
-                val templates = response.body() ?: return Result.error(
-                    ApiError.Unknown("Empty response body")
-                )
-                val mapping = templates.mapNotNull { templateResponse ->
-                    val template = templateResponse.toExerciseTemplate()
-                    template.muscleGroup?.let { template.id to it }
-                }.toMap()
+            // Fetch all pages of exercise templates
+            while (hasMore) {
+                val response = apiService.getExerciseTemplates(page, 50)
                 
-                // Cache the mapping
-                cacheManager.put(CacheKeys.EXERCISE_TEMPLATES, mapping)
-                
-                Result.success(mapping)
+                if (response.isSuccessful) {
+                    val paginatedResponse = response.body() ?: return Result.error(
+                        ApiError.Unknown("Empty response body")
+                    )
+                    val templatesList = paginatedResponse.exerciseTemplates
+                    
+                    if (templatesList != null && templatesList.isNotEmpty()) {
+                        allTemplates.addAll(templatesList)
+                    }
+                    
+                    // Check if there are more pages
+                    hasMore = page < paginatedResponse.pageCount
+                    page++
+                } else {
+                    // If API call fails but we have events data, return empty map instead of error
+                    // This allows the app to continue functioning
+                    if (eventsCached != null) {
+                        return Result.success(emptyMap())
+                    } else {
+                        val error = ErrorHandler.handleHttpException(
+                            retrofit2.HttpException(response)
+                        )
+                        return Result.error(error)
+                    }
+                }
+            }
+            
+            // Build mapping from all accumulated templates
+            val mapping = allTemplates.mapNotNull { templateResponse ->
+                val template = templateResponse.toExerciseTemplate()
+                template.muscleGroup?.let { template.id to it }
+            }.toMap()
+            
+            // Cache the mapping
+            cacheManager.put(CacheKeys.EXERCISE_TEMPLATES, mapping)
+            
+            Result.success(mapping)
+        } catch (e: Exception) {
+            // If exception occurs but we have events data, return empty map instead of error
+            if (eventsCached != null) {
+                Result.success(emptyMap())
             } else {
-                val error = ErrorHandler.handleHttpException(
-                    retrofit2.HttpException(response)
-                )
+                val error = ErrorHandler.handleError(e)
                 Result.error(error)
             }
-        } catch (e: Exception) {
-            val error = ErrorHandler.handleError(e)
-            Result.error(error)
         }
     }
     

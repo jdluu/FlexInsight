@@ -86,17 +86,30 @@ data class ExerciseTemplate(
 data class ExerciseTemplateResponse(
     @SerializedName("id")
     val id: String,
-    @SerializedName("name")
-    val name: String,
+    @SerializedName("title")
+    val title: String,
     @SerializedName("muscle_group")
     val muscleGroup: String?
 ) {
     fun toExerciseTemplate(): ExerciseTemplate {
         return ExerciseTemplate(
             id = id,
-            name = name,
+            name = title,  // Map title to name for internal model
             muscleGroup = muscleGroup
         )
     }
 }
+
+/**
+ * Paginated response wrapper for exercise templates
+ * Actual API response structure: {"page":1,"page_count":5,"exercise_templates":[...]}
+ */
+data class PaginatedExerciseTemplatesResponse(
+    @SerializedName("page")
+    val page: Int,
+    @SerializedName("page_count")
+    val pageCount: Int,
+    @SerializedName("exercise_templates")
+    val exerciseTemplates: List<ExerciseTemplateResponse>?
+)
 
