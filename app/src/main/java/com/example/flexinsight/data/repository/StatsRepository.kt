@@ -26,7 +26,8 @@ class StatsRepository(
     private val exerciseDao: ExerciseDao,
     private val setDao: SetDao,
     private val exerciseRepository: ExerciseRepository,
-    private val cacheManager: CacheManager
+    private val cacheManager: CacheManager,
+    private val dispatcherProvider: com.example.flexinsight.core.dispatchers.DispatcherProvider
 ) {
     /**
      * Calculate workout statistics with caching
@@ -41,7 +42,8 @@ class StatsRepository(
             return cached
         }
         
-        val workouts = workoutDao.getAllWorkoutsFlow().first()
+        return kotlinx.coroutines.withContext(dispatcherProvider.default) {
+            val workouts = workoutDao.getAllWorkoutsFlow().first()
         
         if (workouts.isEmpty()) {
             val emptyStats = WorkoutStats(
@@ -101,7 +103,8 @@ class StatsRepository(
         
         // Cache the result
         cacheManager.put(CacheKeys.WORKOUT_STATS, stats)
-        return stats
+        stats
+        }
     }
     
     /**

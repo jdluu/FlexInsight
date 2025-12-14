@@ -15,7 +15,8 @@ class FlexRepository(
     database: FlexDatabase,
     private val apiKeyManager: ApiKeyManager,
     networkMonitor: com.example.flexinsight.core.network.NetworkMonitor,
-    cacheManager: com.example.flexinsight.data.cache.CacheManager
+    cacheManager: com.example.flexinsight.data.cache.CacheManager,
+    private val dispatcherProvider: com.example.flexinsight.core.dispatchers.DispatcherProvider = com.example.flexinsight.core.dispatchers.DefaultDispatcherProvider()
 ) {
     private val workoutDao = database.workoutDao()
     private val exerciseDao = database.exerciseDao()
@@ -55,7 +56,8 @@ class FlexRepository(
         exerciseDao = exerciseDao,
         setDao = setDao,
         exerciseRepository = exerciseRepository,
-        cacheManager = cacheManager
+        cacheManager = cacheManager,
+        dispatcherProvider = dispatcherProvider
     )
     
     private val cacheManager = cacheManager
