@@ -19,7 +19,8 @@ import kotlinx.coroutines.launch
 
 data class ExerciseWithSets(
     val exercise: Exercise,
-    val sets: List<Set>
+    val sets: List<Set>,
+    val muscleGroup: String? = null
 )
 
 data class WorkoutDetailUiState(

@@ -14,13 +14,15 @@ data class RoutineExercise(
  * Routine exercise API response
  */
 data class RoutineExerciseResponse(
-    @SerializedName("template_id")
-    val templateId: String
+    @SerializedName("exercise_template_id")
+    val templateId: String,
+    @SerializedName("title")
+    val title: String?
 ) {
     fun toRoutineExercise(exerciseName: String? = null): RoutineExercise {
         return RoutineExercise(
             templateId = templateId,
-            name = exerciseName
+            name = title ?: exerciseName // Prefer API title, fallback to mapping
         )
     }
 }

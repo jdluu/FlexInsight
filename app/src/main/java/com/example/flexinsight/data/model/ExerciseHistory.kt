@@ -28,7 +28,9 @@ data class ExerciseHistoryEntry(
  * Exercise history response
  */
 data class ExerciseHistoryResponse(
-    @SerializedName("data")
-    val data: List<ExerciseHistoryEntry>
+    @SerializedName("exercise_id")
+    val exerciseId: String,
+    @SerializedName("history")
+    val history: List<ExerciseHistoryEntry>
 )
 

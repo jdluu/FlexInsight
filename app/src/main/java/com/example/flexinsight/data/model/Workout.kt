@@ -123,7 +123,9 @@ data class PaginatedWorkoutEventsResponse(
 data class WorkoutEvent(
     @SerializedName("type")
     val type: String, // "created", "updated", or "deleted"
+    @SerializedName("workout_id")
+    val workoutId: String?,
     @SerializedName("workout")
-    val workout: WorkoutResponse?  // Full workout data embedded in event (null for deleted events)
+    val workout: WorkoutResponse? = null // Keeping just in case, but docs show workout_id
 )
 
