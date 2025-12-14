@@ -170,6 +170,15 @@ fun RecommendedWorkoutCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Generate Optimized Plan", color = MaterialTheme.colorScheme.onPrimary)
             }
+            
+            Text(
+                text = "AI will create a personalized workout plan based on your training history and recovery needs",
+                fontSize = 10.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                lineHeight = 14.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

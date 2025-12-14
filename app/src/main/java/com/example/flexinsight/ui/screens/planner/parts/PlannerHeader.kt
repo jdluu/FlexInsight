@@ -80,6 +80,12 @@ fun WeeklyGoalCard(weeklyGoalProgress: WeeklyGoalProgress? = null) {
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                         letterSpacing = 1.sp
                     )
+                    Text(
+                        text = "${weeklyGoalProgress?.target ?: 5} workouts per week",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f)
+                    )
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
