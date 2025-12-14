@@ -2,6 +2,8 @@ package com.example.hevyinsight.data.api
 
 import com.example.hevyinsight.data.model.ExerciseHistoryResponse
 import com.example.hevyinsight.data.model.ExerciseTemplateResponse
+import com.example.hevyinsight.data.model.PaginatedExerciseTemplatesResponse
+import com.example.hevyinsight.data.model.PaginatedRoutineResponse
 import com.example.hevyinsight.data.model.PaginatedWorkoutResponse
 import com.example.hevyinsight.data.model.RoutineResponse
 import com.example.hevyinsight.data.model.WorkoutResponse
@@ -52,18 +54,42 @@ interface HevyApiService {
     ): Response<ExerciseHistoryResponse>
     
     /**
-     * Get all exercise templates
+     * Get all exercise templates (paginated)
      * API key is added automatically by the interceptor
+     * @param page Page number (default: 1)
+     * @param pageSize Number of items per page (default: 50)
      */
-    @GET("v1/exercise-templates")
-    suspend fun getExerciseTemplates(): Response<List<ExerciseTemplateResponse>>
+    @GET("v1/exercise_templates")
+    suspend fun getExerciseTemplates(
+        @Query("page") page: Int = 1,
+        @Query("pageSize") pageSize: Int = 50
+    ): Response<PaginatedExerciseTemplatesResponse>
+    
+    /**
+     * Get workout events (created, updated, deleted) since a specific date
+     * API key is added automatically by the interceptor
+     * @param page Page number (default: 1)
+     * @param pageSize Number of items per page (default: 5, max: 10)
+     * @param since ISO 8601 date string (e.g., "2023-10-01T00:00:00Z")
+     */
+    @GET("v1/workouts/events")
+    suspend fun getWorkoutEvents(
+        @Query("page") page: Int = 1,
+        @Query("pageSize") pageSize: Int = 5,
+        @Query("since") since: String? = null
+    ): Response<com.example.hevyinsight.data.model.PaginatedWorkoutEventsResponse>
 
     /**
-     * Get all workout routines (templates) saved by user
+     * Get all workout routines (templates) saved by user (paginated)
      * API key is added automatically by the interceptor
+     * @param page Page number (default: 1)
+     * @param pageSize Number of items per page (default: 50)
      */
     @GET("v1/routines")
-    suspend fun getRoutines(): Response<List<RoutineResponse>>
+    suspend fun getRoutines(
+        @Query("page") page: Int = 1,
+        @Query("pageSize") pageSize: Int = 50
+    ): Response<PaginatedRoutineResponse>
 
     /**
      * Get a single routine by ID
