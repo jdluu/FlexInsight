@@ -16,6 +16,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.DayOfWeek
 import com.example.flexinsight.core.dispatchers.DispatcherProvider
+import kotlinx.coroutines.withContext
 
 /**
  * Repository for statistics calculations.
@@ -33,7 +34,7 @@ class StatsRepositoryImpl(
     /**
      * Calculate workout statistics with caching
      */
-    suspend fun calculateStats(): WorkoutStats {
+    override suspend fun calculateStats(): WorkoutStats {
         // Check cache first
         val cached = cacheManager.get<WorkoutStats>(
             CacheKeys.WORKOUT_STATS,
@@ -46,65 +47,65 @@ class StatsRepositoryImpl(
         return withContext(dispatcherProvider.default) {
             val workouts = workoutDao.getAllWorkoutsFlow().first()
         
-        if (workouts.isEmpty()) {
-            val emptyStats = WorkoutStats(
-                totalWorkouts = 0,
-                totalVolume = 0.0,
-                averageVolume = 0.0,
-                totalSets = 0,
-                totalDuration = 0L,
-                averageDuration = 0L,
-                currentStreak = 0,
-                longestStreak = 0,
-                bestWeekVolume = 0.0,
-                bestWeekDate = null
+            if (workouts.isEmpty()) {
+                val emptyStats = WorkoutStats(
+                    totalWorkouts = 0,
+                    totalVolume = 0.0,
+                    averageVolume = 0.0,
+                    totalSets = 0,
+                    totalDuration = 0L,
+                    averageDuration = 0L,
+                    currentStreak = 0,
+                    longestStreak = 0,
+                    bestWeekVolume = 0.0,
+                    bestWeekDate = null
+                )
+                cacheManager.put(CacheKeys.WORKOUT_STATS, emptyStats)
+                return@withContext emptyStats
+            }
+            
+            // Optimize: Get all exercises and sets in batch
+            val workoutIds = workouts.map { it.id }
+            val allExercises = workoutIds.flatMap { workoutId ->
+                exerciseDao.getExercisesByWorkoutId(workoutId)
+            }
+            val exerciseIds = allExercises.map { it.id }
+            val allSets = exerciseIds.flatMap { exerciseId ->
+                setDao.getSetsByExerciseId(exerciseId)
+            }
+            
+            // Calculate stats using StatsCalculator
+            val totalWorkouts = workouts.size
+            val totalVolume = StatsCalculator.calculateTotalVolume(workouts, allExercises, allSets)
+            val averageVolume = if (totalWorkouts > 0) totalVolume / totalWorkouts else 0.0
+            val totalSets = allSets.size
+            
+            val totalDuration = StatsCalculator.calculateTotalDuration(workouts)
+            val averageDuration = if (totalWorkouts > 0) totalDuration / totalWorkouts else 0L
+            
+            val currentStreak = StatsCalculator.calculateStreak(workouts)
+            val longestStreak = StatsCalculator.calculateLongestStreak(workouts)
+            
+            // Calculate best week
+            val weeklyProgress = getWeeklyProgress(4)
+            val bestWeek = weeklyProgress.maxByOrNull { it.totalVolume }
+            
+            val stats = WorkoutStats(
+                totalWorkouts = totalWorkouts,
+                totalVolume = totalVolume,
+                averageVolume = averageVolume,
+                totalSets = totalSets,
+                totalDuration = totalDuration,
+                averageDuration = averageDuration,
+                currentStreak = currentStreak,
+                longestStreak = longestStreak,
+                bestWeekVolume = bestWeek?.totalVolume ?: 0.0,
+                bestWeekDate = bestWeek?.weekStartDate
             )
-            cacheManager.put(CacheKeys.WORKOUT_STATS, emptyStats)
-            return emptyStats
-        }
-        
-        // Optimize: Get all exercises and sets in batch
-        val workoutIds = workouts.map { it.id }
-        val allExercises = workoutIds.flatMap { workoutId ->
-            exerciseDao.getExercisesByWorkoutId(workoutId)
-        }
-        val exerciseIds = allExercises.map { it.id }
-        val allSets = exerciseIds.flatMap { exerciseId ->
-            setDao.getSetsByExerciseId(exerciseId)
-        }
-        
-        // Calculate stats using StatsCalculator
-        val totalWorkouts = workouts.size
-        val totalVolume = StatsCalculator.calculateTotalVolume(workouts, allExercises, allSets)
-        val averageVolume = if (totalWorkouts > 0) totalVolume / totalWorkouts else 0.0
-        val totalSets = allSets.size
-        
-        val totalDuration = StatsCalculator.calculateTotalDuration(workouts)
-        val averageDuration = if (totalWorkouts > 0) totalDuration / totalWorkouts else 0L
-        
-        val currentStreak = StatsCalculator.calculateStreak(workouts)
-        val longestStreak = StatsCalculator.calculateLongestStreak(workouts)
-        
-        // Calculate best week
-        val weeklyProgress = getWeeklyProgress(4)
-        val bestWeek = weeklyProgress.maxByOrNull { it.totalVolume }
-        
-        val stats = WorkoutStats(
-            totalWorkouts = totalWorkouts,
-            totalVolume = totalVolume,
-            averageVolume = averageVolume,
-            totalSets = totalSets,
-            totalDuration = totalDuration,
-            averageDuration = averageDuration,
-            currentStreak = currentStreak,
-            longestStreak = longestStreak,
-            bestWeekVolume = bestWeek?.totalVolume ?: 0.0,
-            bestWeekDate = bestWeek?.weekStartDate
-        )
-        
-        // Cache the result
-        cacheManager.put(CacheKeys.WORKOUT_STATS, stats)
-        stats
+            
+            // Cache the result
+            cacheManager.put(CacheKeys.WORKOUT_STATS, stats)
+            stats
         }
     }
     
@@ -146,17 +147,17 @@ class StatsRepositoryImpl(
     /**
      * Get PRs with exercise and workout details (optimized)
      */
-    override suspend fun getPRsWithDetails(limit: Int = 10): List<PRDetails> = withContext(dispatcherProvider.default) {
+    override suspend fun getPRsWithDetails(limit: Int): List<PRDetails> = withContext(dispatcherProvider.default) {
         // Check cache
         val cacheKey = "${CacheKeys.PRS_WITH_DETAILS}_$limit"
         val cached = cacheManager.get<List<PRDetails>>(cacheKey, CacheTTL.PRS)
         if (cached != null) {
-            return cached
+            return@withContext cached
         }
         
         val prSets = setDao.getRecentPRsFlow(limit).first()
         if (prSets.isEmpty()) {
-            return emptyList()
+            return@withContext emptyList()
         }
         
         // Batch fetch exercises and workouts
@@ -196,14 +197,11 @@ class StatsRepositoryImpl(
     /**
      * Get muscle group progress for the last N weeks (optimized)
      */
-    /**
-     * Get muscle group progress for the last N weeks (optimized)
-     */
-    override suspend fun getMuscleGroupProgress(weeks: Int = 4): List<MuscleGroupProgress> = withContext(dispatcherProvider.default) {
+    override suspend fun getMuscleGroupProgress(weeks: Int): List<MuscleGroupProgress> = withContext(dispatcherProvider.default) {
         val cacheKey = "${CacheKeys.MUSCLE_GROUP_PROGRESS}$weeks"
         val cached = cacheManager.get<List<MuscleGroupProgress>>(cacheKey, CacheTTL.PROGRESS)
         if (cached != null) {
-            return cached
+            return@withContext cached
         }
         
         val now = Instant.now()
@@ -213,7 +211,7 @@ class StatsRepositoryImpl(
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(startDate, endDate).first()
         
         if (workouts.isEmpty()) {
-            return emptyList()
+            return@withContext emptyList()
         }
         
         // Batch fetch all exercises and sets
@@ -249,11 +247,7 @@ class StatsRepositoryImpl(
         // Convert to MuscleGroupProgress and determine intensity
         val progress = muscleGroupData.map { (muscleGroup, data) ->
             val (volume, sets) = data
-            val intensity = when {
-                volume >= averageVolume * 1.5 -> "HI"
-                volume >= averageVolume * 0.7 -> "MD"
-                else -> "LO"
-            }
+            val intensity = StatsCalculator.calculateRelativeIntensity(volume, averageVolume)
             MuscleGroupProgress(
                 muscleGroup = muscleGroup,
                 volume = volume,
@@ -270,14 +264,11 @@ class StatsRepositoryImpl(
     /**
      * Calculate volume trend comparing current period to previous period
      */
-    /**
-     * Calculate volume trend comparing current period to previous period
-     */
-    override suspend fun calculateVolumeTrend(weeks: Int = 4): VolumeTrend = withContext(dispatcherProvider.default) {
+    override suspend fun calculateVolumeTrend(weeks: Int): VolumeTrend = withContext(dispatcherProvider.default) {
         val cacheKey = "${CacheKeys.VOLUME_TREND}_$weeks"
         val cached = cacheManager.get<VolumeTrend>(cacheKey, CacheTTL.PROGRESS)
         if (cached != null) {
-            return cached
+            return@withContext cached
         }
         
         val now = Instant.now()
@@ -291,11 +282,7 @@ class StatsRepositoryImpl(
         val currentVolume = calculateTotalVolumeForWorkouts(currentWorkouts)
         val previousVolume = calculateTotalVolumeForWorkouts(previousWorkouts)
         
-        val percentageChange = if (previousVolume > 0) {
-            ((currentVolume - previousVolume) / previousVolume) * 100.0
-        } else {
-            if (currentVolume > 0) 100.0 else 0.0
-        }
+        val percentageChange = StatsCalculator.calculateVolumeChange(currentVolume, previousVolume)
         
         val trend = VolumeTrend(
             currentVolume = currentVolume,
@@ -310,7 +297,7 @@ class StatsRepositoryImpl(
     /**
      * Get weekly volume data for chart display
      */
-    override suspend fun getWeeklyVolumeData(weeks: Int = 4): List<WeeklyVolumeData> = withContext(dispatcherProvider.default) {
+    override suspend fun getWeeklyVolumeData(weeks: Int): List<WeeklyVolumeData> = withContext(dispatcherProvider.default) {
         val weeklyProgress = getWeeklyProgress(weeks)
         weeklyProgress.mapIndexed { index, progress ->
             WeeklyVolumeData(
@@ -323,14 +310,11 @@ class StatsRepositoryImpl(
     /**
      * Get duration trend grouped by day of week
      */
-    /**
-     * Get duration trend grouped by day of week
-     */
-    override suspend fun getDurationTrend(weeks: Int = 6): List<DailyDurationData> = withContext(dispatcherProvider.default) {
+    override suspend fun getDurationTrend(weeks: Int): List<DailyDurationData> = withContext(dispatcherProvider.default) {
         val cacheKey = "${CacheKeys.DURATION_TREND}$weeks"
         val cached = cacheManager.get<List<DailyDurationData>>(cacheKey, CacheTTL.PROGRESS)
         if (cached != null) {
-            return cached
+            return@withContext cached
         }
         
         val now = Instant.now()
@@ -348,10 +332,7 @@ class StatsRepositoryImpl(
     /**
      * Get weekly goal progress
      */
-    /**
-     * Get weekly goal progress
-     */
-    override suspend fun getWeeklyGoalProgress(target: Int = 5): WeeklyGoalProgress = withContext(dispatcherProvider.default) {
+    override suspend fun getWeeklyGoalProgress(target: Int): WeeklyGoalProgress = withContext(dispatcherProvider.default) {
         val now = LocalDate.now()
         val weekStart = now.with(java.time.DayOfWeek.MONDAY).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val weekEnd = now.with(java.time.DayOfWeek.SUNDAY).atTime(java.time.LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
@@ -359,12 +340,7 @@ class StatsRepositoryImpl(
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(weekStart, weekEnd).first()
         val completed = workouts.size
         
-        val status = when {
-            completed >= target -> "On Track"
-            completed >= target * 0.7 -> "On Track"
-            completed >= target * 0.5 -> "Behind"
-            else -> "Behind"
-        }
+        val status = StatsCalculator.calculateGoalStatus(completed, target)
         
         WeeklyGoalProgress(
             completed = completed,
@@ -373,9 +349,6 @@ class StatsRepositoryImpl(
         )
     }
     
-    /**
-     * Get week calendar data (Monday to Sunday)
-     */
     /**
      * Get week calendar data (Monday to Sunday)
      */
@@ -415,9 +388,6 @@ class StatsRepositoryImpl(
     /**
      * Get planned workouts for a specific day
      */
-    /**
-     * Get planned workouts for a specific day
-     */
     override suspend fun getPlannedWorkoutsForDay(timestamp: Long): List<PlannedWorkout> = withContext(dispatcherProvider.default) {
         val dayStart = StatsCalculator.getStartOfDay(timestamp)
         val dayEnd = StatsCalculator.getEndOfDay(timestamp)
@@ -439,11 +409,7 @@ class StatsRepositoryImpl(
             val totalVolume = allSets.sumOf { set ->
                 (set.weight ?: 0.0) * (set.reps ?: 0)
             }
-            val intensity = when {
-                totalVolume > 5000 -> "High Intensity"
-                totalVolume > 2000 -> "Medium Intensity"
-                else -> "Aerobic"
-            }
+            val intensity = StatsCalculator.calculateAbsoluteIntensity(totalVolume)
             
             PlannedWorkout(
                 id = workout.id,
@@ -460,10 +426,7 @@ class StatsRepositoryImpl(
     /**
      * Get volume balance across Push, Pull, Legs, Cardio
      */
-    /**
-     * Get volume balance across Push, Pull, Legs, Cardio
-     */
-    override suspend fun getVolumeBalance(weeks: Int = 4): VolumeBalance = withContext(dispatcherProvider.default) {
+    override suspend fun getVolumeBalance(weeks: Int): VolumeBalance = withContext(dispatcherProvider.default) {
         val muscleGroupProgress = getMuscleGroupProgress(weeks)
         StatsCalculator.calculateVolumeBalance(muscleGroupProgress)
     }
@@ -471,10 +434,7 @@ class StatsRepositoryImpl(
     /**
      * Get weekly progress
      */
-    /**
-     * Get weekly progress
-     */
-    override suspend fun getWeeklyProgress(weeks: Int = 4): List<WeeklyProgress> = withContext(dispatcherProvider.default) {
+    override suspend fun getWeeklyProgress(weeks: Int): List<WeeklyProgress> = withContext(dispatcherProvider.default) {
         val now = Instant.now()
         val endDate = now.toEpochMilli()
         val startDate = now.minus(weeks.toLong() * 7, ChronoUnit.DAYS).toEpochMilli()
@@ -516,7 +476,7 @@ class StatsRepositoryImpl(
     /**
      * Get member since date (timestamp of first workout)
      */
-    suspend fun getMemberSinceDate(): Long? {
+    override suspend fun getMemberSinceDate(): Long? {
         val workouts = workoutDao.getAllWorkoutsFlow().first()
         return workouts.minOfOrNull { it.startTime }
     }
@@ -524,7 +484,7 @@ class StatsRepositoryImpl(
     /**
      * Calculate account age in days
      */
-    suspend fun calculateAccountAgeDays(): Int {
+    override suspend fun calculateAccountAgeDays(): Int {
         val memberSince = getMemberSinceDate() ?: return 0
         val now = System.currentTimeMillis()
         val daysDiff = (now - memberSince) / (1000 * 60 * 60 * 24)

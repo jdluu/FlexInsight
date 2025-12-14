@@ -18,17 +18,17 @@ object StatsCalculator {
     fun calculateTotalVolume(
         workouts: List<Workout>,
         allExercises: List<Exercise>,
-        allSets: List<Set>
+        allSets: List<com.example.flexinsight.data.model.Set>
     ): Double {
         val exercisesByWorkout = allExercises.groupBy { it.workoutId }
         val setsByExercise = allSets.groupBy { it.exerciseId }
         
         return workouts.sumOf { workout ->
             val exercises = exercisesByWorkout[workout.id] ?: emptyList()
-            exercises.sumOf { exercise ->
+            exercises.sumOf { exercise: Exercise ->
                 val sets = setsByExercise[exercise.id] ?: emptyList()
-                sets.sumOf { set ->
-                    (set.weight ?: 0.0) * (set.reps ?: 0)
+                sets.sumOf { set: com.example.flexinsight.data.model.Set ->
+                    ((set.weight ?: 0.0) * (set.reps ?: 0)).toDouble()
                 }
             }
         }
@@ -222,6 +222,9 @@ object StatsCalculator {
     /**
      * Get end of the day timestamp.
      */
+    /**
+     * Get end of the day timestamp.
+     */
     fun getEndOfDay(timestamp: Long): Long {
         return Instant.ofEpochMilli(timestamp)
             .atZone(ZoneId.systemDefault())
@@ -231,4 +234,49 @@ object StatsCalculator {
             .toInstant()
             .toEpochMilli()
      }
+
+    /**
+     * Calculate volume percentage change.
+     */
+    fun calculateVolumeChange(currentVolume: Double, previousVolume: Double): Double {
+        return if (previousVolume > 0) {
+            ((currentVolume - previousVolume) / previousVolume) * 100.0
+        } else {
+            if (currentVolume > 0) 100.0 else 0.0
+        }
+    }
+
+    /**
+     * Calculate weekly goal status.
+     */
+    fun calculateGoalStatus(completed: Int, target: Int): String {
+        return when {
+            completed >= target -> "On Track"
+            completed >= target * 0.7 -> "On Track"
+            completed >= target * 0.5 -> "Behind"
+            else -> "Behind"
+        }
+    }
+
+    /**
+     * Calculate relative intensity (HI/MD/LO) based on average volume.
+     */
+    fun calculateRelativeIntensity(volume: Double, averageVolume: Double): String {
+        return when {
+            volume >= averageVolume * 1.5 -> "HI"
+            volume >= averageVolume * 0.7 -> "MD"
+            else -> "LO"
+        }
+    }
+
+    /**
+     * Calculate absolute intensity based on total volume.
+     */
+    fun calculateAbsoluteIntensity(totalVolume: Double): String {
+        return when {
+            totalVolume > 5000 -> "High Intensity"
+            totalVolume > 2000 -> "Medium Intensity"
+            else -> "Aerobic"
+        }
+    }
 }

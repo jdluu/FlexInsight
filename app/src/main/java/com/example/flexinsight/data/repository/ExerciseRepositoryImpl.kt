@@ -50,7 +50,7 @@ class ExerciseRepositoryImpl(
     /**
      * Invalidates the API service
      */
-    fun invalidateApiService() {
+    override fun invalidateApiService() {
         apiService = null
         currentApiKey = null
         cacheManager.invalidate(CacheKeys.EXERCISE_TEMPLATES)
@@ -61,7 +61,7 @@ class ExerciseRepositoryImpl(
      * Returns mapping of templateId -> muscleGroup
      * Prefers data extracted from workout events, falls back to API cache, then API call
      */
-    suspend fun getExerciseTemplateMapping(): Result<Map<String, String>> {
+    override suspend fun getExerciseTemplateMapping(): Result<Map<String, String>> {
         // 1. First check event-extracted templates (from workout events)
         // Note: Events data has templateId -> exerciseName, not muscleGroup
         // But we check it to see if we have template IDs available

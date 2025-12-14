@@ -2,6 +2,7 @@ package com.example.flexinsight.ui.utils
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flexinsight.core.errors.ApiError
 import com.example.flexinsight.core.errors.ErrorHandler
 import com.example.flexinsight.ui.common.UiError
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -17,15 +18,22 @@ import kotlinx.coroutines.launch
  * @param block The suspend function to execute.
  */
 fun ViewModel.safeLaunch(
-    onError: (UiError) -> Unit,
+    onError: (ApiError) -> Unit,
     block: suspend CoroutineScope.() -> Unit
 ): Job {
     val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         val apiError = ErrorHandler.handleError(throwable)
-        onError(UiError.fromApiError(apiError))
+        onError(apiError)
     }
     
     return viewModelScope.launch(exceptionHandler) {
         block()
     }
+}
+
+/**
+ * Extension to convert Throwable to ApiError
+ */
+fun Throwable.toApiError(): ApiError {
+    return ErrorHandler.handleError(this)
 }

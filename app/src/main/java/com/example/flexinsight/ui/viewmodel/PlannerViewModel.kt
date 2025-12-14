@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import com.example.flexinsight.ui.utils.safeLaunch
+import com.example.flexinsight.ui.utils.toApiError
 
 data class PlannerUiState(
     val loadingState: LoadingState = LoadingState.Idle,
@@ -46,10 +47,10 @@ class PlannerViewModel(
     }
     
     fun loadPlannerData() {
-        safeLaunch(onError = { error ->
+        safeLaunch(onError = { apiError ->
             _uiState.value = _uiState.value.copy(
-                loadingState = LoadingState.Error(error.toApiError()),
-                error = error
+                loadingState = LoadingState.Error(apiError),
+                error = UiError.fromApiError(apiError)
             )
         }) {
             _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
@@ -118,8 +119,8 @@ class PlannerViewModel(
     }
     
     fun selectDay(dayIndex: Int) {
-        safeLaunch(onError = { error ->
-            _uiState.value = _uiState.value.copy(error = error)
+        safeLaunch(onError = { apiError ->
+            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
         }) {
             val weekCalendarData = _uiState.value.weekCalendarData
             if (dayIndex >= 0 && dayIndex < weekCalendarData.size) {
@@ -139,8 +140,8 @@ class PlannerViewModel(
     }
 
     fun markWorkoutAsComplete(workoutId: String, isCompleted: Boolean) {
-        safeLaunch(onError = { error ->
-            _uiState.value = _uiState.value.copy(error = error)
+        safeLaunch(onError = { apiError ->
+            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
         }) {
             // Optimistic update
             val updatedWorkouts = _uiState.value.selectedDayWorkouts.map {
@@ -167,8 +168,8 @@ class PlannerViewModel(
     }
 
     fun rescheduleWorkout(workoutId: String, newDate: Long) {
-        safeLaunch(onError = { error ->
-            _uiState.value = _uiState.value.copy(error = error)
+        safeLaunch(onError = { apiError ->
+            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
         }) {
             val result = repository.rescheduleWorkout(workoutId, newDate)
             

@@ -151,8 +151,8 @@ class SettingsViewModel(
     }
     
     fun updateTheme(theme: String) {
-        safeLaunch(onError = { error ->
-            _uiState.value = _uiState.value.copy(error = error)
+        safeLaunch(onError = { apiError ->
+            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
         }) {
             userPreferencesManager.setTheme(theme)
             _uiState.value = _uiState.value.copy(theme = theme)
@@ -160,8 +160,8 @@ class SettingsViewModel(
     }
     
     fun updateUnits(units: String) {
-        safeLaunch(onError = { error ->
-            _uiState.value = _uiState.value.copy(error = error)
+        safeLaunch(onError = { apiError ->
+            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
         }) {
             userPreferencesManager.setUnits(units)
             _uiState.value = _uiState.value.copy(units = units)
@@ -169,8 +169,8 @@ class SettingsViewModel(
     }
     
     fun updateViewOnlyMode(enabled: Boolean) {
-        safeLaunch(onError = { error ->
-            _uiState.value = _uiState.value.copy(error = error)
+        safeLaunch(onError = { apiError ->
+            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
         }) {
             userPreferencesManager.setViewOnlyMode(enabled)
             _uiState.value = _uiState.value.copy(viewOnlyMode = enabled)
@@ -178,8 +178,8 @@ class SettingsViewModel(
     }
     
     fun clearCache() {
-        safeLaunch(onError = { error ->
-            _uiState.value = _uiState.value.copy(error = error)
+        safeLaunch(onError = { apiError ->
+            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
         }) {
             repository.clearCache()
             _uiState.value = _uiState.value.copy(error = null)
@@ -187,8 +187,8 @@ class SettingsViewModel(
     }
     
     fun updateDisplayName(name: String) {
-        safeLaunch(onError = { error ->
-            _uiState.value = _uiState.value.copy(error = error)
+        safeLaunch(onError = { apiError ->
+            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
         }) {
             userPreferencesManager.setDisplayName(name)
             // Update local state immediately for responsiveness

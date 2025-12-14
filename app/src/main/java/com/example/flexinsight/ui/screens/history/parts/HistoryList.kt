@@ -26,7 +26,7 @@ import com.example.flexinsight.ui.theme.SurfaceHighlight
 import com.example.flexinsight.ui.theme.TextSecondary
 import com.example.flexinsight.ui.utils.UnitConverter
 import com.example.flexinsight.ui.utils.rememberUnitPreference
-import com.example.flexinsight.ui.screens.history.formatDateShort
+import com.example.flexinsight.ui.screens.history.parts.formatDateShort
 
 @Composable
 fun RecentPRsSection(

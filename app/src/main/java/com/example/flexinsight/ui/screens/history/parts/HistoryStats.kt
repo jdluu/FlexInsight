@@ -25,8 +25,8 @@ import com.example.flexinsight.ui.theme.Primary
 import com.example.flexinsight.ui.theme.SurfaceCardAlt
 import com.example.flexinsight.ui.theme.TextSecondary
 import com.example.flexinsight.ui.utils.UnitConverter
-import com.example.flexinsight.ui.screens.history.formatVolumeWithCommas
-import com.example.flexinsight.ui.screens.history.formatPercentageChange
+import com.example.flexinsight.ui.screens.history.parts.formatVolumeWithCommas
+import com.example.flexinsight.ui.screens.history.parts.formatPercentageChange
 
 @Composable
 fun StatsGrid(

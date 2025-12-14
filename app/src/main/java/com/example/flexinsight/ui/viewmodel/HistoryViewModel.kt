@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import com.example.flexinsight.ui.utils.safeLaunch
+import com.example.flexinsight.ui.utils.toApiError
 
 data class HistoryUiState(
     val loadingState: LoadingState = LoadingState.Idle,
@@ -60,10 +61,10 @@ class HistoryViewModel(
     }
     
     private fun loadHistoryData() {
-        safeLaunch(onError = { error ->
+        safeLaunch(onError = { apiError ->
             _uiState.value = _uiState.value.copy(
-                loadingState = LoadingState.Error(error.toApiError()),
-                error = error
+                loadingState = LoadingState.Error(apiError),
+                error = UiError.fromApiError(apiError)
             )
         }) {
             _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)

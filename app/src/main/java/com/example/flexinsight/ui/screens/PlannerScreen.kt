@@ -71,33 +71,20 @@ fun PlannerScreen(
     var showRescheduleDialog by remember { mutableStateOf<PlannedWorkout?>(null) }
     
     if (showRescheduleDialog != null) {
-        AlertDialog(
-            onDismissRequest = { showRescheduleDialog = null },
-            title = { Text("Reschedule Workout") },
-            text = { Text("Move '${showRescheduleDialog?.name}' to tomorrow?") },
-            containerColor = BackgroundDarkAlt,
-            titleContentColor = Color.White,
-            textContentColor = TextSecondary,
-            confirmButton = {
-                TextButton(onClick = {
-                    showRescheduleDialog?.let { workout ->
-                        val calendar = Calendar.getInstance()
-                        calendar.add(Calendar.DAY_OF_YEAR, 1)
-                        workout.id?.let { id ->
-                            viewModel.rescheduleWorkout(id, calendar.timeInMillis)
-                        }
-                        Toast.makeText(context, "Moved to tomorrow", Toast.LENGTH_SHORT).show()
+        PlannerRescheduleDialog(
+            workout = showRescheduleDialog!!,
+            onConfirm = {
+                showRescheduleDialog?.let { workout ->
+                    val calendar = Calendar.getInstance()
+                    calendar.add(Calendar.DAY_OF_YEAR, 1)
+                    workout.id?.let { id ->
+                        viewModel.rescheduleWorkout(id, calendar.timeInMillis)
                     }
-                    showRescheduleDialog = null
-                }) {
-                    Text("Move", color = Primary)
+                    Toast.makeText(context, "Moved to tomorrow", Toast.LENGTH_SHORT).show()
                 }
+                showRescheduleDialog = null
             },
-            dismissButton = {
-                TextButton(onClick = { showRescheduleDialog = null }) {
-                    Text("Cancel", color = TextSecondary)
-                }
-            }
+            onDismiss = { showRescheduleDialog = null }
         )
     }
     

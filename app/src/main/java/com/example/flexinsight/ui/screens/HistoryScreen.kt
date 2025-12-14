@@ -31,52 +31,15 @@ fun HistoryScreen(
     var showFilterDialog by remember { mutableStateOf(false) }
     
     // Filter Dialog
+    // Filter Dialog
     if (showFilterDialog) {
-        AlertDialog(
-            onDismissRequest = { showFilterDialog = false },
-            title = {
-                Text(
-                    text = "Filter History",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
+        HistoryFilterDialog(
+            currentFilter = uiState.dateFilter,
+            onFilterSelected = { filter ->
+                viewModel.setDateFilter(filter)
+                showFilterDialog = false
             },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val filters = listOf("All Time", "Last 30 Days", "Last 3 Months", "This Year")
-                    filters.forEach { filter ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.setDateFilter(filter)
-                                    showFilterDialog = false
-                                }
-                                .padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = uiState.dateFilter == filter,
-                                onClick = null, // Handled by Row clickable
-                                colors = RadioButtonDefaults.colors(selectedColor = Primary, unselectedColor = TextSecondary)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = filter,
-                                color = if (uiState.dateFilter == filter) Color.White else TextSecondary,
-                                fontSize = 16.sp
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showFilterDialog = false }) {
-                    Text("Close", color = Primary)
-                }
-            },
-            containerColor = SurfaceCardAlt,
-            textContentColor = TextSecondary
+            onDismiss = { showFilterDialog = false }
         )
     }
     
