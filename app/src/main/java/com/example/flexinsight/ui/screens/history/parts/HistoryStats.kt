@@ -229,11 +229,13 @@ fun TotalVolumeCard(
                     ) {
                         weeklyVolumeData.take(4).forEachIndexed { index, _ ->
                             Text(
-                                text = "Week ${4 - index}",
+                                text = "W${4 - index}",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.width(24.dp)
+                                modifier = Modifier.width(24.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                maxLines = 1
                             )
                         }
                     }

@@ -168,16 +168,16 @@ fun AnalysisCard(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(32.dp)
                             )
-                            Row(
+                            Column(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
+                                horizontalAlignment = Alignment.Start,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 val colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
                                 muscleGroupProgress.take(3).forEachIndexed { index, muscle ->
                                     MuscleLegend(
                                         name = muscle.muscleGroup,
-                                        color = colors.getOrElse(index) { MaterialTheme.colorScheme.primary },
-                                        modifier = Modifier.padding(horizontal = 6.dp)
+                                        color = colors.getOrElse(index) { MaterialTheme.colorScheme.primary }
                                     )
                                 }
                             }
@@ -196,9 +196,8 @@ fun AnalysisCard(
 }
 
 @Composable
-fun MuscleLegend(name: String, color: Color, modifier: Modifier = Modifier) {
+fun MuscleLegend(name: String, color: Color) {
     Row(
-        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -213,8 +212,7 @@ fun MuscleLegend(name: String, color: Color, modifier: Modifier = Modifier) {
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            softWrap = false
+            maxLines = 1
         )
     }
 }
