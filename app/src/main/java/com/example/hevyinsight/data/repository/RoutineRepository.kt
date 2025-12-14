@@ -73,40 +73,56 @@ class RoutineRepository(
         val apiService = (apiServiceResult as Result.Success).data
         
         return try {
-            val response = apiService.getRoutines()
-            
-            if (response.isSuccessful) {
-                val routineResponses = response.body() ?: return Result.error(
-                    ApiError.Unknown("Empty response body")
-                )
-                
-                // Get exercise template mapping for routine conversion
-                val exerciseTemplateMappingResult = exerciseRepository.getExerciseTemplateMapping()
-                val exerciseTemplateMapping = if (exerciseTemplateMappingResult is Result.Success) {
-                    exerciseTemplateMappingResult.data
+            var page = 1
+            var hasMore = true
+            val allRoutineResponses = mutableListOf<RoutineResponse>()
+
+            // Fetch all pages of routines
+            while (hasMore) {
+                val response = apiService.getRoutines(page, 50)
+
+                if (response.isSuccessful) {
+                    val paginatedResponse = response.body() ?: return Result.error(
+                        ApiError.Unknown("Empty response body")
+                    )
+                    val routinesList = paginatedResponse.routines
+
+                    if (routinesList != null && routinesList.isNotEmpty()) {
+                        allRoutineResponses.addAll(routinesList)
+                    }
+
+                    // Check if there are more pages
+                    hasMore = page < paginatedResponse.pageCount
+                    page++
                 } else {
-                    emptyMap()
+                    val error = ErrorHandler.handleHttpException(
+                        retrofit2.HttpException(response)
+                    )
+                    
+                    if (error is ApiError.AuthError) {
+                        invalidateApiService()
+                    }
+                    
+                    return Result.error(error)
                 }
-                
-                val routinesList = routineResponses.map { routineResponse ->
-                    routineResponse.toRoutine(exerciseTemplateMapping)
-                }
-                
-                // Cache routines
-                cacheManager.put(CacheKeys.ROUTINES, routinesList)
-                
-                Result.success(Unit)
-            } else {
-                val error = ErrorHandler.handleHttpException(
-                    retrofit2.HttpException(response)
-                )
-                
-                if (error is ApiError.AuthError) {
-                    invalidateApiService()
-                }
-                
-                Result.error(error)
             }
+
+            // Get exercise template mapping for routine conversion
+            val exerciseTemplateMappingResult = exerciseRepository.getExerciseTemplateMapping()
+            val exerciseTemplateMapping = if (exerciseTemplateMappingResult is Result.Success) {
+                exerciseTemplateMappingResult.data
+            } else {
+                emptyMap()
+            }
+
+            val routinesList = allRoutineResponses.map { routineResponse ->
+                routineResponse.toRoutine(exerciseTemplateMapping)
+            }
+
+            // Cache routines
+            cacheManager.put(CacheKeys.ROUTINES, routinesList)
+
+            Result.success(Unit)
         } catch (e: Exception) {
             val error = ErrorHandler.handleError(e)
             Result.error(error)
