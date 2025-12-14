@@ -9,11 +9,17 @@ import com.example.flexinsight.data.local.dao.WorkoutDao
 import com.example.flexinsight.data.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import java.util.Calendar
+import java.time.Instant
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.DayOfWeek
 
 /**
  * Repository for statistics calculations.
  * Optimized to avoid N+1 query problems by using batch operations.
+ * Refactored to use java.time and StatsCalculator.
  */
 class StatsRepository(
     private val workoutDao: WorkoutDao,
@@ -64,23 +70,17 @@ class StatsRepository(
             setDao.getSetsByExerciseId(exerciseId)
         }
         
-        // Calculate stats
+        // Calculate stats using StatsCalculator
         val totalWorkouts = workouts.size
-        val totalVolume = calculateTotalVolumeOptimized(workouts, allExercises, allSets)
+        val totalVolume = StatsCalculator.calculateTotalVolume(workouts, allExercises, allSets)
         val averageVolume = if (totalWorkouts > 0) totalVolume / totalWorkouts else 0.0
         val totalSets = allSets.size
         
-        // Calculate duration
-        val totalDuration = workouts
-            .filter { it.endTime != null }
-            .sumOf { workout -> 
-                val endTime = workout.endTime ?: return@sumOf 0L
-                (endTime - workout.startTime) / (1000 * 60)
-            }
+        val totalDuration = StatsCalculator.calculateTotalDuration(workouts)
         val averageDuration = if (totalWorkouts > 0) totalDuration / totalWorkouts else 0L
         
-        val currentStreak = calculateStreak(workouts)
-        val longestStreak = calculateLongestStreak(workouts)
+        val currentStreak = StatsCalculator.calculateStreak(workouts)
+        val longestStreak = StatsCalculator.calculateLongestStreak(workouts)
         
         // Calculate best week
         val weeklyProgress = getWeeklyProgress(4)
@@ -192,6 +192,9 @@ class StatsRepository(
     /**
      * Get muscle group progress for the last N weeks (optimized)
      */
+    /**
+     * Get muscle group progress for the last N weeks (optimized)
+     */
     suspend fun getMuscleGroupProgress(weeks: Int = 4): List<MuscleGroupProgress> {
         val cacheKey = "${CacheKeys.MUSCLE_GROUP_PROGRESS}$weeks"
         val cached = cacheManager.get<List<MuscleGroupProgress>>(cacheKey, CacheTTL.PROGRESS)
@@ -199,10 +202,9 @@ class StatsRepository(
             return cached
         }
         
-        val calendar = Calendar.getInstance()
-        val endDate = calendar.timeInMillis
-        calendar.add(Calendar.WEEK_OF_YEAR, -weeks)
-        val startDate = calendar.timeInMillis
+        val now = Instant.now()
+        val endDate = now.toEpochMilli()
+        val startDate = now.minus(weeks.toLong() * 7, ChronoUnit.DAYS).toEpochMilli()
         
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(startDate, endDate).first()
         
@@ -264,6 +266,9 @@ class StatsRepository(
     /**
      * Calculate volume trend comparing current period to previous period
      */
+    /**
+     * Calculate volume trend comparing current period to previous period
+     */
     suspend fun calculateVolumeTrend(weeks: Int = 4): VolumeTrend {
         val cacheKey = "${CacheKeys.VOLUME_TREND}_$weeks"
         val cached = cacheManager.get<VolumeTrend>(cacheKey, CacheTTL.PROGRESS)
@@ -271,18 +276,12 @@ class StatsRepository(
             return cached
         }
         
-        val calendar = Calendar.getInstance()
-        val now = calendar.timeInMillis
+        val now = Instant.now()
+        val currentPeriodEnd = now.toEpochMilli()
+        val currentPeriodStart = now.minus(weeks.toLong() * 7, ChronoUnit.DAYS).toEpochMilli()
+        val previousPeriodStart = now.minus(weeks.toLong() * 14, ChronoUnit.DAYS).toEpochMilli()
         
-        // Current period: last N weeks
-        calendar.add(Calendar.WEEK_OF_YEAR, -weeks)
-        val currentPeriodStart = calendar.timeInMillis
-        
-        // Previous period: N weeks before that
-        calendar.add(Calendar.WEEK_OF_YEAR, -weeks)
-        val previousPeriodStart = calendar.timeInMillis
-        
-        val currentWorkouts = workoutDao.getWorkoutsByDateRangeFlow(currentPeriodStart, now).first()
+        val currentWorkouts = workoutDao.getWorkoutsByDateRangeFlow(currentPeriodStart, currentPeriodEnd).first()
         val previousWorkouts = workoutDao.getWorkoutsByDateRangeFlow(previousPeriodStart, currentPeriodStart).first()
         
         val currentVolume = calculateTotalVolumeForWorkouts(currentWorkouts)
@@ -320,6 +319,9 @@ class StatsRepository(
     /**
      * Get duration trend grouped by day of week
      */
+    /**
+     * Get duration trend grouped by day of week
+     */
     suspend fun getDurationTrend(weeks: Int = 6): List<DailyDurationData> {
         val cacheKey = "${CacheKeys.DURATION_TREND}$weeks"
         val cached = cacheManager.get<List<DailyDurationData>>(cacheKey, CacheTTL.PROGRESS)
@@ -327,54 +329,13 @@ class StatsRepository(
             return cached
         }
         
-        val calendar = Calendar.getInstance()
-        val endDate = calendar.timeInMillis
-        calendar.add(Calendar.WEEK_OF_YEAR, -weeks)
-        val startDate = calendar.timeInMillis
+        val now = Instant.now()
+        val endDate = now.toEpochMilli()
+        val startDate = now.minus(weeks.toLong() * 7, ChronoUnit.DAYS).toEpochMilli()
         
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(startDate, endDate).first()
         
-        // Group by day of week
-        val dayGroups = mutableMapOf<Int, MutableList<Long>>()
-        
-        workouts.forEach { workout ->
-            if (workout.endTime != null) {
-                val workoutCal = Calendar.getInstance().apply {
-                    timeInMillis = workout.startTime
-                }
-                val dayOfWeek = workoutCal.get(Calendar.DAY_OF_WEEK)
-                val durationMinutes = (workout.endTime - workout.startTime) / (1000 * 60)
-                
-                val dayIndex = when (dayOfWeek) {
-                    Calendar.MONDAY -> 0
-                    Calendar.TUESDAY -> 1
-                    Calendar.WEDNESDAY -> 2
-                    Calendar.THURSDAY -> 3
-                    Calendar.FRIDAY -> 4
-                    Calendar.SATURDAY -> 5
-                    Calendar.SUNDAY -> 6
-                    else -> -1
-                }
-                
-                if (dayIndex >= 0) {
-                    dayGroups.getOrPut(dayIndex) { mutableListOf() }.add(durationMinutes)
-                }
-            }
-        }
-        
-        val dayLabels = listOf("M", "T", "W", "T", "F", "S")
-        val result = dayLabels.mapIndexed { index, label ->
-            val durations = dayGroups[index] ?: emptyList()
-            val avgDuration = if (durations.isNotEmpty()) {
-                durations.average().toLong()
-            } else {
-                0L
-            }
-            DailyDurationData(
-                dayOfWeek = label,
-                averageDuration = avgDuration
-            )
-        }
+        val result = StatsCalculator.calculateDurationTrend(workouts, startDate, endDate)
         
         cacheManager.put(cacheKey, result)
         return result
@@ -383,22 +344,13 @@ class StatsRepository(
     /**
      * Get weekly goal progress
      */
+    /**
+     * Get weekly goal progress
+     */
     suspend fun getWeeklyGoalProgress(target: Int = 5): WeeklyGoalProgress {
-        val calendar = Calendar.getInstance()
-        
-        // Get current week (Monday to Sunday)
-        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val weekStart = calendar.timeInMillis
-        
-        calendar.add(Calendar.DAY_OF_WEEK, 6)
-        calendar.set(Calendar.HOUR_OF_DAY, 23)
-        calendar.set(Calendar.MINUTE, 59)
-        calendar.set(Calendar.SECOND, 59)
-        val weekEnd = calendar.timeInMillis
+        val now = LocalDate.now()
+        val weekStart = now.with(java.time.DayOfWeek.MONDAY).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val weekEnd = now.with(java.time.DayOfWeek.SUNDAY).atTime(java.time.LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(weekStart, weekEnd).first()
         val completed = workouts.size
@@ -420,31 +372,21 @@ class StatsRepository(
     /**
      * Get week calendar data (Monday to Sunday)
      */
+    /**
+     * Get week calendar data (Monday to Sunday)
+     */
     suspend fun getWeekCalendarData(): List<DayInfo> {
-        val calendar = Calendar.getInstance()
-        
-        // Get current week starting Monday
-        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-        val daysFromMonday = when (dayOfWeek) {
-            Calendar.SUNDAY -> 6
-            else -> dayOfWeek - Calendar.MONDAY
-        }
-        calendar.add(Calendar.DAY_OF_MONTH, -daysFromMonday)
+        val now = LocalDate.now()
+        // Get start of current week (Monday)
+        val weekStart = now.with(java.time.DayOfWeek.MONDAY)
         
         val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         val days = mutableListOf<DayInfo>()
         
         for (i in 0..6) {
-            calendar.set(Calendar.HOUR_OF_DAY, 0)
-            calendar.set(Calendar.MINUTE, 0)
-            calendar.set(Calendar.SECOND, 0)
-            calendar.set(Calendar.MILLISECOND, 0)
-            val dayStart = calendar.timeInMillis
-            
-            calendar.set(Calendar.HOUR_OF_DAY, 23)
-            calendar.set(Calendar.MINUTE, 59)
-            calendar.set(Calendar.SECOND, 59)
-            val dayEnd = calendar.timeInMillis
+            val date = weekStart.plusDays(i.toLong())
+            val dayStart = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val dayEnd = date.atTime(java.time.LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
             
             val workouts = workoutDao.getWorkoutsByDateRangeFlow(dayStart, dayEnd).first()
             val hasWorkout = workouts.isNotEmpty()
@@ -454,15 +396,13 @@ class StatsRepository(
             days.add(
                 DayInfo(
                     name = dayNames[i],
-                    date = calendar.get(Calendar.DAY_OF_MONTH),
+                    date = date.dayOfMonth,
                     timestamp = dayStart,
                     hasWorkout = hasWorkout,
                     isCompleted = isCompleted,
                     workoutCount = workoutCount
                 )
             )
-            
-            calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
         
         return days
@@ -471,21 +411,12 @@ class StatsRepository(
     /**
      * Get planned workouts for a specific day
      */
+    /**
+     * Get planned workouts for a specific day
+     */
     suspend fun getPlannedWorkoutsForDay(timestamp: Long): List<PlannedWorkout> {
-        val calendar = Calendar.getInstance().apply {
-            timeInMillis = timestamp
-        }
-        
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val dayStart = calendar.timeInMillis
-        
-        calendar.set(Calendar.HOUR_OF_DAY, 23)
-        calendar.set(Calendar.MINUTE, 59)
-        calendar.set(Calendar.SECOND, 59)
-        val dayEnd = calendar.timeInMillis
+        val dayStart = StatsCalculator.getStartOfDay(timestamp)
+        val dayEnd = StatsCalculator.getEndOfDay(timestamp)
         
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(dayStart, dayEnd).first()
         
@@ -525,68 +456,49 @@ class StatsRepository(
     /**
      * Get volume balance across Push, Pull, Legs, Cardio
      */
+    /**
+     * Get volume balance across Push, Pull, Legs, Cardio
+     */
     suspend fun getVolumeBalance(weeks: Int = 4): VolumeBalance {
         val muscleGroupProgress = getMuscleGroupProgress(weeks)
-        
-        // Map muscle groups to categories
-        val pushGroups = listOf("Chest", "Shoulders", "Triceps")
-        val pullGroups = listOf("Back", "Biceps")
-        val legsGroups = listOf("Legs", "Quads", "Hamstrings", "Glutes", "Calves")
-        val cardioGroups = listOf("Cardio")
-        
-        var pushVolume = 0.0
-        var pullVolume = 0.0
-        var legsVolume = 0.0
-        var cardioVolume = 0.0
-        
-        muscleGroupProgress.forEach { progress ->
-            val group = progress.muscleGroup
-            when {
-                pushGroups.any { group.contains(it, ignoreCase = true) } -> pushVolume += progress.volume
-                pullGroups.any { group.contains(it, ignoreCase = true) } -> pullVolume += progress.volume
-                legsGroups.any { group.contains(it, ignoreCase = true) } -> legsVolume += progress.volume
-                cardioGroups.any { group.contains(it, ignoreCase = true) } -> cardioVolume += progress.volume
-            }
-        }
-        
-        val totalVolume = pushVolume + pullVolume + legsVolume + cardioVolume
-        
-        return if (totalVolume > 0) {
-            VolumeBalance(
-                push = (pushVolume / totalVolume).toFloat(),
-                pull = (pullVolume / totalVolume).toFloat(),
-                legs = (legsVolume / totalVolume).toFloat(),
-                cardio = (cardioVolume / totalVolume).toFloat()
-            )
-        } else {
-            VolumeBalance(
-                push = 0.25f,
-                pull = 0.25f,
-                legs = 0.25f,
-                cardio = 0.25f
-            )
-        }
+        return StatsCalculator.calculateVolumeBalance(muscleGroupProgress)
     }
     
     /**
      * Get weekly progress
      */
+    /**
+     * Get weekly progress
+     */
     suspend fun getWeeklyProgress(weeks: Int = 4): List<WeeklyProgress> {
-        val calendar = Calendar.getInstance()
-        val endDate = calendar.timeInMillis
-        calendar.add(Calendar.WEEK_OF_YEAR, -weeks)
-        val startDate = calendar.timeInMillis
+        val now = Instant.now()
+        val endDate = now.toEpochMilli()
+        val startDate = now.minus(weeks.toLong() * 7, ChronoUnit.DAYS).toEpochMilli()
         
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(startDate, endDate).first()
         
+        val weekFields = java.time.temporal.WeekFields.of(java.util.Locale.getDefault())
+        
         // Group by week and calculate progress
         return workouts.groupBy { workout ->
-            val workoutCal = Calendar.getInstance().apply {
-                timeInMillis = workout.startTime
-            }
-            workoutCal.get(Calendar.WEEK_OF_YEAR)
+             Instant.ofEpochMilli(workout.startTime)
+                .atZone(ZoneId.systemDefault())
+                .get(weekFields.weekOfWeekBasedYear())
         }.map { (_, weekWorkouts) ->
             val weekStart = weekWorkouts.minOfOrNull { it.startTime } ?: 0L
+            // Use StatsCalculator for consistency
+            // Need exercises and sets for volume, which calculateTotalVolume expects.
+            // But here we are inside a method that seems to rely on calculateTotalVolumeForWorkouts 
+            // which fetches internally... that's an N+1 issue potentially if we reuse the old helper logic.
+            // But wait, the old helper calculateTotalVolumeForWorkouts DID fetch internally.
+            
+            // To be efficient, we should fetch all data for these workouts in batch if we can,
+            // or just accept the existing pattern since we are refactoring logic, not fully rewriting the data access pattern for this specific method yet
+            // although the task is to fix perf issues too.
+            // The old calculateTotalVolumeForWorkouts does batch fetching for the passed list of workouts.
+            // So we can replicate that or expose a helper in StatsCalculator that takes DAOs? No, StatsCalculator should be pure.
+            // We should keep a private helper in Repository that fetches data and THEN calls StatsCalculator.
+            
             val totalVolume = calculateTotalVolumeForWorkouts(weekWorkouts)
             WeeklyProgress(
                 weekStartDate = weekStart,
@@ -647,26 +559,6 @@ class StatsRepository(
     
     // Helper functions
     
-    private suspend fun calculateTotalVolumeOptimized(
-        workouts: List<Workout>,
-        allExercises: List<Exercise>,
-        allSets: List<com.example.flexinsight.data.model.Set>
-    ): Double {
-        // Create maps for efficient lookup
-        val exercisesByWorkout = allExercises.groupBy { it.workoutId }
-        val setsByExercise = allSets.groupBy { it.exerciseId }
-        
-        return workouts.sumOf { workout ->
-            val exercises = exercisesByWorkout[workout.id] ?: emptyList()
-            exercises.sumOf { exercise ->
-                val sets = setsByExercise[exercise.id] ?: emptyList()
-                sets.sumOf { set: com.example.flexinsight.data.model.Set ->
-                    (set.weight ?: 0.0) * (set.reps ?: 0)
-                }
-            }
-        }
-    }
-    
     private suspend fun calculateTotalVolumeForWorkouts(workouts: List<Workout>): Double {
         if (workouts.isEmpty()) return 0.0
         
@@ -679,79 +571,6 @@ class StatsRepository(
             setDao.getSetsByExerciseId(exerciseId)
         }
         
-        return allSets.sumOf { set ->
-            (set.weight ?: 0.0) * (set.reps ?: 0)
-        }
-    }
-    
-    private fun calculateStreak(workouts: List<Workout>): Int {
-        if (workouts.isEmpty()) return 0
-        
-        val sortedWorkouts = workouts.sortedByDescending { it.startTime }
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        
-        var streak = 0
-        var currentDate = calendar.timeInMillis
-        
-        for (workout in sortedWorkouts) {
-            val workoutCal = Calendar.getInstance().apply {
-                timeInMillis = workout.startTime
-            }
-            workoutCal.set(Calendar.HOUR_OF_DAY, 0)
-            workoutCal.set(Calendar.MINUTE, 0)
-            workoutCal.set(Calendar.SECOND, 0)
-            workoutCal.set(Calendar.MILLISECOND, 0)
-            val workoutDateStart = workoutCal.timeInMillis
-            
-            if (workoutDateStart == currentDate) {
-                streak++
-                calendar.add(Calendar.DAY_OF_YEAR, -1)
-                currentDate = calendar.timeInMillis
-            } else if (workoutDateStart < currentDate) {
-                break
-            }
-        }
-        
-        return streak
-    }
-    
-    private fun calculateLongestStreak(workouts: List<Workout>): Int {
-        if (workouts.isEmpty()) return 0
-        
-        val sortedWorkouts = workouts.sortedBy { it.startTime }
-        var longestStreak = 0
-        var currentStreak = 0
-        var lastDate: Long? = null
-        
-        for (workout in sortedWorkouts) {
-            val workoutCal = Calendar.getInstance().apply {
-                timeInMillis = workout.startTime
-            }
-            workoutCal.set(Calendar.HOUR_OF_DAY, 0)
-            workoutCal.set(Calendar.MINUTE, 0)
-            workoutCal.set(Calendar.SECOND, 0)
-            workoutCal.set(Calendar.MILLISECOND, 0)
-            val workoutDate = workoutCal.timeInMillis
-            
-            if (lastDate == null) {
-                currentStreak = 1
-                lastDate = workoutDate
-            } else {
-                val daysDiff = (workoutDate - lastDate) / (1000 * 60 * 60 * 24)
-                if (daysDiff == 1L) {
-                    currentStreak++
-                } else {
-                    longestStreak = maxOf(longestStreak, currentStreak)
-                    currentStreak = 1
-                }
-                lastDate = workoutDate
-            }
-        }
-        
-        return maxOf(longestStreak, currentStreak)
+        return StatsCalculator.calculateTotalVolume(workouts, allExercises, allSets)
     }
 }
