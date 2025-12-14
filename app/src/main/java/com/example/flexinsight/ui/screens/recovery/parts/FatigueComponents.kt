@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,14 +35,14 @@ fun FatigueSection() {
             text = "Fatigue",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onSurface
         )
         
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = SurfaceVariant),
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Box(
                 modifier = Modifier
@@ -49,7 +50,7 @@ fun FatigueSection() {
                     .background(
                         brush = Brush.horizontalGradient(
                             colors = listOf(
-                                Primary.copy(alpha = 0.3f),
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                                 Color.Transparent
                             )
                         )
@@ -69,24 +70,24 @@ fun FatigueSection() {
                                 text = "Leg Day (Heavy)",
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = "Yesterday at 6:00 PM",
                                 fontSize = 14.sp,
-                                color = TextSecondary
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = RedAccent.copy(alpha = 0.2f),
-                            border = BorderStroke(1.dp, RedAccent.copy(alpha = 0.2f))
+                            color = MaterialTheme.colorScheme.error.copy(alpha = 0.2f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.2f))
                         ) {
                             Text(
                                 text = "Recovering",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = RedAccent,
+                                color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                 letterSpacing = 1.sp
                             )
@@ -128,8 +129,8 @@ fun FatigueStatBox(
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        color = if (isHighlighted) Primary.copy(alpha = 0.1f) else SurfaceVariant,
-        border = if (isHighlighted) BorderStroke(1.dp, Primary.copy(alpha = 0.2f)) else null
+        color = if (isHighlighted) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant,
+        border = if (isHighlighted) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)) else null
     ) {
         Row(
             modifier = Modifier
@@ -141,7 +142,7 @@ fun FatigueStatBox(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = if (isHighlighted) Primary else TextSecondary
+                tint = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -151,14 +152,14 @@ fun FatigueStatBox(
                     text = label.uppercase(),
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isHighlighted) Primary.copy(alpha = 0.8f) else TextSecondary,
+                    color = if (isHighlighted) MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 1.sp
                 )
                 Text(
                     text = value,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isHighlighted) Primary else Color.White
+                    color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
             }
         }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,8 +34,8 @@ fun RecoveryScoreCard() {
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceVariant),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(
             modifier = Modifier
@@ -42,7 +43,7 @@ fun RecoveryScoreCard() {
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Primary.copy(alpha = 0.1f),
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                             Color.Transparent
                         ),
                         radius = 200f
@@ -61,9 +62,9 @@ fun RecoveryScoreCard() {
                     com.example.flexinsight.ui.screens.recovery.parts.CircularProgressIndicator(
                         progress = 0.82f,
                         modifier = Modifier.fillMaxSize(),
-                        color = Primary,
+                        color = MaterialTheme.colorScheme.primary,
                         strokeWidth = 12.dp,
-                        backgroundColor = SurfaceVariant.copy(alpha = 0.5f)
+                        backgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     )
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -73,13 +74,13 @@ fun RecoveryScoreCard() {
                             text = "82",
                             fontSize = 64.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "SCORE",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
-                            color = TextSecondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -93,11 +94,11 @@ fun RecoveryScoreCard() {
                         text = "High Readiness",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Primary
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = Primary.copy(alpha = 0.1f)
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                     ) {
                         Row(
                             modifier = Modifier.padding(12.dp),
@@ -106,13 +107,13 @@ fun RecoveryScoreCard() {
                             Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = null,
-                                tint = Primary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
                                 text = "Your HRV is up significantly. AI suggests today is a good day for a PR attempt.",
                                 fontSize = 14.sp,
-                                color = Color.White.copy(alpha = 0.8f),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                                 lineHeight = 20.sp
                             )
                         }
@@ -127,9 +128,9 @@ fun RecoveryScoreCard() {
 fun CircularProgressIndicator(
     progress: Float,
     modifier: Modifier = Modifier,
-    color: Color = Primary,
+    color: Color = MaterialTheme.colorScheme.primary,
     strokeWidth: Dp = 8.dp,
-    backgroundColor: Color = Color.Gray.copy(alpha = 0.3f)
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
 ) {
     Box(
         modifier = modifier,
