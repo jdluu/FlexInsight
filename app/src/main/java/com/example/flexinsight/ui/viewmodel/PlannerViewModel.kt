@@ -93,9 +93,26 @@ class PlannerViewModel(
                 emptyList()
             }
             
-            // Load workouts for selected day (default to first day)
+            // Load workouts for selected day (default to current day)
             var selectedDayWorkouts = emptyList<PlannedWorkout>()
-            val selectedDayIndex = _uiState.value.selectedDayIndex
+            var selectedDayIndex = _uiState.value.selectedDayIndex
+            
+            // If this is the initial load (selectedDayIndex is 0), find today's index
+            if (selectedDayIndex == 0 && weekCalendarData.isNotEmpty()) {
+                val today = System.currentTimeMillis()
+                val todayIndex = weekCalendarData.indexOfFirst { dayInfo ->
+                    // Check if the day matches today (same day, ignoring time)
+                    val dayStart = dayInfo.timestamp
+                    val dayEnd = dayStart + 24 * 60 * 60 * 1000 // Add 24 hours
+                    today >= dayStart && today < dayEnd
+                }
+                
+                // If today is found in the week, use it; otherwise keep 0
+                if (todayIndex >= 0) {
+                    selectedDayIndex = todayIndex
+                }
+            }
+            
             if (weekCalendarData.isNotEmpty() && selectedDayIndex < weekCalendarData.size) {
                 try {
                     val selectedDay = weekCalendarData[selectedDayIndex]
@@ -109,6 +126,7 @@ class PlannerViewModel(
                 loadingState = LoadingState.Success,
                 weeklyGoalProgress = weeklyGoalProgress,
                 weekCalendarData = weekCalendarData,
+                selectedDayIndex = selectedDayIndex,
                 selectedDayWorkouts = selectedDayWorkouts,
                 routines = routines,
                 volumeBalance = volumeBalance,
