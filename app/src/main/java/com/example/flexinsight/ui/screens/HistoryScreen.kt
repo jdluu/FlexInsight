@@ -30,6 +30,8 @@ import com.example.flexinsight.ui.utils.UnitConverter
 import com.example.flexinsight.ui.viewmodel.HistoryViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.foundation.lazy.items
+import com.example.flexinsight.data.model.Exercise
 
 /**
  * Format volume with commas (e.g., "124,500")
@@ -57,10 +59,63 @@ fun formatDateShort(timestamp: Long): String {
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
-    onNavigateToWorkoutDetail: (String) -> Unit = {}
+    onNavigateToWorkoutDetail: (String) -> Unit = {},
+    onNavigateToAnalysis: () -> Unit = {},
+    onNavigateToPRList: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val useMetric = rememberUnitPreference()
+    var showFilterDialog by remember { mutableStateOf(false) }
+    
+    // Filter Dialog
+    if (showFilterDialog) {
+        AlertDialog(
+            onDismissRequest = { showFilterDialog = false },
+            title = {
+                Text(
+                    text = "Filter History",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val filters = listOf("All Time", "Last 30 Days", "Last 3 Months", "This Year")
+                    filters.forEach { filter ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.setDateFilter(filter)
+                                    showFilterDialog = false
+                                }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = uiState.dateFilter == filter,
+                                onClick = null, // Handled by Row clickable
+                                colors = RadioButtonDefaults.colors(selectedColor = Primary, unselectedColor = TextSecondary)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = filter,
+                                color = if (uiState.dateFilter == filter) Color.White else TextSecondary,
+                                fontSize = 16.sp
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showFilterDialog = false }) {
+                    Text("Close", color = Primary)
+                }
+            },
+            containerColor = SurfaceCardAlt,
+            textContentColor = TextSecondary
+        )
+    }
     
     if (uiState.isLoading) {
         Box(
@@ -111,54 +166,80 @@ fun HistoryScreen(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         item {
-            HistoryHeader()
+            HistoryHeader(onFilterClick = { showFilterDialog = true })
         }
         item {
             TabSelector(selectedTab = selectedTab, onTabSelected = { selectedTab = it })
         }
-        item {
-            AIInsightsCard(
-                volumeTrend = uiState.volumeTrend,
-                muscleGroupProgress = uiState.muscleGroupProgress,
-                useMetric = useMetric
-            )
-        }
-        item {
-            StatsGrid(
-                workoutCount = uiState.workoutCount,
-                avgVolume = uiState.workoutStats?.averageVolume?.toInt() ?: 0,
-                bestWeek = uiState.workoutStats?.bestWeekDate?.let { 
-                    java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault()).format(java.util.Date(it))
-                } ?: "N/A",
-                useMetric = useMetric
-            )
-        }
-        item {
-            TotalVolumeCard(
-                workoutStats = uiState.workoutStats,
-                volumeTrend = uiState.volumeTrend,
-                weeklyVolumeData = uiState.weeklyVolumeData,
-                useMetric = useMetric
-            )
-        }
-        item {
-            AnalysisBreakdown(
-                workoutStats = uiState.workoutStats,
-                durationTrend = uiState.durationTrend,
-                muscleGroupProgress = uiState.muscleGroupProgress
-            )
-        }
-        item {
-            RecentPRsSection(
-                prsWithDetails = uiState.prsWithDetails,
-                onNavigateToWorkoutDetail = onNavigateToWorkoutDetail
-            )
+        
+        when (selectedTab) {
+            0 -> { // Summary Tab
+                item {
+                    AIInsightsCard(
+                        volumeTrend = uiState.volumeTrend,
+                        muscleGroupProgress = uiState.muscleGroupProgress,
+                        useMetric = useMetric,
+                        onAnalyzeClick = onNavigateToAnalysis
+                    )
+                }
+                item {
+                    StatsGrid(
+                        workoutCount = uiState.workoutCount,
+                        avgVolume = uiState.workoutStats?.averageVolume?.toInt() ?: 0,
+                        bestWeek = uiState.workoutStats?.bestWeekDate?.let { 
+                            java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault()).format(java.util.Date(it))
+                        } ?: "N/A",
+                        useMetric = useMetric
+                    )
+                }
+                item {
+                    TotalVolumeCard(
+                        workoutStats = uiState.workoutStats,
+                        volumeTrend = uiState.volumeTrend,
+                        weeklyVolumeData = uiState.weeklyVolumeData,
+                        useMetric = useMetric
+                    )
+                }
+                item {
+                    AnalysisBreakdown(
+                        workoutStats = uiState.workoutStats,
+                        durationTrend = uiState.durationTrend,
+                        muscleGroupProgress = uiState.muscleGroupProgress
+                    )
+                }
+                item {
+                    RecentPRsSection(
+                        prsWithDetails = uiState.prsWithDetails,
+                        onNavigateToWorkoutDetail = onNavigateToWorkoutDetail,
+                        onViewAllClick = onNavigateToPRList
+                    )
+                }
+            }
+            1 -> { // Exercises Tab
+                if (uiState.exercises.isEmpty()) {
+                    item {
+                        EmptyStateMessage(message = "No exercises found in history.")
+                    }
+                } else {
+                    items(uiState.exercises) { exercise ->
+                        ExerciseHistoryItem(exercise)
+                    }
+                }
+            }
+            2 -> { // Compare Tab
+                item {
+                    EmptyStateMessage(
+                        message = "Comparison Tool Coming Soon!\nCompare your progress across different time periods.",
+                        isPlaceholder = true
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun HistoryHeader() {
+fun HistoryHeader(onFilterClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -172,7 +253,7 @@ fun HistoryHeader() {
             fontWeight = FontWeight.Bold,
             color = Color.White
         )
-        IconButton(onClick = {}) {
+        IconButton(onClick = onFilterClick) {
             Icon(
                 imageVector = Icons.Default.Tune,
                 contentDescription = "Filter",
@@ -224,7 +305,8 @@ fun TabSelector(selectedTab: Int, onTabSelected: (Int) -> Unit) {
 fun AIInsightsCard(
     volumeTrend: com.example.flexinsight.data.model.VolumeTrend? = null,
     muscleGroupProgress: List<com.example.flexinsight.data.model.MuscleGroupProgress> = emptyList(),
-    useMetric: Boolean = false
+    useMetric: Boolean = false,
+    onAnalyzeClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -270,27 +352,14 @@ fun AIInsightsCard(
                     )
                 }
                 Text(
-                    text = when {
-                        volumeTrend != null && volumeTrend.percentageChange > 0 -> {
-                            "You've increased your total volume by ${volumeTrend.percentageChange.toInt()}% this month! Keep pushing on compound movements."
-                        }
-                        muscleGroupProgress.isNotEmpty() -> {
-                            val topMuscle = muscleGroupProgress.first()
-                            val volumeStr = UnitConverter.formatVolume(topMuscle.volume, useMetric)
-                            val unit = UnitConverter.getWeightUnit(useMetric)
-                            "Your ${topMuscle.muscleGroup} volume is $volumeStr $unit. Focus on balanced training across all muscle groups."
-                        }
-                        else -> {
-                            "Keep tracking your workouts to see insights and progress over time!"
-                        }
-                    },
+                    text = "AI Insights coming soon! We're building tools to help you analyze your training patterns.",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.White,
                     lineHeight = 22.sp
                 )
                 Button(
-                    onClick = {},
+                    onClick = onAnalyzeClick,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Primary.copy(alpha = 0.1f),
                         contentColor = Primary
@@ -718,7 +787,8 @@ fun MuscleLegend(name: String, color: Color) {
 @Composable
 fun RecentPRsSection(
     prsWithDetails: List<com.example.flexinsight.data.model.PRDetails> = emptyList(),
-    onNavigateToWorkoutDetail: (String) -> Unit = {}
+    onNavigateToWorkoutDetail: (String) -> Unit = {},
+    onViewAllClick: () -> Unit = {}
 ) {
     val useMetric = rememberUnitPreference()
     
@@ -739,7 +809,7 @@ fun RecentPRsSection(
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
-            TextButton(onClick = {}) {
+            TextButton(onClick = onViewAllClick) {
                 Text(
                     text = "View All",
                     fontSize = 14.sp,
