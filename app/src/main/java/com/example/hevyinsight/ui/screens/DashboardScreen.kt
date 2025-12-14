@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hevyinsight.ui.theme.*
 import com.example.hevyinsight.ui.utils.rememberViewOnlyMode
+import com.example.hevyinsight.ui.utils.rememberUnitPreference
+import com.example.hevyinsight.ui.utils.UnitConverter
 import com.example.hevyinsight.ui.viewmodel.DashboardViewModel
 import com.example.hevyinsight.ui.components.ErrorBanner
 import com.example.hevyinsight.ui.components.NetworkStatusIndicator
@@ -87,6 +89,7 @@ fun DashboardScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val viewOnlyMode = rememberViewOnlyMode()
+    val useMetric = rememberUnitPreference()
     val listState = rememberLazyListState()
     var isRefreshing by remember { mutableStateOf(false) }
     
@@ -174,6 +177,7 @@ fun DashboardScreen(
                 FeaturedWorkoutCard(
                     workout = workout,
                     workoutStats = uiState.latestWorkoutStats,
+                    useMetric = useMetric,
                     onClick = { onNavigateToWorkoutDetail(workout.id) }
                 )
             } ?: run {
@@ -185,6 +189,7 @@ fun DashboardScreen(
             WeeklyProgressSection(
                 progress = uiState.weeklyProgress,
                 muscleGroupProgress = uiState.muscleGroupProgress,
+                useMetric = useMetric,
                 onSeeAllClick = { onNavigateToHistory() }
             )
         }
@@ -363,6 +368,7 @@ fun StreakIndicator(streak: Int = 0) {
 fun FeaturedWorkoutCard(
     workout: com.example.hevyinsight.data.model.Workout,
     workoutStats: com.example.hevyinsight.data.model.SingleWorkoutStats?,
+    useMetric: Boolean = false,
     onClick: () -> Unit
 ) {
     Card(
@@ -445,7 +451,7 @@ fun FeaturedWorkoutCard(
                     )
                     StatBox(
                         "Vol",
-                        workoutStats?.let { formatVolume(it.totalVolume) } ?: "0",
+                        workoutStats?.let { UnitConverter.formatVolume(it.totalVolume, useMetric) } ?: "0",
                         Icons.Default.MonitorWeight,
                         modifier = Modifier.weight(1f)
                     )
@@ -559,6 +565,7 @@ fun StatBox(label: String, value: String, icon: androidx.compose.ui.graphics.vec
 fun WeeklyProgressSection(
     progress: List<com.example.hevyinsight.data.model.WeeklyProgress> = emptyList(),
     muscleGroupProgress: List<com.example.hevyinsight.data.model.MuscleGroupProgress> = emptyList(),
+    useMetric: Boolean = false,
     onSeeAllClick: () -> Unit = {}
 ) {
     Column(
@@ -618,13 +625,13 @@ fun WeeklyProgressSection(
                         ) {
                             val totalVolume = progress.sumOf { it.totalVolume }
                             Text(
-                                text = formatVolume(totalVolume),
+                                text = UnitConverter.formatVolume(totalVolume, useMetric),
                                 fontSize = 32.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White
                             )
                             Text(
-                                text = "lbs",
+                                text = UnitConverter.getWeightUnit(useMetric),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Normal,
                                 color = TextSecondary
