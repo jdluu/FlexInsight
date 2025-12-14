@@ -21,7 +21,7 @@ data class SettingsUiState(
     val error: UiError? = null,
     val profileInfo: ProfileInfo? = null,
     val weeklyGoal: Int = 5,
-    val theme: String = "Dark",
+    val theme: String = "System",
     val units: String = "Imperial",
     val viewOnlyMode: Boolean = false,
     val syncState: LoadingState = LoadingState.Idle,
@@ -71,7 +71,7 @@ class SettingsViewModel(
                 val theme = try {
                     userPreferencesManager.getTheme()
                 } catch (e: Exception) {
-                    "Dark"
+                    "System"
                 }
                 
                 val units = try {

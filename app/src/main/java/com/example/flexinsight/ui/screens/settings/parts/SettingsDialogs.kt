@@ -186,7 +186,7 @@ fun ThemeDialog(
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit
 ) {
-    val themes = listOf("Dark", "Light", "System")
+    val themes = listOf("System", "Light", "Dark")
     
     AlertDialog(
         onDismissRequest = onDismiss,

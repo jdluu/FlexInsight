@@ -22,7 +22,7 @@ class UserPreferencesManager(private val context: Context) {
         private val VIEW_ONLY_MODE = booleanPreferencesKey("view_only_mode")
         
         private const val DEFAULT_WEEKLY_GOAL = 5
-        private const val DEFAULT_THEME = "Dark"
+        private const val DEFAULT_THEME = "System"
         private const val DEFAULT_UNITS = "Imperial"
         private const val DEFAULT_VIEW_ONLY_MODE = true
     }
