@@ -8,6 +8,7 @@ import com.example.hevyinsight.data.model.Workout
 import com.example.hevyinsight.data.model.WorkoutStats
 import com.example.hevyinsight.data.model.WeeklyProgress
 import com.example.hevyinsight.data.model.SingleWorkoutStats
+import com.example.hevyinsight.data.model.ProfileInfo
 import com.example.hevyinsight.data.repository.HevyRepository
 import com.example.hevyinsight.ui.common.LoadingState
 import com.example.hevyinsight.ui.common.UiError
@@ -21,6 +22,7 @@ import kotlinx.coroutines.delay
 data class DashboardUiState(
     val loadingState: LoadingState = LoadingState.Idle,
     val error: UiError? = null,
+    val profileInfo: ProfileInfo? = null,
     val latestWorkout: Workout? = null,
     val latestWorkoutStats: SingleWorkoutStats? = null,
     val workoutStats: WorkoutStats? = null,
@@ -68,6 +70,13 @@ class DashboardViewModel(
                 try {
                     val latestWorkout = workouts.firstOrNull()
                     
+                    // Load profile info
+                    val profileInfo = try {
+                        repository.getProfileInfo()
+                    } catch (e: Exception) {
+                        null
+                    }
+                    
                     // Calculate latest workout stats
                     val latestWorkoutStats = latestWorkout?.let {
                         try {
@@ -113,6 +122,7 @@ class DashboardViewModel(
                     
                     _uiState.value = _uiState.value.copy(
                         loadingState = LoadingState.Success,
+                        profileInfo = profileInfo,
                         latestWorkout = latestWorkout,
                         latestWorkoutStats = latestWorkoutStats,
                         workoutStats = stats,

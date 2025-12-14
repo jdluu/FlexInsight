@@ -165,6 +165,7 @@ fun DashboardScreen(
         
         item {
             DashboardHeader(
+                profileInfo = uiState.profileInfo,
                 onNotificationsClick = { onNavigateToSettings() },
                 onRefreshClick = { viewModel.sync() }
             )
@@ -202,8 +203,6 @@ fun DashboardScreen(
             item {
                 QuickActionsGrid(
                     onStartClick = { onNavigateToPlanner() },
-                    onLogWeightClick = { /* TODO: Implement weight logging */ },
-                    onAddNoteClick = { /* TODO: Implement note adding */ },
                     onAnalyticsClick = { onNavigateToHistory() }
                 )
             }
@@ -228,6 +227,7 @@ fun DashboardScreen(
 
 @Composable
 fun DashboardHeader(
+    profileInfo: com.example.hevyinsight.data.model.ProfileInfo? = null,
     onNotificationsClick: () -> Unit = {},
     onRefreshClick: () -> Unit = {}
 ) {
@@ -273,7 +273,7 @@ fun DashboardHeader(
                     letterSpacing = 1.sp
                 )
                 Text(
-                    text = "$greeting, Jeffrey",
+                    text = "${greeting}, ${profileInfo?.displayName ?: "User"}",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -487,11 +487,13 @@ fun FeaturedWorkoutCard(
                             )
                         }
                         Spacer(modifier = Modifier.height(4.dp))
+                        // TODO: Implement AI summary generation from workout data
                         Text(
-                            text = "Great intensity on the bench press today. You hit a PR! Try increasing rest times next session to 90s.",
+                            text = "AI workout insights coming soon. Complete your workout to see personalized recommendations and analysis.",
                             fontSize = 13.sp,
-                            color = Color.White.copy(alpha = 0.8f),
-                            lineHeight = 18.sp
+                            color = Color.White.copy(alpha = 0.6f),
+                            lineHeight = 18.sp,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                         )
                     }
                 }
@@ -852,11 +854,13 @@ fun DailyInsightCard(
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
+                    // TODO: Implement AI-powered daily insights and tips
                     Text(
-                        text = "Did you know? Creatine absorption is optimized post-workout when combined with a source of carbohydrates.",
+                        text = "AI-powered daily insights coming soon. Get personalized tips and recommendations based on your training data.",
                         fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.8f),
-                        lineHeight = 20.sp
+                        color = Color.White.copy(alpha = 0.6f),
+                        lineHeight = 20.sp,
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                     )
                     TextButton(
                         onClick = onChatClick,
@@ -884,8 +888,6 @@ fun DailyInsightCard(
 @Composable
 fun QuickActionsGrid(
     onStartClick: () -> Unit = {},
-    onLogWeightClick: () -> Unit = {},
-    onAddNoteClick: () -> Unit = {},
     onAnalyticsClick: () -> Unit = {}
 ) {
     Column(
@@ -906,8 +908,6 @@ fun QuickActionsGrid(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             QuickActionButton("Start", Icons.Default.PlayArrow, Primary, onClick = onStartClick, modifier = Modifier.weight(1f))
-            QuickActionButton("Log Weight", Icons.Default.MonitorWeight, Color.White, onClick = onLogWeightClick, modifier = Modifier.weight(1f))
-            QuickActionButton("Add Note", Icons.Default.EditNote, Color.White, onClick = onAddNoteClick, modifier = Modifier.weight(1f))
             QuickActionButton("Analytics", Icons.Default.Analytics, Color.White, onClick = onAnalyticsClick, modifier = Modifier.weight(1f))
         }
     }
