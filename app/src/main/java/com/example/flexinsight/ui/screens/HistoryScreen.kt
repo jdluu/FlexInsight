@@ -47,10 +47,10 @@ fun HistoryScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BackgroundDarkAlt),
+                .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator(color = Primary)
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
         return
     }
@@ -59,7 +59,7 @@ fun HistoryScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BackgroundDarkAlt)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -69,14 +69,14 @@ fun HistoryScreen(
             ) {
                 Text(
                     text = uiState.error?.message ?: "Unknown error",
-                    color = RedAccent,
+                    color = MaterialTheme.colorScheme.error,
                     fontSize = 16.sp
                 )
                 Button(
                     onClick = { viewModel.refresh() },
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Retry", color = BackgroundDark)
+                    Text("Retry", color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
@@ -87,7 +87,7 @@ fun HistoryScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDarkAlt),
+            .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(bottom = 100.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {

@@ -21,7 +21,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.flexinsight.data.preferences.ApiKeyManager
+import com.example.flexinsight.data.preferences.UserPreferencesManager
 import com.example.flexinsight.ui.components.FlexBottomNavigation
 import com.example.flexinsight.ui.navigation.Screen
 import com.example.flexinsight.ui.screens.*
@@ -35,7 +37,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            FlexInsightTheme {
+            val application = getApplication()
+            val userPreferencesManager = remember {
+                application?.let { UserPreferencesManager(it) }
+            }
+            
+            val themePreference by userPreferencesManager?.themeFlow?.collectAsState(initial = "System") ?: remember { mutableStateOf("System") }
+            
+            val darkTheme = when (themePreference) {
+                "Dark" -> true
+                "Light" -> false
+                else -> isSystemInDarkTheme() // "System" or any other value
+            }
+            
+            FlexInsightTheme(darkTheme = darkTheme) {
                 MainScreen()
             }
         }
@@ -57,13 +72,13 @@ fun MainScreen() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(com.example.flexinsight.ui.theme.BackgroundDark)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "Application error: Failed to initialize",
-                color = com.example.flexinsight.ui.theme.RedAccent
+                color = MaterialTheme.colorScheme.error
             )
         }
         return
@@ -115,7 +130,7 @@ fun MainScreen() {
             title = {
                 Text(
                     text = "Hevy API Key Required",
-                    color = androidx.compose.ui.graphics.Color.White,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontWeight = FontWeight.Bold
                 )
             },
@@ -125,22 +140,22 @@ fun MainScreen() {
                 ) {
                     Text(
                         text = "To use FlexInsight, you need to provide your Hevy API key. You can get it from https://hevy.com/settings?developer",
-                        color = com.example.flexinsight.ui.theme.TextSecondary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 14.sp
                     )
                     OutlinedTextField(
                         value = apiKeyText,
                         onValueChange = { apiKeyText = it },
-                        label = { Text("API Key", color = com.example.flexinsight.ui.theme.TextSecondary) },
-                        placeholder = { Text("Enter your API key", color = com.example.flexinsight.ui.theme.TextTertiary) },
+                        label = { Text("API Key", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                        placeholder = { Text("Enter your API key", color = MaterialTheme.colorScheme.outline) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = androidx.compose.ui.graphics.Color.White,
-                            unfocusedTextColor = androidx.compose.ui.graphics.Color.White,
-                            focusedBorderColor = com.example.flexinsight.ui.theme.Primary,
-                            unfocusedBorderColor = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.3f),
-                            focusedLabelColor = com.example.flexinsight.ui.theme.TextSecondary,
-                            unfocusedLabelColor = com.example.flexinsight.ui.theme.TextSecondary
+                            focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.3f),
+                            focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                         singleLine = true
                     )
@@ -148,7 +163,7 @@ fun MainScreen() {
                     if (errorText != null) {
                         Text(
                             text = errorText,
-                            color = com.example.flexinsight.ui.theme.RedAccent,
+                            color = MaterialTheme.colorScheme.error,
                             fontSize = 12.sp
                         )
                     }
@@ -166,12 +181,12 @@ fun MainScreen() {
                             error = "API key must be at least 10 characters"
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = com.example.flexinsight.ui.theme.Primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Save", color = com.example.flexinsight.ui.theme.BackgroundDark, fontWeight = FontWeight.Bold)
+                    Text("Save", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
                 }
             },
-            containerColor = com.example.flexinsight.ui.theme.SurfaceCardAlt,
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
         )
     }

@@ -35,13 +35,13 @@ fun SettingsScreen() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BackgroundDarkAlt)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "Application error: Failed to initialize",
-                color = RedAccent
+                color = MaterialTheme.colorScheme.error
             )
         }
         return
@@ -74,10 +74,10 @@ fun SettingsScreen() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BackgroundDarkAlt),
+                .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator(color = Primary)
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
         return
     }
@@ -85,7 +85,7 @@ fun SettingsScreen() {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDarkAlt),
+            .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(bottom = 100.dp),
         verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
@@ -138,7 +138,7 @@ fun SettingsScreen() {
                 name = "Health Connect",
                 description = null,
                 icon = Icons.Default.Favorite,
-                iconColor = RedAccent,
+                iconColor = MaterialTheme.colorScheme.error,
                 isConnected = false,
                 isToggle = true,
                 toggleState = healthConnectEnabled,
@@ -191,7 +191,7 @@ fun SettingsScreen() {
                 name = "View Only Mode",
                 description = "Hide edit/create buttons",
                 icon = Icons.Default.Visibility,
-                iconColor = TextSecondary,
+                iconColor = MaterialTheme.colorScheme.secondary,
                 isConnected = false,
                 isToggle = true,
                 toggleState = uiState.viewOnlyMode,
@@ -322,14 +322,14 @@ fun SettingsHeader() {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Back",
-                tint = Color.White
+                tint = MaterialTheme.colorScheme.onBackground
             )
         }
         Text(
             text = "Profile",
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier.size(40.dp))
     }

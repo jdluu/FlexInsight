@@ -32,10 +32,10 @@ fun WorkoutDetailScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BackgroundDark),
+                .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator(color = Primary)
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
         return
     }
@@ -54,14 +54,14 @@ fun WorkoutDetailScreen(
             ) {
                 Text(
                     text = uiState.error?.message ?: "Unknown error",
-                    color = RedAccent,
+                    color = MaterialTheme.colorScheme.error,
                     fontSize = 16.sp
                 )
                 Button(
                     onClick = { viewModel.refresh() },
-                    colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Retry", color = BackgroundDark)
+                    Text("Retry", color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
@@ -79,7 +79,7 @@ fun WorkoutDetailScreen(
         ) {
             Text(
                 text = "Workout not found",
-                color = TextSecondary,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp
             )
         }
@@ -93,7 +93,7 @@ fun WorkoutDetailScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark),
+            .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(bottom = 100.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {

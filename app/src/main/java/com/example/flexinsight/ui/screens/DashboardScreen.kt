@@ -54,10 +54,10 @@ fun DashboardScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BackgroundDark),
+                .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator(color = Primary)
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
         return
     }
@@ -77,13 +77,13 @@ fun DashboardScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .background(BackgroundDark),
+                .background(MaterialTheme.colorScheme.background),
             contentPadding = PaddingValues(
                 top = if (isRefreshing) 60.dp else 0.dp,
                 bottom = 100.dp
@@ -168,7 +168,7 @@ fun DashboardScreen(
                     .padding(top = 16.dp)
             ) {
                 CircularProgressIndicator(
-                    color = Primary,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(32.dp)
                 )
             }
