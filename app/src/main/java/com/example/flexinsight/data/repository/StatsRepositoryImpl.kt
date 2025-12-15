@@ -518,7 +518,14 @@ class StatsRepositoryImpl(
      */
     override suspend fun getProfileInfo(hasApiKey: Boolean, remoteWorkoutCount: Int?): ProfileInfo = withContext(dispatcherProvider.default) {
         val workouts = workoutDao.getAllWorkoutsFlow().first()
-        val totalWorkouts = remoteWorkoutCount ?: workouts.size
+        val localCount = workouts.size
+        // Use remote count if available, but ensure we don't show less than what we have locally
+        // This prevents "0 Workouts" when we clearly have workouts in the DB
+        val totalWorkouts = if (remoteWorkoutCount != null) {
+            java.lang.Math.max(remoteWorkoutCount, localCount)
+        } else {
+            localCount
+        }
         val memberSince = getMemberSinceDate()
         val accountAgeDays = calculateAccountAgeDays()
         
