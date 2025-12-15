@@ -39,7 +39,6 @@ fun SettingsScreen(
     val snackbarHostState = com.example.flexinsight.ui.common.LocalSnackbarHostState.current
 
     var healthConnectEnabled by remember { mutableStateOf(false) }
-    var geminiEnabled by remember { mutableStateOf(true) }
     var apiKey by remember { mutableStateOf<String?>(null) }
     var showApiKeyDialog by remember { mutableStateOf(false) }
     var apiKeyError by remember { mutableStateOf<String?>(null) }
@@ -136,17 +135,6 @@ fun SettingsScreen(
                 isToggle = true,
                 toggleState = healthConnectEnabled,
                 onToggleChange = { healthConnectEnabled = it }
-            )
-            IntegrationItem(
-                name = "Gemini AI",
-                description = "On-device analysis",
-                icon = Icons.Default.AutoAwesome,
-                iconColor = null, // Gradient
-                isConnected = false,
-                isToggle = true,
-                toggleState = geminiEnabled,
-                onToggleChange = { geminiEnabled = it },
-                badge = "Beta"
             )
         }
         item {
