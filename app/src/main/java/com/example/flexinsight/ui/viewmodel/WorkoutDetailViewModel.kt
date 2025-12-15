@@ -33,8 +33,6 @@ data class WorkoutDetailUiState(
     val error: UiError? = null,
     val workout: Workout? = null,
     val workoutStats: SingleWorkoutStats? = null,
-    val workout: Workout? = null,
-    val workoutStats: SingleWorkoutStats? = null,
     val exercisesWithSets: List<ExerciseWithSets> = emptyList(),
     val units: String = "Imperial"
 ) {
@@ -43,10 +41,6 @@ data class WorkoutDetailUiState(
         get() = loadingState.isLoading
 }
 
-@HiltViewModel
-class WorkoutDetailViewModel @Inject constructor(
-    private val repository: FlexRepository,
-    private val exerciseDao: ExerciseDao,
 @HiltViewModel
 class WorkoutDetailViewModel @Inject constructor(
     private val repository: FlexRepository,
