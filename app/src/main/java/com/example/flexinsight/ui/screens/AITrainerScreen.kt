@@ -60,7 +60,9 @@ fun AITrainerScreen(
             }
         }
 
-        QuickActionChips()
+        if (uiState.isAiAvailable) {
+            QuickActionChips()
+        }
 
         ChatInput(
             text = inputText,
@@ -68,7 +70,8 @@ fun AITrainerScreen(
             onSend = {
                 viewModel.sendMessage(inputText)
                 inputText = ""
-            }
+            },
+            enabled = uiState.isAiAvailable
         )
     }
 }

@@ -141,7 +141,8 @@ fun ChatBubble(message: ChatMessage) {
 fun ChatInput(
     text: String,
     onTextChange: (String) -> Unit,
-    onSend: () -> Unit
+    onSend: () -> Unit,
+    enabled: Boolean = true
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -173,9 +174,10 @@ fun ChatInput(
                         value = text,
                         onValueChange = onTextChange,
                         modifier = Modifier.weight(1f),
+                        enabled = enabled,
                         placeholder = {
                             Text(
-                                "Ask about your fitness...",
+                                if (enabled) "Ask about your fitness..." else "AI not supported on device",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         },
@@ -183,7 +185,9 @@ fun ChatInput(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledContainerColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
                         ),
                         textStyle = androidx.compose.ui.text.TextStyle(
                             color = MaterialTheme.colorScheme.onSurface,
@@ -193,12 +197,13 @@ fun ChatInput(
                     )
                     IconButton(
                         onClick = {},
+                        enabled = enabled,
                         modifier = Modifier.size(40.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.AddPhotoAlternate,
                             contentDescription = "Add photo",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
                     }
                 }
@@ -208,8 +213,8 @@ fun ChatInput(
             FloatingActionButton(
                 onClick = onSend,
                 modifier = Modifier.size(48.dp),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = if (enabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                 elevation = FloatingActionButtonDefaults.elevation(0.dp)
             ) {
                 Icon(

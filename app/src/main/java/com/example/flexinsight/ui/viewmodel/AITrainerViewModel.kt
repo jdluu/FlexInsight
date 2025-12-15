@@ -2,10 +2,11 @@ package com.example.flexinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flexinsight.core.errors.Result
+import com.example.flexinsight.data.ai.FlexAIClient
 import com.example.flexinsight.data.model.Workout
 import com.example.flexinsight.data.repository.FlexRepository
 import com.example.flexinsight.ui.screens.aitrainer.parts.ChatMessage
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,78 +17,104 @@ import javax.inject.Inject
 
 data class AITrainerUiState(
     val messages: List<ChatMessage> = emptyList(),
-    val isTyping: Boolean = false
+    val isTyping: Boolean = false,
+    val isAiAvailable: Boolean = true,
+    val error: String? = null
 )
-
 
 @HiltViewModel
 class AITrainerViewModel @Inject constructor(
-    private val repository: FlexRepository
+    private val repository: FlexRepository,
+    private val aiClient: FlexAIClient
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AITrainerUiState())
     val uiState: StateFlow<AITrainerUiState> = _uiState.asStateFlow()
 
-    private val _messages = mutableListOf<ChatMessage>()
-
     init {
-        // Initial static conversation for demo purposes, but with dynamic greeting
+        checkAiAvailability()
+    }
+
+    private fun checkAiAvailability() {
         viewModelScope.launch {
-            loadDynamicGreeting()
+            val isAvailable = aiClient.isAvailable()
+            _uiState.value = _uiState.value.copy(isAiAvailable = isAvailable)
+            
+            if (isAvailable) {
+                loadDynamicContextAndGreeting()
+            } else {
+                 _uiState.value = _uiState.value.copy(
+                     messages = listOf(ChatMessage("ai", "Sorry, on-device AI is not supported on this device.", false))
+                 )
+            }
         }
     }
 
-    private suspend fun loadDynamicGreeting() {
+    private suspend fun loadDynamicContextAndGreeting() {
         _uiState.value = _uiState.value.copy(isTyping = true)
 
-        // Fetch latest workout for context
         val latestWorkout = try {
             repository.getRecentWorkouts(1).first().firstOrNull()
         } catch (e: Exception) {
             null
         }
 
-        delay(1000) // Simulate AI "thinking"
-
-        val greeting = generateGreeting(latestWorkout)
-
-        _messages.add(ChatMessage("ai", greeting, false))
-
-        // Add some context-aware follow-up if we have a workout
-        if (latestWorkout != null) {
-             _messages.add(ChatMessage("user", "Actually, let's look at that session. My heart rate felt high.", false))
-             _messages.add(ChatMessage("ai", "You're right. You peaked at 172 BPM near the end. Here is the breakdown:", true, hasChart = true))
-             _messages.add(ChatMessage("user", "Okay, should I take a rest day then?", false))
+        // Construct initial context prompt
+        val contextPrompt = if (latestWorkout != null) {
+            "The user's last workout was '${latestWorkout.name}' on ${java.util.Date(latestWorkout.startTime)}. " +
+            "Act as a professional fitness coach. Greet the user and ask how they are feeling after their last session."
         } else {
-             _messages.add(ChatMessage("ai", "I don't see any recent workouts. Ready to start your first session?", false))
+            "The user has no recorded workouts. Act as a professional fitness coach. " +
+            "Greet the user enthusiastically and ask them about their fitness goals."
         }
+        
+        // We treat the "system instructions" as a prompt for the greeting generation here
+        val result = aiClient.generateResponse(contextPrompt)
+        
+        _uiState.value = _uiState.value.copy(isTyping = false)
 
-        _uiState.value = AITrainerUiState(messages = _messages.toList(), isTyping = false)
-    }
-
-    private fun generateGreeting(lastWorkout: Workout?): String {
-        if (lastWorkout == null) {
-            return "Good morning! Ready to start your fitness journey today?"
+        if (result is Result.Success) {
+            val greeting = result.data
+            addMessage(ChatMessage("ai", greeting, false))
+        } else {
+            addMessage(ChatMessage("ai", "Hello! I'm your AI Trainer. Ready to workout?", false))
         }
-
-        val workoutName = lastWorkout.name ?: "workout"
-        return "Good morning! I've analyzed your sleep data. You're 15% more recovered than yesterday. Ready to recover from your $workoutName?"
     }
 
     fun sendMessage(text: String) {
         if (text.isBlank()) return
 
-        val newMessages = _uiState.value.messages.toMutableList()
-        newMessages.add(ChatMessage("user", text, false))
+        // 1. Add User Message
+        addMessage(ChatMessage("user", text, true))
+        _uiState.value = _uiState.value.copy(isTyping = true)
 
-        _uiState.value = _uiState.value.copy(messages = newMessages, isTyping = true)
-
-        // Simulate AI response
         viewModelScope.launch {
-            delay(2000)
-            val responseMessages = _uiState.value.messages.toMutableList()
-            responseMessages.add(ChatMessage("ai", "Based on your data, I recommend focusing on recovery today.", false))
-            _uiState.value = _uiState.value.copy(messages = responseMessages, isTyping = false)
+            // 2. Build History
+            val history = _uiState.value.messages.map { msg ->
+                val role = if (msg.isContext) "user" else "model" // Map ChatMessage to role
+                role to msg.text
+            }
+
+            // 3. Generate Response
+            val result = aiClient.generateResponse(text, history)
+            
+            _uiState.value = _uiState.value.copy(isTyping = false)
+
+            when (result) {
+                is Result.Success -> {
+                    addMessage(ChatMessage("ai", result.data, false))
+                }
+                is Result.Error -> {
+                    _uiState.value = _uiState.value.copy(error = result.error.message)
+                    addMessage(ChatMessage("ai", "I'm having trouble thinking right now. Please try again.", false))
+                }
+            }
         }
+    }
+    
+    private fun addMessage(message: ChatMessage) {
+        val currentList = _uiState.value.messages.toMutableList()
+        currentList.add(message)
+        _uiState.value = _uiState.value.copy(messages = currentList)
     }
 }
