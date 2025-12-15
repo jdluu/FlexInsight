@@ -216,10 +216,11 @@ fun WeeklyProgressSection(
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     } else {
-                        val maxVolume = muscleGroupProgress.maxOfOrNull { it.volume } ?: 1.0
+                        val totalVolume = progress.sumOf { it.totalVolume }
                         muscleGroupProgress.forEach { muscleGroup ->
-                            val percentage = if (maxVolume > 0) {
-                                ((muscleGroup.volume / maxVolume) * 100).toInt()
+                            // Calculate percentage of total volume
+                            val percentage = if (totalVolume > 0) {
+                                ((muscleGroup.volume / totalVolume) * 100).toInt()
                             } else {
                                 0
                             }
@@ -296,17 +297,27 @@ fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon:
                     .clip(RoundedCornerShape(4.dp))
                     .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(percentage / 100f)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(
-                            if (percentage >= 70) MaterialTheme.colorScheme.primary
-                            else if (percentage >= 40) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                            else MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                        )
-                )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            // Determine relative width for visual emphasis (relative to the largest group shown)
+                            // or just use the raw percentage?
+                            // User request implies "accurate percentages". 
+                            // If we use raw percentage (e.g. 30%), the bar will be 30% width.
+                            // Previously it was full width (100%) for the top one.
+                            // Let's stick to raw percentage for accuracy, but scale it slightly if they are all small?
+                            // Actually, let's keep it simple: raw percentage width.
+                            .fillMaxWidth(percentage / 100f)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(
+                                // Color coding based on intensity instead of arbitrary percentage thresholds
+                                when(intensity) {
+                                    "HI" -> MaterialTheme.colorScheme.primary
+                                    "MD" -> MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                    else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                                }
+                            )
+                    )
             }
         }
         
