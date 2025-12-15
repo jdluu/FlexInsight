@@ -15,7 +15,8 @@ import com.example.flexinsight.ui.viewmodel.WorkoutDetailViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import com.example.flexinsight.ui.screens.workoutdetail.parts.*
 
 @Composable
@@ -25,7 +26,7 @@ fun WorkoutDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val useMetric = rememberUnitPreference()
-    
+
     if (uiState.isLoading) {
         Box(
             modifier = Modifier
@@ -37,7 +38,7 @@ fun WorkoutDetailScreen(
         }
         return
     }
-    
+
     if (uiState.error != null) {
         Box(
             modifier = Modifier
@@ -65,7 +66,7 @@ fun WorkoutDetailScreen(
         }
         return
     }
-    
+
     val workout = uiState.workout
     if (workout == null) {
         Box(
@@ -83,11 +84,11 @@ fun WorkoutDetailScreen(
         }
         return
     }
-    
+
     // Format date
     val dateFormat = SimpleDateFormat("EEE, MMM d, yyyy", Locale.getDefault())
     val dateString = dateFormat.format(Date(workout.startTime))
-    
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()

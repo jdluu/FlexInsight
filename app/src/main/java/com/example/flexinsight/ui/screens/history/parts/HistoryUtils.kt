@@ -1,7 +1,8 @@
 package com.example.flexinsight.ui.screens.history.parts
 
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 /**
  * Format volume with commas (e.g., "124,500")

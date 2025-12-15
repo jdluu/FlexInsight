@@ -29,7 +29,8 @@ import com.example.flexinsight.ui.theme.SurfaceCard
 import com.example.flexinsight.ui.theme.TextSecondary
 import com.example.flexinsight.ui.utils.UnitConverter
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun FeaturedWorkoutCard(
@@ -66,7 +67,7 @@ fun FeaturedWorkoutCard(
                         )
                     )
             )
-            
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -104,7 +105,7 @@ fun FeaturedWorkoutCard(
                             )
                         }
                     }
-                    
+
                     // Date badge
                     Surface(
                         shape = RoundedCornerShape(8.dp),
@@ -119,9 +120,9 @@ fun FeaturedWorkoutCard(
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 // Workout name
                 Text(
                     text = workout.name ?: "Workout",
@@ -130,9 +131,9 @@ fun FeaturedWorkoutCard(
                     color = MaterialTheme.colorScheme.onSurface,
                     lineHeight = 30.sp
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 // Stats row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -157,9 +158,9 @@ fun FeaturedWorkoutCard(
                         modifier = Modifier.weight(1f)
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 // "Tap to view details" affordance
                 Row(
                     modifier = Modifier.fillMaxWidth(),

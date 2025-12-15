@@ -11,7 +11,8 @@ import androidx.compose.ui.unit.sp
 import com.example.flexinsight.data.sync.SyncState
 import com.example.flexinsight.ui.theme.*
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 /**
  * Composable for displaying sync status
@@ -84,7 +85,7 @@ fun SyncStatusIndicator(
 private fun formatTimeAgo(timestamp: Long): String? {
     val now = System.currentTimeMillis()
     val diff = now - timestamp
-    
+
     return when {
         diff < 60_000 -> "Just now"
         diff < 3600_000 -> "${diff / 60_000}m ago"
