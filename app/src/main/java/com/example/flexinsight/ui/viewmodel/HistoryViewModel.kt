@@ -24,6 +24,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import com.example.flexinsight.ui.utils.safeLaunch
 import com.example.flexinsight.ui.utils.toApiError
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 data class HistoryUiState(
     val loadingState: LoadingState = LoadingState.Idle,
@@ -45,8 +47,6 @@ data class HistoryUiState(
         get() = loadingState.isLoading
 }
 
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
 @HiltViewModel
 class HistoryViewModel @Inject constructor(

@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import com.example.flexinsight.ui.utils.safeLaunch
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 data class SettingsUiState(
     val loadingState: LoadingState = LoadingState.Idle,
@@ -33,8 +35,6 @@ data class SettingsUiState(
         get() = syncState.isLoading
 }
 
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(

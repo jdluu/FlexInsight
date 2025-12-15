@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 data class RecoveryUiState(
     val loadingState: LoadingState = LoadingState.Idle,
@@ -27,8 +29,6 @@ enum class TrainingLoadStatus {
     Low, Optimal, High
 }
 
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
 @HiltViewModel
 class RecoveryViewModel @Inject constructor(

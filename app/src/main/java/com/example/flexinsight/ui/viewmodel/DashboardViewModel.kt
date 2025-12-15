@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 data class DashboardUiState(
     val loadingState: LoadingState = LoadingState.Idle,
@@ -35,8 +37,6 @@ data class DashboardUiState(
         get() = loadingState.isLoading
 }
 
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
