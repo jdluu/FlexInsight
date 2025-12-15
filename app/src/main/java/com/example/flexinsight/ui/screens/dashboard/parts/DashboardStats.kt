@@ -321,11 +321,12 @@ fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon:
             }
         }
         
-        Text(
-            text = intensity,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        // Intensity label removed per user request
+//        Text(
+//            text = intensity,
+//            fontSize = 12.sp,
+//            fontWeight = FontWeight.Bold,
+//            color = MaterialTheme.colorScheme.onSurfaceVariant
+//        )
     }
 }
