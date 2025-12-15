@@ -62,14 +62,9 @@ class NetworkMonitor(private val context: Context) {
 
     /**
      * Gets the current network state synchronously
-     * Uses cached value if available, otherwise checks connectivity
+     * Always checks connectivity to ensure accuracy
      */
     fun getCurrentNetworkState(): NetworkState {
-        // Return cached state if we have it and it's not Unknown
-        if (cachedState != NetworkState.Unknown) {
-            return cachedState
-        }
-
         return if (isNetworkAvailable()) {
             NetworkState.Available.also { cachedState = it }
         } else {
