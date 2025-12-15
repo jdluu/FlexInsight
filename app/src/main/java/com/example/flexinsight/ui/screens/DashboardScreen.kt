@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.example.flexinsight.core.network.NetworkState
 import com.example.flexinsight.ui.components.ErrorBanner
 import com.example.flexinsight.ui.components.NetworkStatusIndicator
+import com.example.flexinsight.ui.common.LoadingState
 import com.example.flexinsight.ui.screens.dashboard.parts.*
 import com.example.flexinsight.ui.theme.BackgroundDark
 import com.example.flexinsight.ui.theme.Primary

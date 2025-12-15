@@ -25,11 +25,8 @@ import com.example.flexinsight.ui.theme.SurfaceCardAlt
 import com.example.flexinsight.ui.theme.SurfaceHighlight
 import com.example.flexinsight.ui.theme.TextSecondary
 import com.example.flexinsight.ui.utils.UnitConverter
-import com.example.flexinsight.ui.utils.UnitConverter
-import com.example.flexinsight.ui.screens.history.parts.formatDateShort
 import com.example.flexinsight.ui.screens.history.parts.formatDateShort
 
-@Composable
 @Composable
 fun RecentPRsSection(
     prsWithDetails: List<PRDetails> = emptyList(),
