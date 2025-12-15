@@ -35,7 +35,7 @@ fun RecentPRsSection(
     onViewAllClick: () -> Unit = {}
 ) {
     val useMetric = rememberUnitPreference()
-    
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,7 +62,7 @@ fun RecentPRsSection(
                 )
             }
         }
-        
+
         if (prsWithDetails.isEmpty()) {
             Text(
                 text = "🏆 No personal records yet!\n\nKeep pushing your limits - your first PR is just one workout away. Track your progress and celebrate every milestone.",
@@ -78,7 +78,7 @@ fun RecentPRsSection(
                 // Track which exercises have been seen to mark newest PR per exercise
                 val exercisePRs = prsWithDetails.groupBy { it.exerciseName }
                 val newestPRPerExercise = exercisePRs.mapValues { (_, prs) -> prs.maxByOrNull { it.date } }
-                
+
                 prsWithDetails.forEach { prDetails ->
                     val isNewPR = newestPRPerExercise[prDetails.exerciseName]?.setId == prDetails.setId
                     val convertedWeight = UnitConverter.convertWeight(prDetails.weight, useMetric)
@@ -220,7 +220,7 @@ fun PRCard(
                     )
                 }
             }
-            
+
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -237,7 +237,7 @@ fun PRCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             // Mini chart placeholder
             Box(
                 modifier = Modifier
@@ -246,7 +246,7 @@ fun PRCard(
                     .clip(RoundedCornerShape(4.dp))
                     .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
             )
-            
+
             Column(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(2.dp)

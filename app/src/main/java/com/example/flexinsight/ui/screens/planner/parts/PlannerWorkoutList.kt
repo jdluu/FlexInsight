@@ -70,7 +70,7 @@ fun WorkoutListSection(
                 }
             }
         }
-        
+
         if (selectedDayWorkouts.isEmpty()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -117,7 +117,7 @@ fun WorkoutListSection(
                     workout.intensity?.contains("Aerobic", ignoreCase = true) == true -> Color(0xFF3B82F6)
                     else -> MaterialTheme.colorScheme.primary
                 }
-                
+
                 WorkoutItem(
                     title = workout.name,
                     duration = formatDuration(workout.duration),
@@ -126,14 +126,14 @@ fun WorkoutListSection(
                     icon = icon,
                     iconColor = iconColor,
                     hasCheckbox = !workout.isCompleted,
-                    onCheckedChange = { isChecked -> 
+                    onCheckedChange = { isChecked ->
                         workout.id?.let { id -> onWorkoutComplete(id, isChecked) }
                     },
                     onLongClick = { onReschedule(workout) }
                 )
             }
         }
-        
+
         if (selectedDayWorkouts.isNotEmpty()) {
             Row(
                 modifier = Modifier
@@ -252,7 +252,7 @@ fun WorkoutItem(
                         }
                     }
                 }
-                
+
                 if (isCompleted) {
                     Surface(
                         modifier = Modifier.size(32.dp),

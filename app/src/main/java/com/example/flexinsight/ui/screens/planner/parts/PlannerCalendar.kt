@@ -47,7 +47,7 @@ fun WeekCalendar(
     onDaySelected: (Int) -> Unit = {}
 ) {
     val today = System.currentTimeMillis()
-    
+
     LazyRow(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -59,7 +59,7 @@ fun WeekCalendar(
             val dayStart = dayData.timestamp
             val dayEnd = dayStart + 24 * 60 * 60 * 1000
             val isToday = today >= dayStart && today < dayEnd
-            
+
             val dayUiModel = PlannerDayUiModel(
                 name = dayData.name,
                 date = dayData.date,
@@ -85,9 +85,9 @@ fun DayCard(day: PlannerDayUiModel, onClick: () -> Unit) {
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(24.dp),
         color = if (day.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
-        border = if (day.isToday && !day.isSelected) 
-                    BorderStroke(2.dp, MaterialTheme.colorScheme.primary) 
-                 else 
+        border = if (day.isToday && !day.isSelected)
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                 else
                     BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
         Box(
@@ -124,7 +124,7 @@ fun DayCard(day: PlannerDayUiModel, onClick: () -> Unit) {
                         letterSpacing = 0.5.sp
                     )
                 }
-                
+
                 Text(
                     text = day.name,
                     fontSize = 12.sp,

@@ -40,13 +40,13 @@ class WorkoutDetailViewModel(
     private val database: FlexDatabase,
     workoutId: String?
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(WorkoutDetailUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<WorkoutDetailUiState> = _uiState.asStateFlow()
-    
+
     private val exerciseDao = database.exerciseDao()
     private val setDao = database.setDao()
-    
+
     init {
         if (workoutId != null) {
             loadWorkoutData(workoutId)
@@ -57,15 +57,15 @@ class WorkoutDetailViewModel(
             )
         }
     }
-    
+
     private fun loadWorkoutData(workoutId: String) {
         viewModelScope.launch {
             try {
                 _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
-                
+
                 // Load workout
                 val workout = repository.getWorkoutByIdFlow(workoutId).first()
-                
+
                 if (workout == null) {
                     val apiError = com.example.flexinsight.core.errors.ApiError.Unknown("Workout not found")
                     _uiState.value = _uiState.value.copy(
@@ -74,21 +74,21 @@ class WorkoutDetailViewModel(
                     )
                     return@launch
                 }
-                
+
                 // Calculate workout stats
                 val workoutStats = try {
                     repository.calculateWorkoutStats(workout)
                 } catch (e: Exception) {
                     null
                 }
-                
+
                 // Load exercises
                 val exercises = try {
                     exerciseDao.getExercisesByWorkoutIdFlow(workoutId).first()
                 } catch (e: Exception) {
                     emptyList()
                 }
-                
+
                 // Load sets for each exercise
                 val exercisesWithSets = exercises.map { exercise ->
                     val sets = try {
@@ -98,7 +98,7 @@ class WorkoutDetailViewModel(
                     }
                     ExerciseWithSets(exercise, sets)
                 }
-                
+
                 _uiState.value = _uiState.value.copy(
                     loadingState = LoadingState.Success,
                     workout = workout,
@@ -115,7 +115,7 @@ class WorkoutDetailViewModel(
             }
         }
     }
-    
+
     fun refresh() {
         val workoutId = _uiState.value.workout?.id
         if (workoutId != null) {

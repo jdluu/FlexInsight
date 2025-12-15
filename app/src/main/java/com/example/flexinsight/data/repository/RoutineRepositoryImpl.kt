@@ -31,7 +31,7 @@ class RoutineRepositoryImpl(
 ) : RoutineRepository {
     private var apiService: FlexApiService? = null
     private var currentApiKey: String? = null
-    
+
     /**
      * Gets API service, creating it if needed
      */
@@ -39,16 +39,16 @@ class RoutineRepositoryImpl(
         val apiKey = apiKeyManager.getApiKey() ?: return Result.error(
             ApiError.AuthError.InvalidApiKey
         )
-        
+
         if (apiService == null || currentApiKey != apiKey) {
             apiService = apiClient.createApiService(apiKey)
             currentApiKey = apiKey
         }
-        
+
         val service = apiService ?: return Result.error(ApiError.Unknown("API service not initialized"))
         return Result.success(service)
     }
-    
+
     /**
      * Invalidates the API service
      */
@@ -57,7 +57,7 @@ class RoutineRepositoryImpl(
         currentApiKey = null
         cacheManager.invalidate(CacheKeys.ROUTINES)
     }
-    
+
     /**
      * Sync routines from API
      */
@@ -66,14 +66,14 @@ class RoutineRepositoryImpl(
         if (apiServiceResult is Result.Error) {
             return Result.error(apiServiceResult.error)
         }
-        
+
         // Check network
         if (!networkMonitor.hasNetworkConnection()) {
             return Result.error(ApiError.NetworkError.NoConnection)
         }
-        
+
         val apiService = (apiServiceResult as Result.Success).data
-        
+
         return try {
             var page = 1
             var hasMore = true
@@ -126,11 +126,11 @@ class RoutineRepositoryImpl(
                     val error = ErrorHandler.handleHttpException(
                         retrofit2.HttpException(response)
                     )
-                    
+
                     if (error is ApiError.AuthError) {
                         invalidateApiService()
                     }
-                    
+
                     return Result.error(error)
                 }
             }
@@ -144,7 +144,7 @@ class RoutineRepositoryImpl(
             Result.error(error)
         }
     }
-    
+
     /**
      * Get all routines - returns cached data immediately
      */
@@ -157,7 +157,7 @@ class RoutineRepositoryImpl(
             emit(cached ?: emptyList())
         }
     }
-    
+
     /**
      * Get routine by ID
      */
@@ -165,7 +165,7 @@ class RoutineRepositoryImpl(
         val routinesResult = getRoutines()
         val routines = routinesResult.first()
         val routine = routines.firstOrNull { it.id == routineId }
-        
+
         return if (routine != null) {
             Result.success(routine)
         } else {
@@ -174,21 +174,21 @@ class RoutineRepositoryImpl(
             if (apiServiceResult is Result.Error) {
                 return apiServiceResult
             }
-            
+
             if (!networkMonitor.hasNetworkConnection()) {
                 return Result.error(ApiError.NetworkError.NoConnection)
             }
-            
+
             val apiService = (apiServiceResult as Result.Success).data
-            
+
             try {
                 val response = apiService.getRoutineById(routineId)
-                
+
                 if (response.isSuccessful) {
                     val routineResponse = response.body() ?: return Result.error(
                         ApiError.Unknown("Empty response body")
                     )
-                    
+
                     // Get exercise template mapping
                     val exerciseTemplateMappingResult = exerciseRepository.getExerciseTemplateMapping()
                     val exerciseTemplateMapping = if (exerciseTemplateMappingResult is Result.Success) {
@@ -196,7 +196,7 @@ class RoutineRepositoryImpl(
                     } else {
                         emptyMap()
                     }
-                    
+
                     val routine = routineResponse.toRoutine(exerciseTemplateMapping)
                     Result.success(routine)
                 } else {
@@ -248,20 +248,20 @@ class RoutineRepositoryImpl(
                     val paginatedResponse = response.body() ?: return Result.error(
                         ApiError.Unknown("Empty response body")
                     )
-                    
+
                     val foldersList = paginatedResponse.folders
                     if (foldersList.isNotEmpty()) {
                         allFolders.addAll(foldersList.map { it.toRoutineFolder() })
                     }
 
-                    // Check if there are more pages - though folders response might not strictly follow pageCount logic, 
+                    // Check if there are more pages - though folders response might not strictly follow pageCount logic,
                     // typically it's limited. Assuming standard pagination if pageCount exists or just stop if empty.
                     // The docs sample for folders doesn't explicitly show page_count, but let's assume standard behavior or stop if empty.
                     // If page_count is not in response, we might need adjustments. Let's assume standard paginated response structure for now.
-                    // Wait, I didn't see page_count in the sample response in docs for buckets/folders. 
+                    // Wait, I didn't see page_count in the sample response in docs for buckets/folders.
                     // Docs: {"page":1, "folders": [...]} - Missing page_count.
                     // So we loop until empty results?
-                    
+
                     if (foldersList.isEmpty()) {
                         hasMore = false
                     } else {
@@ -274,13 +274,13 @@ class RoutineRepositoryImpl(
                      return Result.error(error)
                 }
             }
-            
-            // Refined Loop logic: Use do-while or check page count if available. 
+
+            // Refined Loop logic: Use do-while or check page count if available.
             // Since docs don't show page_count, let's just use the fact that I added PaginatedRoutineFolderResponse which likely should have it or we trust the loop.
             // Actually, checking PaginatedRoutineFolderResponse definition I created...
-            // data class PaginatedRoutineFolderResponse(val page: Int, val folders: List<RoutineFolderResponse>) 
+            // data class PaginatedRoutineFolderResponse(val page: Int, val folders: List<RoutineFolderResponse>)
             // I did NOT add pageCount. So I should iterate until empty list is returned.
-            
+
             cacheManager.put(CacheKeys.ROUTINE_FOLDERS, allFolders)
             Result.success(allFolders)
 

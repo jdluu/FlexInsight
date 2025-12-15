@@ -8,17 +8,17 @@ sealed class NetworkState {
      * Network is available and connected
      */
     data object Available : NetworkState()
-    
+
     /**
      * Network is unavailable (no internet connection)
      */
     data object Unavailable : NetworkState()
-    
+
     /**
      * Network state is unknown (checking or initializing)
      */
     data object Unknown : NetworkState()
-    
+
     /**
      * Returns true if network is available
      */

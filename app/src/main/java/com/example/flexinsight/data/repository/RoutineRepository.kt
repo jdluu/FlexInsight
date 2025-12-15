@@ -9,11 +9,11 @@ import kotlinx.coroutines.flow.Flow
  */
 interface RoutineRepository {
     fun invalidateApiService()
-    
+
     suspend fun syncRoutines(): Result<Unit>
-    
+
     fun getRoutines(): Flow<List<Routine>>
-    
+
     suspend fun getRoutineById(routineId: String): Result<Routine>
 
     suspend fun getRoutineFolders(): Result<List<com.example.flexinsight.data.model.RoutineFolder>>

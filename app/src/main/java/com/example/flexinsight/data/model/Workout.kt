@@ -47,7 +47,7 @@ data class WorkoutResponse(
     fun toWorkout(): Workout {
         val startTimestamp = parseTimestamp(startTime)
         val endTimestamp = endTime?.let { parseTimestamp(it) }
-        
+
         return Workout(
             id = id,
             name = title, // API uses "title", we store as "name"
@@ -59,14 +59,14 @@ data class WorkoutResponse(
             needsSync = false
         )
     }
-    
+
     private fun parseTimestamp(isoString: String): Long {
         return try {
             // Parse ISO 8601 format (e.g., "2025-12-12T18:27:13+00:00" or "2024-01-15T10:30:00Z")
             // Check if string has timezone offset (contains "+" or has "-" after the date part)
-            val hasTimezoneOffset = isoString.contains("+") || 
+            val hasTimezoneOffset = isoString.contains("+") ||
                 (isoString.length > 19 && isoString.substring(19).contains("-"))
-            
+
             if (hasTimezoneOffset) {
                 // Format: "2025-12-12T18:27:13+00:00" - replace timezone with Z
                 val cleanString = isoString.replace(Regex("[+-]\\d{2}:\\d{2}$"), "Z")

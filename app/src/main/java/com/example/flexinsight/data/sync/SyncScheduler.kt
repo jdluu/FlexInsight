@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
  * Manages scheduling of background sync work.
  */
 class SyncScheduler(private val context: Context) {
-    
+
     /**
      * Schedules periodic background sync (every 30 minutes when network is available)
      */
@@ -19,17 +19,17 @@ class SyncScheduler(private val context: Context) {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-        
+
         val syncWork = PeriodicWorkRequestBuilder<BackgroundSyncWorker>(
             30, TimeUnit.MINUTES
         )
             .setConstraints(constraints)
             .addTag(BackgroundSyncWorker.WORK_NAME)
             .build()
-        
+
         WorkManager.getInstance(context).enqueue(syncWork)
     }
-    
+
     /**
      * Cancels all scheduled sync work
      */

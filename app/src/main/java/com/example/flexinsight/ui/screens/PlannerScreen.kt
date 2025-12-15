@@ -27,7 +27,7 @@ fun PlannerScreen(
     val uiState by viewModel.uiState.collectAsState()
     val scope = rememberCoroutineScope()
     val snackbarHostState = com.example.flexinsight.ui.common.LocalSnackbarHostState.current
-    
+
     if (uiState.isLoading) {
         Box(
             modifier = Modifier
@@ -39,7 +39,7 @@ fun PlannerScreen(
         }
         return
     }
-    
+
     if (uiState.error != null) {
         Box(
             modifier = Modifier
@@ -67,10 +67,10 @@ fun PlannerScreen(
         }
         return
     }
-    
+
     val context = LocalContext.current
     var showRescheduleDialog by remember { mutableStateOf<PlannedWorkout?>(null) }
-    
+
     showRescheduleDialog?.let { workout ->
         PlannerRescheduleDialog(
             workout = workout,
@@ -86,7 +86,7 @@ fun PlannerScreen(
             onDismiss = { showRescheduleDialog = null }
         )
     }
-    
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -111,8 +111,8 @@ fun PlannerScreen(
             WorkoutListSection(
                 selectedDayWorkouts = uiState.selectedDayWorkouts,
                 selectedDayName = uiState.weekCalendarData.getOrNull(uiState.selectedDayIndex)?.name ?: "Day",
-                onWorkoutComplete = { id, completed -> 
-                    viewModel.markWorkoutAsComplete(id, completed) 
+                onWorkoutComplete = { id, completed ->
+                    viewModel.markWorkoutAsComplete(id, completed)
                 },
                 onReschedule = { workout ->
                     showRescheduleDialog = workout

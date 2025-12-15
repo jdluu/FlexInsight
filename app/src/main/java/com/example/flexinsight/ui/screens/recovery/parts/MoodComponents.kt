@@ -38,7 +38,7 @@ fun MoodLogSection(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
@@ -68,7 +68,7 @@ fun MoodLogSection(
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
-                    
+
                     Slider(
                         value = moodValue,
                         onValueChange = onMoodChange,
@@ -81,7 +81,7 @@ fun MoodLogSection(
                         ),
                         modifier = Modifier.padding(vertical = 8.dp)
                     )
-                    
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -102,7 +102,7 @@ fun MoodLogSection(
                         )
                     }
                 }
-                
+
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -137,7 +137,7 @@ fun MoodLogSection(
                         )
                     }
                 }
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)

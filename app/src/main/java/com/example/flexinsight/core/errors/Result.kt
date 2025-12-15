@@ -11,24 +11,24 @@ sealed class Result<out T> {
      * Represents a successful operation with a value
      */
     data class Success<T>(val data: T) : Result<T>()
-    
+
     /**
      * Represents a failed operation with an error
      */
     data class Error(val error: ApiError) : Result<Nothing>()
-    
+
     /**
      * Returns true if the result is a success
      */
     val isSuccess: Boolean
         get() = this is Success
-    
+
     /**
      * Returns true if the result is an error
      */
     val isError: Boolean
         get() = this is Error
-    
+
     /**
      * Gets the data if successful, null otherwise
      */
@@ -36,7 +36,7 @@ sealed class Result<out T> {
         is Success -> data
         is Error -> null
     }
-    
+
     /**
      * Gets the data if successful, or returns the default value
      */
@@ -44,7 +44,7 @@ sealed class Result<out T> {
         is Success -> data
         is Error -> default
     }
-    
+
     /**
      * Maps the success value to another type
      */
@@ -52,7 +52,7 @@ sealed class Result<out T> {
         is Success -> Success(transform(data))
         is Error -> this
     }
-    
+
     /**
      * Maps the error to another error type
      */
@@ -60,7 +60,7 @@ sealed class Result<out T> {
         is Success -> this
         is Error -> Error(transform(error))
     }
-    
+
     /**
      * Executes an action if the result is a success
      */
@@ -70,7 +70,7 @@ sealed class Result<out T> {
         }
         return this
     }
-    
+
     /**
      * Executes an action if the result is an error
      */
@@ -80,7 +80,7 @@ sealed class Result<out T> {
         }
         return this
     }
-    
+
     /**
      * Companion object with helper functions for creating Result instances
      */
@@ -89,7 +89,7 @@ sealed class Result<out T> {
          * Helper function to create a success result
          */
         fun <T> success(data: T): Result<T> = Success(data)
-        
+
         /**
          * Helper function to create an error result
          */

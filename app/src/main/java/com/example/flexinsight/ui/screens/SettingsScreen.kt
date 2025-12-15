@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 fun SettingsScreen() {
     val context = LocalContext.current
     val application = context.applicationContext as? FlexInsightApplication
-    
+
     if (application == null) {
         Box(
             modifier = Modifier
@@ -46,16 +46,16 @@ fun SettingsScreen() {
         }
         return
     }
-    
+
     val viewModel: SettingsViewModel = viewModel {
         SettingsViewModel(application.repository, application.userPreferencesManager)
     }
     val uiState by viewModel.uiState.collectAsState()
-    
+
     val apiKeyManager = remember { ApiKeyManager(context) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = com.example.flexinsight.ui.common.LocalSnackbarHostState.current
-    
+
     var healthConnectEnabled by remember { mutableStateOf(false) }
     var geminiEnabled by remember { mutableStateOf(true) }
     var apiKey by remember { mutableStateOf<String?>(null) }
@@ -65,12 +65,12 @@ fun SettingsScreen() {
     var showThemeDialog by remember { mutableStateOf(false) }
     var showClearCacheDialog by remember { mutableStateOf(false) }
     var showEditProfileDialog by remember { mutableStateOf(false) }
-    
+
     // Load API key
     LaunchedEffect(Unit) {
         apiKey = apiKeyManager.getApiKey()
     }
-    
+
     // Sync Status Feedback
     LaunchedEffect(uiState.syncState) {
         when (val state = uiState.syncState) {
@@ -83,7 +83,7 @@ fun SettingsScreen() {
             else -> {}
         }
     }
-    
+
     if (uiState.isLoading) {
         Box(
             modifier = Modifier
@@ -95,7 +95,7 @@ fun SettingsScreen() {
         }
         return
     }
-    
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -118,7 +118,7 @@ fun SettingsScreen() {
                     .padding(horizontal = 16.dp)
             )
         }
-        
+
         item {
             ProfileSection(
                 profileInfo = uiState.profileInfo,
@@ -128,7 +128,7 @@ fun SettingsScreen() {
                 onEditProfileClick = { showEditProfileDialog = true }
             )
         }
-        
+
         // Error banner
         uiState.error?.let { error ->
             item {
@@ -258,12 +258,12 @@ fun SettingsScreen() {
             )
         }
     }
-    
+
     // API Key Dialog
     if (showApiKeyDialog) {
         ApiKeyDialog(
             currentApiKey = apiKey,
-            onDismiss = { 
+            onDismiss = {
                 showApiKeyDialog = false
                 apiKeyError = null
             },
@@ -283,7 +283,7 @@ fun SettingsScreen() {
             error = apiKeyError
         )
     }
-    
+
     // Weekly Goal Dialog
     if (showWeeklyGoalDialog) {
         WeeklyGoalDialog(
@@ -295,7 +295,7 @@ fun SettingsScreen() {
             }
         )
     }
-    
+
     // Theme Dialog
     if (showThemeDialog) {
         ThemeDialog(
@@ -307,7 +307,7 @@ fun SettingsScreen() {
             }
         )
     }
-    
+
     // Clear Cache Dialog
     if (showClearCacheDialog) {
         ClearCacheDialog(
@@ -331,7 +331,7 @@ fun SettingsScreen() {
             }
         )
     }
-    
+
     // Error Snackbar
     uiState.error?.let { error ->
         LaunchedEffect(error) {

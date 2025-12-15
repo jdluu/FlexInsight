@@ -14,7 +14,7 @@ data class CacheEntry<T>(
         val age = System.currentTimeMillis() - timestamp
         return age < ttlMillis
     }
-    
+
     /**
      * Gets the age of this cache entry in milliseconds
      */

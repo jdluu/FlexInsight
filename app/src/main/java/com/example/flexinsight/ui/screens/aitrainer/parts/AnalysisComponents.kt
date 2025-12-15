@@ -89,7 +89,7 @@ fun HeartRateChart() {
                     }
                 }
             }
-            
+
             // Simplified chart representation
             Box(
                 modifier = Modifier
@@ -105,7 +105,7 @@ fun HeartRateChart() {
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -119,7 +119,7 @@ fun HeartRateChart() {
                     )
                 }
             }
-            
+
             Button(
                 onClick = {},
                 modifier = Modifier.fillMaxWidth(),

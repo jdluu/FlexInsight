@@ -41,18 +41,18 @@ fun WorkoutStatsCard(
     } else {
         "0m"
     }
-    
+
     val volumeText = if (stats?.totalVolume != null && stats.totalVolume > 0) {
         UnitConverter.formatVolumeWithCommas(stats.totalVolume, useMetric)
     } else {
         "0"
     }
-    
+
     val setsText = (stats?.totalSets ?: 0).toString()
     val repsText = totalReps.toString()
-    
+
     val hasPR = false // TODO: Check if any sets are PRs
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,9 +92,9 @@ fun WorkoutStatsCard(
                     StatItem(setsText, "Sets", modifier = Modifier.weight(1f))
                     StatItem(repsText, "Reps", modifier = Modifier.weight(1f))
                 }
-                
+
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)

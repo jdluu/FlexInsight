@@ -84,7 +84,7 @@ fun RecoveryScoreCard() {
                         )
                     }
                 }
-                
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -142,7 +142,7 @@ fun CircularProgressIndicator(
             val strokeWidthPx = strokeWidth.toPx()
             val radius = (size.minDimension - strokeWidthPx) / 2
             val center = Offset(size.width / 2, size.height / 2)
-            
+
             // Background circle
             drawCircle(
                 color = backgroundColor,
@@ -150,7 +150,7 @@ fun CircularProgressIndicator(
                 center = center,
                 style = Stroke(width = strokeWidthPx)
             )
-            
+
             // Progress arc
             val sweepAngle = 360 * progress
             drawArc(

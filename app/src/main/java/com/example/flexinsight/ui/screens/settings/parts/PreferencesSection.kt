@@ -81,7 +81,7 @@ fun PreferenceItem(
                     color = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
-            
+
             if (isValueOnly) {
                 Text(
                     text = value ?: "",
@@ -184,7 +184,7 @@ fun ToggleItem(
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
-            
+
             Switch(
                 checked = checked,
                 onCheckedChange = onToggleChange,

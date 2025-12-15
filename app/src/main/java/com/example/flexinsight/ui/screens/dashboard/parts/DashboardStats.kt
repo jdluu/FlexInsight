@@ -123,9 +123,9 @@ fun WeeklyProgressSection(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(12.dp))
-        
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
@@ -175,7 +175,7 @@ fun WeeklyProgressSection(
                         // Show last 5 weeks of progress
                         val weeksToShow = progress.takeLast(5)
                         val maxVolume = weeksToShow.maxOfOrNull { it.totalVolume } ?: 1.0
-                        
+
                         repeat(5) { index ->
                             val weekIndex = weeksToShow.size - 5 + index
                             val weekVolume = if (weekIndex >= 0 && weekIndex < weeksToShow.size) {
@@ -189,7 +189,7 @@ fun WeeklyProgressSection(
                                 4.dp
                             }
                             val isCurrent = index == 4 && weekIndex >= 0
-                            
+
                             Box(
                                 modifier = Modifier
                                     .width(6.dp)
@@ -203,7 +203,7 @@ fun WeeklyProgressSection(
                         }
                     }
                 }
-                
+
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -268,7 +268,7 @@ fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon:
                 )
             }
         }
-        
+
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -302,7 +302,7 @@ fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon:
                             .fillMaxHeight()
                             // Determine relative width for visual emphasis (relative to the largest group shown)
                             // or just use the raw percentage?
-                            // User request implies "accurate percentages". 
+                            // User request implies "accurate percentages".
                             // If we use raw percentage (e.g. 30%), the bar will be 30% width.
                             // Previously it was full width (100%) for the top one.
                             // Let's stick to raw percentage for accuracy, but scale it slightly if they are all small?
@@ -320,7 +320,7 @@ fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon:
                     )
             }
         }
-        
+
         // Intensity label removed per user request
 //        Text(
 //            text = intensity,

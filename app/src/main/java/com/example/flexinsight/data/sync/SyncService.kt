@@ -25,7 +25,7 @@ class SyncService(
             }
         }
     }
-    
+
     /**
      * Sync with cloud database (structure ready, implementation TBD)
      * This will be implemented when a cloud database service is chosen
@@ -39,7 +39,7 @@ class SyncService(
             }
         }
     }
-    
+
     /**
      * Full sync - sync with both API and cloud
      */

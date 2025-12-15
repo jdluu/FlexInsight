@@ -32,7 +32,7 @@ fun QuickActionChips() {
         "Log water intake" to Icons.Default.WaterDrop,
         "Compare to last week" to Icons.AutoMirrored.Filled.ShowChart
     )
-    
+
     LazyRow(
         modifier = Modifier
             .fillMaxWidth()

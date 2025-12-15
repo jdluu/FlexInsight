@@ -25,14 +25,14 @@ interface FlexApiService {
         @Query("page") page: Int,
         @Query("pageSize") pageSize: Int
     ): Response<PaginatedWorkoutResponse>
-    
+
     /**
      * Get the total number of workouts on the account
      * API key is added automatically by the interceptor
      */
     @GET("v1/workouts/count")
     suspend fun getWorkoutCount(): Response<WorkoutCountResponse>
-    
+
     /**
      * Get a single workout's complete details by the workoutId
      * API key is added automatically by the interceptor
@@ -42,7 +42,7 @@ interface FlexApiService {
     suspend fun getWorkoutById(
         @Path("workoutId") workoutId: String
     ): Response<WorkoutResponse>
-    
+
     /**
      * Get exercise history for a specific exercise template
      * API key is added automatically by the interceptor
@@ -52,7 +52,7 @@ interface FlexApiService {
     suspend fun getExerciseHistory(
         @Path("exerciseTemplateId") exerciseTemplateId: String
     ): Response<ExerciseHistoryResponse>
-    
+
     /**
      * Get all exercise templates (paginated)
      * API key is added automatically by the interceptor
@@ -64,7 +64,7 @@ interface FlexApiService {
         @Query("page") page: Int = 1,
         @Query("pageSize") pageSize: Int = 50
     ): Response<PaginatedExerciseTemplatesResponse>
-    
+
     /**
      * Get workout events (created, updated, deleted) since a specific date
      * API key is added automatically by the interceptor

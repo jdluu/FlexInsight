@@ -16,14 +16,14 @@ class ApiKeyManager(private val context: Context) {
     companion object {
         private val API_KEY = stringPreferencesKey("api_key")
     }
-    
+
     /**
      * Get the stored API key as a Flow
      */
     val apiKeyFlow: Flow<String?> = context.dataStore.data.map { preferences ->
         preferences[API_KEY]
     }
-    
+
     /**
      * Get the stored API key synchronously (suspend function)
      */
@@ -32,7 +32,7 @@ class ApiKeyManager(private val context: Context) {
             preferences[API_KEY]
         }.firstOrNull()
     }
-    
+
     /**
      * Save the API key
      */
@@ -41,7 +41,7 @@ class ApiKeyManager(private val context: Context) {
             preferences[API_KEY] = apiKey
         }
     }
-    
+
     /**
      * Clear the stored API key
      */
@@ -50,14 +50,14 @@ class ApiKeyManager(private val context: Context) {
             preferences.remove(API_KEY)
         }
     }
-    
+
     /**
      * Check if API key exists
      */
     suspend fun hasApiKey(): Boolean {
         return getApiKey() != null
     }
-    
+
     /**
      * Validate API key format (basic validation)
      */

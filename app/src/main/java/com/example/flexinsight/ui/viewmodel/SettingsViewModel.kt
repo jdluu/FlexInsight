@@ -37,63 +37,63 @@ class SettingsViewModel(
     private val repository: FlexRepository,
     private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(SettingsUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
-    
+
     init {
         viewModelScope.launch {
             delay(100) // Small delay to ensure database is initialized
             loadSettingsData()
         }
     }
-    
+
     private fun loadSettingsData(isRefresh: Boolean = false) {
         viewModelScope.launch {
             try {
                 if (!isRefresh) {
                     _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
                 }
-                
+
                 // Load profile info
                 val profileInfo = try {
                     repository.getProfileInfo()
                 } catch (e: Exception) {
                     null
                 }
-                
+
                 // Load preferences
                 val weeklyGoal = try {
                     userPreferencesManager.getWeeklyGoal()
                 } catch (e: Exception) {
                     5
                 }
-                
+
                 val theme = try {
                     userPreferencesManager.getTheme()
                 } catch (e: Exception) {
                     "System"
                 }
-                
+
                 val units = try {
                     userPreferencesManager.getUnits()
                 } catch (e: Exception) {
                     "Imperial"
                 }
-                
+
                 val displayName = try {
                     userPreferencesManager.getDisplayName()
                 } catch (e: Exception) {
                     null
                 }
-                
+
                 // Merge display name into profile info if exists
                 val finalProfileInfo = if (displayName != null && profileInfo != null) {
                     profileInfo.copy(displayName = displayName)
                 } else {
                     profileInfo
                 }
-                
+
                 _uiState.value = _uiState.value.copy(
                     loadingState = LoadingState.Success,
                     profileInfo = finalProfileInfo,
@@ -111,7 +111,7 @@ class SettingsViewModel(
             }
         }
     }
-    
+
     fun syncData() {
         viewModelScope.launch {
             try {
@@ -129,7 +129,7 @@ class SettingsViewModel(
             }
         }
     }
-    
+
     fun updateWeeklyGoal(goal: Int) {
         viewModelScope.launch {
             try {
@@ -143,7 +143,7 @@ class SettingsViewModel(
             }
         }
     }
-    
+
     fun updateTheme(theme: String) {
         safeLaunch(onError = { apiError ->
             _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
@@ -152,7 +152,7 @@ class SettingsViewModel(
             _uiState.value = _uiState.value.copy(theme = theme)
         }
     }
-    
+
     fun updateUnits(units: String) {
         safeLaunch(onError = { apiError ->
             _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
@@ -161,9 +161,9 @@ class SettingsViewModel(
             _uiState.value = _uiState.value.copy(units = units)
         }
     }
-    
 
-    
+
+
     fun clearCache() {
         safeLaunch(onError = { apiError ->
             _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
@@ -172,7 +172,7 @@ class SettingsViewModel(
             _uiState.value = _uiState.value.copy(error = null)
         }
     }
-    
+
     fun updateDisplayName(name: String) {
         safeLaunch(onError = { apiError ->
             _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))

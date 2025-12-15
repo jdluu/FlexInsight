@@ -13,7 +13,7 @@ interface FlexRepository {
      * Invalidate the API service (useful when API key is updated)
      */
     fun invalidateApiService()
-    
+
     // Workout operations
     fun getWorkouts(): Flow<List<Workout>>
     fun getRecentWorkouts(limit: Int = 10): Flow<List<Workout>>
@@ -25,7 +25,7 @@ interface FlexRepository {
     fun getWorkoutCount(): Flow<Int>
     suspend fun updateWorkoutStatus(workoutId: String, isCompleted: Boolean): Result<Unit>
     suspend fun rescheduleWorkout(workoutId: String, newStartTime: Long): Result<Unit>
-    
+
     // Statistics operations
     suspend fun calculateStats(): WorkoutStats
     suspend fun calculateWorkoutStats(workout: Workout): SingleWorkoutStats
@@ -43,12 +43,12 @@ interface FlexRepository {
     suspend fun getMemberSinceDate(): Long?
     suspend fun calculateAccountAgeDays(): Int
     suspend fun getProfileInfo(): ProfileInfo
-    
+
     // Routine operations
     fun getRoutines(): Flow<List<Routine>>
     suspend fun getRoutineById(routineId: String): Routine?
     suspend fun getRoutineFolders(): List<RoutineFolder>
-    
+
     // Sync operations
     suspend fun syncAllData()
     fun clearCache()

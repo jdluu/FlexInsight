@@ -29,7 +29,7 @@ fun HistoryScreen(
     val uiState by viewModel.uiState.collectAsState()
     val useMetric = rememberUnitPreference()
     var showFilterDialog by remember { mutableStateOf(false) }
-    
+
     // Filter Dialog
     // Filter Dialog
     if (showFilterDialog) {
@@ -42,7 +42,7 @@ fun HistoryScreen(
             onDismiss = { showFilterDialog = false }
         )
     }
-    
+
     if (uiState.isLoading) {
         Box(
             modifier = Modifier
@@ -54,7 +54,7 @@ fun HistoryScreen(
         }
         return
     }
-    
+
     if (uiState.error != null) {
         Box(
             modifier = Modifier
@@ -83,7 +83,7 @@ fun HistoryScreen(
         return
     }
     var selectedTab by remember { mutableStateOf(0) }
-    
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -97,7 +97,7 @@ fun HistoryScreen(
         item {
             TabSelector(selectedTab = selectedTab, onTabSelected = { selectedTab = it })
         }
-        
+
         when (selectedTab) {
             0 -> { // Summary Tab
                 item {
@@ -112,7 +112,7 @@ fun HistoryScreen(
                     StatsGrid(
                         workoutCount = uiState.workoutCount,
                         avgVolume = uiState.workoutStats?.averageVolume?.toInt() ?: 0,
-                        bestWeek = uiState.workoutStats?.bestWeekDate?.let { 
+                        bestWeek = uiState.workoutStats?.bestWeekDate?.let {
                             formatDateShort(it)
                         } ?: "N/A",
                         useMetric = useMetric

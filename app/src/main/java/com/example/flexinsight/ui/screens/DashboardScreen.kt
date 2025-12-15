@@ -41,13 +41,13 @@ fun DashboardScreen(
     val useMetric = rememberUnitPreference()
     val listState = rememberLazyListState()
     var isRefreshing by remember { mutableStateOf(false) }
-    
+
     LaunchedEffect(uiState.isLoading) {
         if (!uiState.isLoading) {
             isRefreshing = false
         }
     }
-    
+
     if (uiState.isLoading && !isRefreshing) {
         Box(
             modifier = Modifier
@@ -59,7 +59,7 @@ fun DashboardScreen(
         }
         return
     }
-    
+
     // Network status indicator - get context and application outside LazyColumn
     val context = LocalContext.current
     val application = context.applicationContext as? FlexInsightApplication
@@ -71,7 +71,7 @@ fun DashboardScreen(
         }
     }
     val networkState by networkStateFlow.collectAsState(initial = NetworkState.Unknown)
-    
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -98,7 +98,7 @@ fun DashboardScreen(
                     )
                 }
             }
-        
+
             // Error banner
             uiState.error?.let { error ->
                 item {
@@ -111,7 +111,7 @@ fun DashboardScreen(
                     )
                 }
             }
-        
+
             item {
                 DashboardHeader(
                     profileInfo = uiState.profileInfo,
@@ -146,7 +146,7 @@ fun DashboardScreen(
                 )
             }
         }
-        
+
         // Pull-to-refresh indicator
         if (isRefreshing) {
             Box(

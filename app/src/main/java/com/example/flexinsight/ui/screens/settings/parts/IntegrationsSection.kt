@@ -150,7 +150,7 @@ fun IntegrationItem(
                     }
                 }
             }
-            
+
             if (isToggle) {
                 Switch(
                     checked = toggleState,

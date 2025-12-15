@@ -42,15 +42,15 @@ class MainActivity : ComponentActivity() {
             val userPreferencesManager = remember {
                 application?.let { UserPreferencesManager(it) }
             }
-            
+
             val themePreference by userPreferencesManager?.themeFlow?.collectAsState(initial = "System") ?: remember { mutableStateOf("System") }
-            
+
             val darkTheme = when (themePreference) {
                 "Dark" -> true
                 "Light" -> false
                 else -> isSystemInDarkTheme() // "System" or any other value
             }
-            
+
             FlexInsightTheme(darkTheme = darkTheme) {
                 MainScreen()
             }
@@ -67,7 +67,7 @@ fun getApplication(): FlexInsightApplication? {
 @Composable
 fun MainScreen() {
     val application = getApplication()
-    
+
     if (application == null) {
         // Show error screen if application can't be accessed
         Box(
@@ -84,13 +84,13 @@ fun MainScreen() {
         }
         return
     }
-    
+
     val context = LocalContext.current
     val apiKeyManager = remember { ApiKeyManager(context) }
     val scope = rememberCoroutineScope()
-    
+
     var showApiKeyPrompt by remember { mutableStateOf(false) }
-    
+
     // Check for API key on first launch
     LaunchedEffect(Unit) {
         try {
@@ -103,12 +103,12 @@ fun MainScreen() {
             showApiKeyPrompt = true
         }
     }
-    
+
     // Sync on app resume
     LaunchedEffect(Unit) {
         application.syncManager.syncOnResume()
     }
-    
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Dashboard.route
@@ -120,14 +120,14 @@ fun MainScreen() {
         Screen.Recovery.route,
         Screen.Settings.route
     )
-    
+
     // API Key Prompt Dialog
     if (showApiKeyPrompt) {
         var apiKeyText by remember { mutableStateOf("") }
         // Basic validation logic matching ApiKeyManager
         val isValid = apiKeyText.isNotBlank() && apiKeyText.length >= 10
         var error by remember { mutableStateOf<String?>(null) }
-        
+
         AlertDialog(
             onDismissRequest = { /* Don't allow dismissing without API key */ },
             title = {

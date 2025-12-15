@@ -70,7 +70,7 @@ fun AIInsightsSection(
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
-                
+
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -141,7 +141,7 @@ fun RecommendedWorkoutCard(
                     }
                 }
             }
-            
+
             Text(
                 text = recommendation.first,
                 fontSize = 16.sp,
@@ -154,7 +154,7 @@ fun RecommendedWorkoutCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 18.sp
             )
-            
+
             Button(
                 onClick = onGeneratePlan,
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
@@ -170,7 +170,7 @@ fun RecommendedWorkoutCard(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Generate Optimized Plan", color = MaterialTheme.colorScheme.onPrimary)
             }
-            
+
             Text(
                 text = "AI will create a personalized workout plan based on your training history and recovery needs",
                 fontSize = 10.sp,
@@ -197,7 +197,7 @@ fun VolumeBalanceChart(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             letterSpacing = 1.sp
         )
-        
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -206,7 +206,7 @@ fun VolumeBalanceChart(
             val balance = volumeBalance ?: VolumeBalance(0.25f, 0.25f, 0.25f, 0.25f)
             val maxValue = maxOf(balance.push, balance.pull, balance.legs, balance.cardio)
             val isLegsHighlighted = balance.legs == maxValue
-            
+
             VolumeBar("Push", balance.push, Color(0xFF60A5FA), modifier = Modifier.weight(1f))
             VolumeBar("Pull", balance.pull, Color(0xFF9333EA), modifier = Modifier.weight(1f))
             VolumeBar("Legs", balance.legs, MaterialTheme.colorScheme.primary, isHighlighted = isLegsHighlighted, modifier = Modifier.weight(1f))

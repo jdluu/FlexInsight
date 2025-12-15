@@ -90,7 +90,7 @@ fun ProfileSection(
                 }
             }
         }
-        
+
         Text(
             text = getDisplayName(profileInfo),
             fontSize = 24.sp,
@@ -103,7 +103,7 @@ fun ProfileSection(
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        
+
         // Profile stats
         if (profileInfo != null) {
             Row(
@@ -149,7 +149,7 @@ fun ProfileSection(
                 }
             }
         }
-        
+
         Button(
             onClick = onSyncClick,
             modifier = Modifier
@@ -180,7 +180,7 @@ fun ProfileSection(
                 color = MaterialTheme.colorScheme.onPrimary
             )
         }
-        
+
         // Sync status indicator
         val syncStateForIndicator = when (syncState) {
             is LoadingState.Loading -> SyncState.Syncing
@@ -196,7 +196,7 @@ fun ProfileSection(
             syncState = syncStateForIndicator,
             modifier = Modifier.fillMaxWidth()
         )
-        
+
         // Sync error banner
         syncError?.let { error ->
             ErrorBanner(

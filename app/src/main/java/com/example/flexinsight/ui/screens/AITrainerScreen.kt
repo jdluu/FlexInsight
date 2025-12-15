@@ -22,21 +22,21 @@ fun AITrainerScreen(
     val uiState by viewModel.uiState.collectAsState()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
-    
+
     LaunchedEffect(uiState.messages.size) {
         if (uiState.messages.isNotEmpty()) {
             delay(100)
             listState.animateScrollToItem(uiState.messages.size - 1)
         }
     }
-    
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
         AITrainerHeader()
-        
+
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -48,20 +48,20 @@ fun AITrainerScreen(
             item {
                 DateDivider("Today, 9:41 AM")
             }
-            
+
             items(uiState.messages) { message ->
                 ChatBubble(message)
             }
-            
+
             if (uiState.isTyping) {
                 item {
                     TypingIndicator()
                 }
             }
         }
-        
+
         QuickActionChips()
-        
+
         ChatInput(
             text = inputText,
             onTextChange = { inputText = it },

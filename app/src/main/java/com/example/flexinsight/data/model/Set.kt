@@ -62,7 +62,7 @@ data class SetResponse(
     fun toSet(exerciseId: String): Set {
         // Generate ID from exercise ID and index
         val setId = "${exerciseId}_set_$index"
-        
+
         return Set(
             id = setId,
             exerciseId = exerciseId,

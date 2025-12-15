@@ -35,7 +35,7 @@ class AITrainerViewModel(
 
     private suspend fun loadDynamicGreeting() {
         _uiState.value = _uiState.value.copy(isTyping = true)
-        
+
         // Fetch latest workout for context
         val latestWorkout = try {
             repository.getRecentWorkouts(1).first().firstOrNull()
@@ -46,9 +46,9 @@ class AITrainerViewModel(
         delay(1000) // Simulate AI "thinking"
 
         val greeting = generateGreeting(latestWorkout)
-        
+
         _messages.add(ChatMessage("ai", greeting, false))
-        
+
         // Add some context-aware follow-up if we have a workout
         if (latestWorkout != null) {
              _messages.add(ChatMessage("user", "Actually, let's look at that session. My heart rate felt high.", false))
@@ -75,7 +75,7 @@ class AITrainerViewModel(
 
         val newMessages = _uiState.value.messages.toMutableList()
         newMessages.add(ChatMessage("user", text, false))
-        
+
         _uiState.value = _uiState.value.copy(messages = newMessages, isTyping = true)
 
         // Simulate AI response

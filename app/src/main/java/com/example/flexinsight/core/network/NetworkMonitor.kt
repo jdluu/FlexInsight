@@ -18,12 +18,12 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 class NetworkMonitor(private val context: Context) {
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    
+
     /**
      * Current cached network state
      */
     private var cachedState: NetworkState = NetworkState.Unknown
-    
+
     /**
      * Flow of network state changes
      */
@@ -33,33 +33,33 @@ class NetworkMonitor(private val context: Context) {
                 cachedState = NetworkState.Available
                 trySend(NetworkState.Available)
             }
-            
+
             override fun onLost(network: Network) {
                 cachedState = NetworkState.Unavailable
                 trySend(NetworkState.Unavailable)
             }
-            
+
             override fun onUnavailable() {
                 cachedState = NetworkState.Unavailable
                 trySend(NetworkState.Unavailable)
             }
         }
-        
+
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
-        
+
         connectivityManager.registerNetworkCallback(request, callback)
-        
+
         // Send initial state
         cachedState = getCurrentNetworkState()
         trySend(cachedState)
-        
+
         awaitClose {
             connectivityManager.unregisterNetworkCallback(callback)
         }
     }.distinctUntilChanged()
-    
+
     /**
      * Gets the current network state synchronously
      * Uses cached value if available, otherwise checks connectivity
@@ -69,14 +69,14 @@ class NetworkMonitor(private val context: Context) {
         if (cachedState != NetworkState.Unknown) {
             return cachedState
         }
-        
+
         return if (isNetworkAvailable()) {
             NetworkState.Available.also { cachedState = it }
         } else {
             NetworkState.Unavailable.also { cachedState = it }
         }
     }
-    
+
     /**
      * Checks if network is currently available
      */
@@ -93,7 +93,7 @@ class NetworkMonitor(private val context: Context) {
             networkInfo?.state == android.net.NetworkInfo.State.CONNECTED
         }
     }
-    
+
     /**
      * Checks if network is available and connected (synchronous check)
      */

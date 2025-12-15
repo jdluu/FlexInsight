@@ -55,7 +55,7 @@ data class RoutineResponse(
             val exerciseName = exerciseTemplateMapping[exerciseResponse.templateId]
             exerciseResponse.toRoutineExercise(exerciseName)
         }
-        
+
         return Routine(
             id = id,
             name = name,

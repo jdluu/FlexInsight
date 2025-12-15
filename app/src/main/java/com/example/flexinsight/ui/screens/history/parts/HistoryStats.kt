@@ -42,7 +42,7 @@ fun StatsGrid(
         avgVolumeConverted.toInt().toString()
     }
     val unitLabel = UnitConverter.getWeightUnit(useMetric)
-    
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -187,7 +187,7 @@ fun TotalVolumeCard(
                     }
                 }
             }
-            
+
             // Recent 4 weeks trend (simplified)
             if (weeklyVolumeData.isNotEmpty()) {
                 Column(

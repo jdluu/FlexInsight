@@ -15,11 +15,11 @@ fun rememberUnitPreference(): Boolean {
     val preferencesManager = remember(application) {
         application?.userPreferencesManager
     }
-    
+
     val unitsFlow = remember(preferencesManager) {
         preferencesManager?.unitsFlow ?: flowOf("Imperial")
     }
-    
+
     val units by unitsFlow.collectAsState(initial = "Imperial")
     return units == "Metric"
 }

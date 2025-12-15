@@ -2,7 +2,7 @@ package com.example.flexinsight.ui.utils
 
 object UnitConverter {
     private const val KG_TO_LBS = 2.20462
-    
+
     /**
      * Convert weight from kg to lbs if using imperial
      */
@@ -10,21 +10,21 @@ object UnitConverter {
         if (weightKg == null) return null
         return if (useMetric) weightKg else weightKg * KG_TO_LBS
     }
-    
+
     /**
      * Convert volume from kg to lbs if using imperial
      */
     fun convertVolume(volumeKg: Double, useMetric: Boolean): Double {
         return if (useMetric) volumeKg else volumeKg * KG_TO_LBS
     }
-    
+
     /**
      * Get weight unit label
      */
     fun getWeightUnit(useMetric: Boolean): String {
         return if (useMetric) "kg" else "lbs"
     }
-    
+
     /**
      * Format weight value with appropriate unit
      */
@@ -36,7 +36,7 @@ object UnitConverter {
             String.format("%.0f", weight)
         }
     }
-    
+
     /**
      * Format volume with appropriate formatting and unit
      */
@@ -57,7 +57,7 @@ object UnitConverter {
             String.format("%.1f", volume)
         }
     }
-    
+
     /**
      * Format volume with commas
      */

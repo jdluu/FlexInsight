@@ -103,7 +103,7 @@ fun WeeklyGoalCard(weeklyGoalProgress: WeeklyGoalProgress? = null) {
                     }
                 }
             }
-            
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -124,7 +124,7 @@ fun WeeklyGoalCard(weeklyGoalProgress: WeeklyGoalProgress? = null) {
                         .background(MaterialTheme.colorScheme.primary)
                 )
             }
-            
+
             val remaining = weeklyGoalProgress?.let { it.target - it.completed } ?: 0
             Text(
                 text = if (remaining > 0) {

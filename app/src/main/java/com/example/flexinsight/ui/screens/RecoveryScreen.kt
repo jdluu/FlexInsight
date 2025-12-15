@@ -16,7 +16,7 @@ fun RecoveryScreen(
     viewModel: RecoveryViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()

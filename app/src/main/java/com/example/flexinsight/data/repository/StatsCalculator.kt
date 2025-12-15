@@ -22,7 +22,7 @@ object StatsCalculator {
     ): Double {
         val exercisesByWorkout = allExercises.groupBy { it.workoutId }
         val setsByExercise = allSets.groupBy { it.exerciseId }
-        
+
         return workouts.sumOf { workout ->
             val exercises = exercisesByWorkout[workout.id] ?: emptyList()
             exercises.sumOf { exercise: Exercise ->
@@ -40,7 +40,7 @@ object StatsCalculator {
     fun calculateTotalDuration(workouts: List<Workout>): Long {
         return workouts
             .filter { it.endTime != null }
-            .sumOf { workout -> 
+            .sumOf { workout ->
                 val endTime = workout.endTime ?: return@sumOf 0L
                 (endTime - workout.startTime) / (1000 * 60)
             }
@@ -51,27 +51,27 @@ object StatsCalculator {
      */
     fun calculateStreak(workouts: List<Workout>): Int {
         if (workouts.isEmpty()) return 0
-        
+
         // Group by LocalDate to handle multiple workouts per day
         val workoutDates = workouts
             .map { Instant.ofEpochMilli(it.startTime).atZone(ZoneId.systemDefault()).toLocalDate() }
             .distinct()
             .sortedDescending()
-            
+
         val today = LocalDate.now()
         val yesterday = today.minusDays(1)
-        
+
         if (workoutDates.isEmpty()) return 0
-        
+
         // Streak must start today or yesterday
         val latestWorkout = workoutDates.first()
         if (latestWorkout != today && latestWorkout != yesterday) {
             return 0
         }
-        
+
         var streak = 0
         var currentDate = latestWorkout
-        
+
         // Check for consecutive days backwards
         for (i in workoutDates.indices) {
             if (workoutDates[i] == currentDate) {
@@ -81,7 +81,7 @@ object StatsCalculator {
                 break
             }
         }
-        
+
         return streak
     }
 
@@ -90,16 +90,16 @@ object StatsCalculator {
      */
     fun calculateLongestStreak(workouts: List<Workout>): Int {
         if (workouts.isEmpty()) return 0
-        
+
         val workoutDates = workouts
             .map { Instant.ofEpochMilli(it.startTime).atZone(ZoneId.systemDefault()).toLocalDate() }
             .distinct()
             .sorted()
-            
+
         var longestStreak = 0
         var currentStreak = 0
         var lastDate: LocalDate? = null
-        
+
         for (date in workoutDates) {
             if (lastDate == null) {
                 currentStreak = 1
@@ -115,7 +115,7 @@ object StatsCalculator {
                 lastDate = date
             }
         }
-        
+
         return maxOf(longestStreak, currentStreak)
     }
 
@@ -156,7 +156,7 @@ object StatsCalculator {
             VolumeBalance(0.25f, 0.25f, 0.25f, 0.25f)
         }
     }
-    
+
     /**
      * Calculate daily duration trend.
      */
@@ -166,7 +166,7 @@ object StatsCalculator {
         endDate: Long
     ): List<DailyDurationData> {
         val dayGroups = mutableMapOf<DayOfWeek, MutableList<Long>>()
-        
+
         // Initialize map with empty lists
         DayOfWeek.values().forEach { day ->
             if (day != DayOfWeek.SUNDAY) { // Exclude Sunday if 6-day week logic, or keep all
@@ -175,7 +175,7 @@ object StatsCalculator {
         }
         // Assuming we want Mon-Sun or Mon-Sat based on existing logic which used 0-6 index
         // Existing logic used: Mon(0) to Sat(5) + Sun(6)
-        
+
         workouts.forEach { workout ->
              if (workout.endTime != null && workout.startTime >= startDate && workout.startTime <= endDate) {
                 val workoutDate = Instant.ofEpochMilli(workout.startTime)
@@ -183,20 +183,20 @@ object StatsCalculator {
                     .toLocalDate()
                 val dayOfWeek = workoutDate.dayOfWeek
                 val duration = (workout.endTime - workout.startTime) / (1000 * 60)
-                
+
                 dayGroups.getOrPut(dayOfWeek) { mutableListOf() }.add(duration)
              }
         }
-        
+
         // Map to display order M, T, W, T, F, S, S?
         // Original logic had explicit mapping. Let's return Mon-Sat(Sun)
         val displayDays = listOf(
-            DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, 
+            DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
             DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY
         ) // Original code seemed to map only 6 days? Let's verify existing logic.
-        // Existing: dayLabels = listOf("M", "T", "W", "T", "F", "S"). Size 6. 
+        // Existing: dayLabels = listOf("M", "T", "W", "T", "F", "S"). Size 6.
         // Sunday (6) was handled in switch but label list only has 6 items.
-        
+
         return displayDays.map { day ->
             val durations = dayGroups[day] ?: emptyList()
             val avg = if (durations.isNotEmpty()) durations.average().toLong() else 0L
@@ -206,7 +206,7 @@ object StatsCalculator {
             )
         }
     }
-    
+
     /**
      * Get start of the day timestamp.
      */

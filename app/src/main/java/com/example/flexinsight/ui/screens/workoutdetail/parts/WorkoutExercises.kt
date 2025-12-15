@@ -51,11 +51,11 @@ fun ExercisesSection(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         exercisesWithSets.forEachIndexed { index, exerciseWithSets ->
             val exercise = exerciseWithSets.exercise
             val sets = exerciseWithSets.sets
-            
+
             // Convert sets to SetData format
             val setsData = sets.map { set ->
                 SetData(
@@ -66,7 +66,7 @@ fun ExercisesSection(
                     isPR = set.isPersonalRecord
                 )
             }
-            
+
             // Find best set (highest weight * reps)
             val bestSet = sets.maxByOrNull { (it.weight ?: 0.0) * (it.reps ?: 0) }
             val bestSetText = bestSet?.let {
@@ -76,7 +76,7 @@ fun ExercisesSection(
                     "Best: ${String.format("%.0f", weight)}x$reps"
                 } else null
             }
-            
+
             ExpandableExerciseCard(
                 number = index + 1,
                 exerciseName = exercise.name,
@@ -104,7 +104,7 @@ fun ExpandableExerciseCard(
     useMetric: Boolean = false
 ) {
     var expanded by remember { mutableStateOf(isExpanded) }
-    
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -152,7 +152,7 @@ fun ExpandableExerciseCard(
                         )
                     }
                 }
-                
+
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -184,7 +184,7 @@ fun ExpandableExerciseCard(
                     )
                 }
             }
-            
+
             if (expanded && setsData.isNotEmpty()) {
                 Column(
                     modifier = Modifier
@@ -233,11 +233,11 @@ fun ExpandableExerciseCard(
                             letterSpacing = 1.sp
                         )
                     }
-                    
+
                     setsData.forEach { set ->
                         SetRow(set)
                     }
-                    
+
                     if (improvement != null) {
                         Row(
                             modifier = Modifier

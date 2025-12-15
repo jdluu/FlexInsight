@@ -8,14 +8,14 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class CacheManager {
     private val cache = ConcurrentHashMap<String, CacheEntry<*>>()
-    
+
     /**
      * Gets a cached value if it exists and is still valid
      */
     @Suppress("UNCHECKED_CAST")
     fun <T> get(key: String, ttlMillis: Long): T? {
         val entry = cache[key] as? CacheEntry<T> ?: return null
-        
+
         return if (entry.isValid(ttlMillis)) {
             entry.value
         } else {
@@ -24,35 +24,35 @@ class CacheManager {
             null
         }
     }
-    
+
     /**
      * Puts a value in the cache
      */
     fun <T> put(key: String, value: T) {
         cache[key] = CacheEntry(value)
     }
-    
+
     /**
      * Invalidates a specific cache entry
      */
     fun invalidate(key: String) {
         cache.remove(key)
     }
-    
+
     /**
      * Invalidates all cache entries matching a prefix
      */
     fun invalidatePrefix(prefix: String) {
         cache.keys.removeIf { it.startsWith(prefix) }
     }
-    
+
     /**
      * Clears all cache entries
      */
     fun clear() {
         cache.clear()
     }
-    
+
     /**
      * Removes expired entries (cleanup)
      */
@@ -60,17 +60,17 @@ class CacheManager {
         val keysToRemove = cache.entries
             .filter { (_, entry) -> !entry.isValid(ttlMillis) }
             .map { it.key }
-        
+
         keysToRemove.forEach { cache.remove(it) }
     }
-    
+
     /**
      * Gets cache statistics
      */
     fun getStats(): CacheStats {
         val totalEntries = cache.size
         val expiredEntries = cache.values.count { !it.isValid(Long.MAX_VALUE) }
-        
+
         return CacheStats(
             totalEntries = totalEntries,
             expiredEntries = expiredEntries,

@@ -31,7 +31,7 @@ fun ApiKeyDialog(
     var apiKeyText by remember { mutableStateOf(currentApiKey ?: "") }
     // Basic validation logic matching ApiKeyManager
     val isValid = apiKeyText.isNotBlank() && apiKeyText.length >= 10
-    
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -117,7 +117,7 @@ fun WeeklyGoalDialog(
 ) {
     var goalText by remember { mutableStateOf(currentGoal.toString()) }
     var error by remember { mutableStateOf<String?>(null) }
-    
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -138,7 +138,7 @@ fun WeeklyGoalDialog(
                 )
                 OutlinedTextField(
                     value = goalText,
-                    onValueChange = { 
+                    onValueChange = {
                         goalText = it
                         error = null
                     },
@@ -201,7 +201,7 @@ fun ThemeDialog(
     onSelect: (String) -> Unit
 ) {
     val themes = listOf("System", "Light", "Dark")
-    
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -312,7 +312,7 @@ fun EditProfileDialog(
 ) {
     var nameText by remember { mutableStateOf(currentName) }
     var error by remember { mutableStateOf<String?>(null) }
-    
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -333,7 +333,7 @@ fun EditProfileDialog(
                 )
                 OutlinedTextField(
                     value = nameText,
-                    onValueChange = { 
+                    onValueChange = {
                         nameText = it
                         error = null
                     },

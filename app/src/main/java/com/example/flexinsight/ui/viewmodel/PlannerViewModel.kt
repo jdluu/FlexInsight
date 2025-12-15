@@ -36,17 +36,17 @@ data class PlannerUiState(
 class PlannerViewModel(
     private val repository: FlexRepository
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(PlannerUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<PlannerUiState> = _uiState.asStateFlow()
-    
+
     init {
         viewModelScope.launch {
             delay(100) // Small delay to ensure database is initialized
             loadPlannerData()
         }
     }
-    
+
     fun loadPlannerData() {
         safeLaunch(onError = { apiError ->
             _uiState.value = _uiState.value.copy(
@@ -55,56 +55,56 @@ class PlannerViewModel(
             )
         }) {
             _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
-            
+
             // Load individual components with separate try-catch blocks to prevent one failure from blocking everything
             // Note: In a real app we might use async/await to load in parallel, but here we keep it simple or follow existing flow
-            
+
             // Load weekly goal progress
             val weeklyGoalProgress = try {
                 repository.getWeeklyGoalProgress(target = 5)
             } catch (e: Exception) {
                 null
             }
-            
+
             // Load week calendar data
             val weekCalendarData = try {
                 repository.getWeekCalendarData()
             } catch (e: Exception) {
                 emptyList()
             }
-            
+
             // Load routines
             val routinesRequest = try {
                 repository.getRoutines().first()
             } catch (e: Exception) {
                 emptyList()
             }
-            
+
             // Load routine folders
             val routineFolders = try {
                 repository.getRoutineFolders()
             } catch (e: Exception) {
                 emptyList()
             }
-            
+
             // Load volume balance
             val volumeBalance = try {
                 repository.getVolumeBalance(weeks = 4)
             } catch (e: Exception) {
                 null
             }
-            
+
             // Load muscle group progress for recommendations
             val muscleGroupProgress = try {
                 repository.getMuscleGroupProgress(weeks = 4)
             } catch (e: Exception) {
                 emptyList()
             }
-            
+
             // Load workouts for selected day (default to current day)
             var selectedDayWorkouts = emptyList<PlannedWorkout>()
             var selectedDayIndex = _uiState.value.selectedDayIndex
-            
+
             // If this is the initial load (selectedDayIndex is 0), find today's index
             if (selectedDayIndex == 0 && weekCalendarData.isNotEmpty()) {
                 val today = System.currentTimeMillis()
@@ -114,13 +114,13 @@ class PlannerViewModel(
                     val dayEnd = dayStart + 24 * 60 * 60 * 1000 // Add 24 hours
                     today >= dayStart && today < dayEnd
                 }
-                
+
                 // If today is found in the week, use it; otherwise keep 0
                 if (todayIndex >= 0) {
                     selectedDayIndex = todayIndex
                 }
             }
-            
+
             if (weekCalendarData.isNotEmpty() && selectedDayIndex < weekCalendarData.size) {
                 try {
                     val selectedDay = weekCalendarData[selectedDayIndex]
@@ -129,7 +129,7 @@ class PlannerViewModel(
                     // Continue with empty list if it fails
                 }
             }
-            
+
             _uiState.value = _uiState.value.copy(
                 loadingState = LoadingState.Success,
                 weeklyGoalProgress = weeklyGoalProgress,
@@ -144,7 +144,7 @@ class PlannerViewModel(
             )
         }
     }
-    
+
     fun selectDay(dayIndex: Int) {
         safeLaunch(onError = { apiError ->
             _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
@@ -153,7 +153,7 @@ class PlannerViewModel(
             if (dayIndex >= 0 && dayIndex < weekCalendarData.size) {
                 val selectedDay = weekCalendarData[dayIndex]
                 val workouts = repository.getPlannedWorkoutsForDay(selectedDay.timestamp)
-                
+
                 _uiState.value = _uiState.value.copy(
                     selectedDayIndex = dayIndex,
                     selectedDayWorkouts = workouts
@@ -161,7 +161,7 @@ class PlannerViewModel(
             }
         }
     }
-    
+
     fun refresh() {
         loadPlannerData()
     }
@@ -177,7 +177,7 @@ class PlannerViewModel(
             _uiState.value = _uiState.value.copy(selectedDayWorkouts = updatedWorkouts)
 
             val result = repository.updateWorkoutStatus(workoutId, isCompleted)
-            
+
             if (result is com.example.flexinsight.core.errors.Result.Error) {
                 // Revert on failure
                 val revertedWorkouts = _uiState.value.selectedDayWorkouts.map {
@@ -199,7 +199,7 @@ class PlannerViewModel(
             _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
         }) {
             val result = repository.rescheduleWorkout(workoutId, newDate)
-            
+
             if (result is com.example.flexinsight.core.errors.Result.Success) {
                 loadPlannerData()
             } else if (result is com.example.flexinsight.core.errors.Result.Error) {

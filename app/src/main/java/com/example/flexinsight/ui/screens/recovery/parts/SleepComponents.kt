@@ -36,7 +36,7 @@ fun SleepRestSection() {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(24.dp),
@@ -112,7 +112,7 @@ fun SleepRestSection() {
                         )
                     }
                 }
-                
+
                 // Sleep chart
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -121,7 +121,7 @@ fun SleepRestSection() {
                 ) {
                     val sleepData = listOf(0.5f, 0.6f, 0.65f, 0.85f, 0.4f, 0.9f, 0.75f)
                     val days = listOf("M", "T", "W", "T", "F", "S", "S")
-                    
+
                     sleepData.forEachIndexed { index, value ->
                         Column(
                             modifier = Modifier.weight(1f),
@@ -148,7 +148,7 @@ fun SleepRestSection() {
                         }
                     }
                 }
-                
+
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),

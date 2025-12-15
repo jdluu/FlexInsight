@@ -38,10 +38,10 @@ data class DashboardUiState(
 class DashboardViewModel(
     private val repository: FlexRepository
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(DashboardUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
-    
+
     init {
         // Delay initialization slightly to ensure database is ready
         viewModelScope.launch {
@@ -49,12 +49,12 @@ class DashboardViewModel(
             loadDashboardData()
         }
     }
-    
+
     private fun loadDashboardData() {
         viewModelScope.launch {
             try {
                 _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
-                
+
                 // Load latest workout - use first() to get initial value instead of continuous collection
                 val workouts = try {
                     repository.getRecentWorkouts(limit = 1).first()
@@ -66,17 +66,17 @@ class DashboardViewModel(
                     )
                     return@launch
                 }
-                
+
                 try {
                     val latestWorkout = workouts.firstOrNull()
-                    
+
                     // Load profile info
                     val profileInfo = try {
                         repository.getProfileInfo()
                     } catch (e: Exception) {
                         null
                     }
-                    
+
                     // Calculate latest workout stats
                     val latestWorkoutStats = latestWorkout?.let {
                         try {
@@ -85,7 +85,7 @@ class DashboardViewModel(
                             null
                         }
                     }
-                    
+
                     // Load stats
                     val stats = try {
                         repository.calculateStats()
@@ -103,7 +103,7 @@ class DashboardViewModel(
                             bestWeekDate = null
                         )
                     }
-                    
+
                     // Load weekly progress
                     var weeklyProgress = emptyList<com.example.flexinsight.data.model.WeeklyProgress>()
                     try {
@@ -111,7 +111,7 @@ class DashboardViewModel(
                     } catch (e: Exception) {
                         // Continue with empty progress if it fails
                     }
-                    
+
                     // Load muscle group progress
                     var muscleGroupProgress = emptyList<com.example.flexinsight.data.model.MuscleGroupProgress>()
                     try {
@@ -119,7 +119,7 @@ class DashboardViewModel(
                     } catch (e: Exception) {
                         // Continue with empty progress if it fails
                     }
-                    
+
                     _uiState.value = _uiState.value.copy(
                         loadingState = LoadingState.Success,
                         profileInfo = profileInfo,
@@ -147,11 +147,11 @@ class DashboardViewModel(
             }
         }
     }
-    
+
     fun refresh() {
         loadDashboardData()
     }
-    
+
     fun sync() {
         viewModelScope.launch {
             try {

@@ -46,7 +46,7 @@ class RecoveryViewModel(
             )
         }) {
             _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
-            
+
             // Calculate Training Load based on volume trend
             // If current volume > 1.2 * previous, it's High
             // If current volume < 0.8 * previous, it's Low
@@ -67,7 +67,7 @@ class RecoveryViewModel(
             } else {
                 TrainingLoadStatus.Optimal
             }
-            
+
             // For demo purposes, we can keep some hardcoded values like sleep/soreness
             // or fetch them if we had a sleep repo. We'll stick to calculating the Load.
 
@@ -78,11 +78,11 @@ class RecoveryViewModel(
             )
         }
     }
-    
+
     fun updateMood(value: Float) {
         _uiState.value = _uiState.value.copy(moodValue = value)
     }
-    
+
     fun updateNotes(text: String) {
         _uiState.value = _uiState.value.copy(notesText = text)
     }

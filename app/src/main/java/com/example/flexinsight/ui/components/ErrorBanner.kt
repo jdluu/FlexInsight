@@ -42,7 +42,7 @@ fun ErrorBanner(
             "❌"
         )
     }
-    
+
     Surface(
         modifier = modifier,
         color = backgroundColor,
@@ -59,7 +59,7 @@ fun ErrorBanner(
                 text = icon,
                 fontSize = 20.sp
             )
-            
+
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -81,7 +81,7 @@ fun ErrorBanner(
                     fontSize = 12.sp
                 )
             }
-            
+
             if (onDismiss != null) {
                 IconButton(
                     onClick = onDismiss,

@@ -51,7 +51,7 @@ fun NotesSection(notes: String) {
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            
+
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),

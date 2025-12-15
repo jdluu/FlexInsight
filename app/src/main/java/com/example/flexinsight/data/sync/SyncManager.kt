@@ -23,10 +23,10 @@ class SyncManager(
 ) {
     private val _syncState = MutableStateFlow<SyncState>(SyncState.Idle)
     val syncState: StateFlow<SyncState> = _syncState.asStateFlow()
-    
+
     private var lastSyncTime: Long = 0L
     private val minSyncIntervalMillis = 15 * 60 * 1000L // 15 minutes
-    
+
     /**
      * Performs a manual sync (user-triggered)
      * Always attempts sync regardless of network state or last sync time
@@ -35,16 +35,16 @@ class SyncManager(
         return withContext(Dispatchers.IO) {
             try {
                 _syncState.value = SyncState.Syncing
-                
+
                 // Check network before syncing
                 if (!networkMonitor.hasNetworkConnection()) {
                     val error = ApiError.NetworkError.NoConnection
                     _syncState.value = SyncState.Error(error)
                     return@withContext Result.failure(Exception(error.message))
                 }
-                
+
                 repository.syncAllData()
-                
+
                 lastSyncTime = System.currentTimeMillis()
                 _syncState.value = SyncState.Success(lastSyncTime)
                 Result.success(Unit)
@@ -59,7 +59,7 @@ class SyncManager(
             }
         }
     }
-    
+
     /**
      * Performs a background sync if conditions are met
      * Only syncs if:
@@ -72,12 +72,12 @@ class SyncManager(
             if (!shouldSync()) {
                 return@withContext false
             }
-            
+
             try {
                 _syncState.value = SyncState.Syncing
-                
+
                 repository.syncAllData()
-                
+
                 lastSyncTime = System.currentTimeMillis()
                 _syncState.value = SyncState.Success(lastSyncTime)
                 true
@@ -88,7 +88,7 @@ class SyncManager(
             }
         }
     }
-    
+
     /**
      * Syncs on app resume if conditions are met
      */
@@ -97,7 +97,7 @@ class SyncManager(
             syncIfNeeded()
         }
     }
-    
+
     /**
      * Determines if a sync should be performed
      */
@@ -106,21 +106,21 @@ class SyncManager(
         if (!networkMonitor.hasNetworkConnection()) {
             return false
         }
-        
+
         // Check if enough time has passed since last sync
         val timeSinceLastSync = System.currentTimeMillis() - lastSyncTime
         if (timeSinceLastSync < minSyncIntervalMillis) {
             return false
         }
-        
+
         // Don't sync if already syncing
         if (_syncState.value is SyncState.Syncing) {
             return false
         }
-        
+
         return true
     }
-    
+
     /**
      * Gets the time since last successful sync in milliseconds
      */

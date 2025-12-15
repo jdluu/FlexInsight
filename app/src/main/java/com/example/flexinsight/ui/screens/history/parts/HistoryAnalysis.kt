@@ -42,7 +42,7 @@ fun AnalysisBreakdown(
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
-        
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -90,7 +90,7 @@ fun AnalysisCard(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            
+
             if (title == "Duration Trend") {
                 val avgDuration = workoutStats?.averageDuration ?: 0L
                 val durationStr = if (avgDuration > 0) {

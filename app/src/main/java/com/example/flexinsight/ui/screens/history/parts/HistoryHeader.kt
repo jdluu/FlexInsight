@@ -45,7 +45,7 @@ fun HistoryHeader(onFilterClick: () -> Unit = {}) {
 @Composable
 fun TabSelector(selectedTab: Int, onTabSelected: (Int) -> Unit) {
     val tabs = listOf("Summary", "Exercises", "Compare")
-    
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -64,7 +64,7 @@ fun TabSelector(selectedTab: Int, onTabSelected: (Int) -> Unit) {
                 Surface(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    color = if (selectedTab == index) MaterialTheme.colorScheme.primary 
+                    color = if (selectedTab == index) MaterialTheme.colorScheme.primary
                            else if (isComingSoon) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
                            else Color.Transparent,
                     onClick = { if (!isComingSoon) onTabSelected(index) }
@@ -78,7 +78,7 @@ fun TabSelector(selectedTab: Int, onTabSelected: (Int) -> Unit) {
                             text = tab,
                             fontSize = 14.sp,
                             fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium,
-                            color = if (selectedTab == index) MaterialTheme.colorScheme.onPrimary 
+                            color = if (selectedTab == index) MaterialTheme.colorScheme.onPrimary
                                    else if (isComingSoon) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                                    else MaterialTheme.colorScheme.onSecondaryContainer,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center

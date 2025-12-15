@@ -57,7 +57,7 @@ data class ExerciseResponse(
         } else {
             "${workoutId}_exercise_${title.hashCode()}"
         }
-        
+
         return Exercise(
             id = exerciseId,
             workoutId = workoutId,

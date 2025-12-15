@@ -18,7 +18,7 @@ abstract class FlexDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
     abstract fun exerciseDao(): ExerciseDao
     abstract fun setDao(): SetDao
-    
+
     companion object {
         const val DATABASE_NAME = "flex_database"
     }

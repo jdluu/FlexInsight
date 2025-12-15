@@ -21,27 +21,27 @@ class FlexInsightApplication : Application() {
             .fallbackToDestructiveMigration() // Allow schema changes during development
             .build()
     }
-    
+
     val apiKeyManager: ApiKeyManager by lazy {
         ApiKeyManager(applicationContext)
     }
-    
+
     val userPreferencesManager: UserPreferencesManager by lazy {
         UserPreferencesManager(applicationContext)
     }
-    
+
     val networkMonitor: NetworkMonitor by lazy {
         NetworkMonitor(applicationContext)
     }
-    
+
     val cacheManager: CacheManager by lazy {
         CacheManager()
     }
-    
-    
+
+
     // Core Dependencies
     private val apiClient by lazy { com.example.flexinsight.data.api.FlexApiClient() }
-    
+
     // Repositories
     private val exerciseRepository: com.example.flexinsight.data.repository.ExerciseRepository by lazy {
         com.example.flexinsight.data.repository.ExerciseRepositoryImpl(
@@ -52,7 +52,7 @@ class FlexInsightApplication : Application() {
             cacheManager = cacheManager
         )
     }
-    
+
     private val workoutRepository: com.example.flexinsight.data.repository.WorkoutRepository by lazy {
         com.example.flexinsight.data.repository.WorkoutRepositoryImpl(
             workoutDao = database.workoutDao(),
@@ -64,7 +64,7 @@ class FlexInsightApplication : Application() {
             cacheManager = cacheManager
         )
     }
-    
+
     private val routineRepository: com.example.flexinsight.data.repository.RoutineRepository by lazy {
         com.example.flexinsight.data.repository.RoutineRepositoryImpl(
             apiKeyManager = apiKeyManager,
@@ -74,7 +74,7 @@ class FlexInsightApplication : Application() {
             exerciseRepository = exerciseRepository
         )
     }
-    
+
     private val statsRepository: com.example.flexinsight.data.repository.StatsRepository by lazy {
         com.example.flexinsight.data.repository.StatsRepositoryImpl(
             workoutDao = database.workoutDao(),
@@ -98,21 +98,21 @@ class FlexInsightApplication : Application() {
             statsRepository = statsRepository
         )
     }
-    
+
     val syncManager: SyncManager by lazy {
         SyncManager(
             repository = repository,
             networkMonitor = networkMonitor
         )
     }
-    
+
     val syncScheduler: SyncScheduler by lazy {
         SyncScheduler(applicationContext)
     }
-    
+
     override fun onCreate() {
         super.onCreate()
-        
+
         // Schedule periodic background sync
         syncScheduler.schedulePeriodicSync()
     }

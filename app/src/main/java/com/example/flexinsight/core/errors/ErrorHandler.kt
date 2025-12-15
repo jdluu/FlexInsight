@@ -13,7 +13,7 @@ import retrofit2.HttpException
  */
 object ErrorHandler {
     private const val TAG = "ErrorHandler"
-    
+
     /**
      * Converts a Throwable to an ApiError
      */
@@ -26,10 +26,10 @@ object ErrorHandler {
                     throwable.message?.contains("Expected BEGIN_OBJECT") == true) {
                     AppLogger.e("JSON deserialization error - API response structure mismatch", throwable, TAG)
                     // ApiError.ServerError.Other(code) is the only subclass that takes a code?
-                    // Or explicit subclass? 
+                    // Or explicit subclass?
                     // ApiError.ServerError is sealed.
                     // We need a specific instance.
-                    // Use ApiError.Unknown for format error if no specific ServerError fits, 
+                    // Use ApiError.Unknown for format error if no specific ServerError fits,
                     // or define a new one. Or use Other(500).
                     // ApiError.Server doesn't exist. Use Unknown or ServerError.Other.
                     // Given the message "Server response format error", let's use Unknown for now as it captures the message best
@@ -49,45 +49,45 @@ object ErrorHandler {
             }
         }
     }
-    
+
     /**
      * Converts an HTTP exception to an ApiError
      */
     fun handleHttpException(exception: HttpException): ApiError {
         val code = exception.code()
         val message = exception.message()
-        
+
         return when (code) {
             // Authentication errors
             401 -> ApiError.AuthError.InvalidApiKey
             403 -> ApiError.AuthError.Forbidden
-            
+
             // Client errors
             400 -> ApiError.ClientError.BadRequest
             404 -> ApiError.ClientError.NotFound
             429 -> ApiError.ClientError.RateLimited
             in 400..499 -> ApiError.ClientError.Other(code)
-            
+
             // Server errors
             500 -> ApiError.ServerError.InternalServerError
             502 -> ApiError.ServerError.BadGateway
             503 -> ApiError.ServerError.ServiceUnavailable
             504 -> ApiError.ServerError.GatewayTimeout
             in 500..599 -> ApiError.ServerError.Other(code)
-            
+
             else -> {
                 AppLogger.w("Unhandled HTTP code: $code", tag = TAG)
                 ApiError.Unknown("HTTP $code: $message", exception)
             }
         }
     }
-    
+
     /**
      * Logs an error with appropriate level based on error type
      */
     fun logError(error: ApiError, context: String = "") {
         val prefix = if (context.isNotEmpty()) "[$context] " else ""
-        
+
         when (error) {
             is ApiError.NetworkError, is ApiError.NetworkError.Timeout, is ApiError.ServerError -> {
                 // ServerError and ClientError have httpCode property, NetworkError does not (except indirectly?)
@@ -105,7 +105,7 @@ object ErrorHandler {
             is ApiError.ClientError -> {
                 AppLogger.w("$prefix${error.message} (HTTP ${error.httpCode})", tag = TAG)
                 // ClientError doesn't seem to have validationErrors in the definition I saw?
-                // Checking ApiError.kt again... ClientError subclasses don't show validationErrors. 
+                // Checking ApiError.kt again... ClientError subclasses don't show validationErrors.
                 // It was likely removed or never there. I will remove the validation loop.
             }
             is ApiError.Unknown -> {

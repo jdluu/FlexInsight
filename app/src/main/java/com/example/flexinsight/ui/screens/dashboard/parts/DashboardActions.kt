@@ -77,7 +77,7 @@ fun DailyInsightCard(
                         modifier = Modifier.size(20.dp)
                     )
                 }
-                
+
                 Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -136,7 +136,7 @@ fun QuickActionsGrid(
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(bottom = 12.dp)
         )
-        
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)

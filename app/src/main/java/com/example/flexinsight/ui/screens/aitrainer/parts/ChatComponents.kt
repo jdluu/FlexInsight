@@ -57,7 +57,7 @@ fun DateDivider(text: String) {
 @Composable
 fun ChatBubble(message: ChatMessage) {
     val isUser = message.sender == "user"
-    
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
@@ -83,7 +83,7 @@ fun ChatBubble(message: ChatMessage) {
             }
             Spacer(modifier = Modifier.width(12.dp))
         }
-        
+
         Column(
             modifier = Modifier.widthIn(max = 280.dp),
             horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
@@ -108,13 +108,13 @@ fun ChatBubble(message: ChatMessage) {
                         color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 20.sp
                     )
-                    
+
                     if (message.hasChart) {
                         HeartRateChart()
                     }
                 }
             }
-            
+
             if (isUser && message.isRead) {
                 Text(
                     text = "Read 9:43 AM",
@@ -124,7 +124,7 @@ fun ChatBubble(message: ChatMessage) {
                 )
             }
         }
-        
+
         if (isUser) {
             Spacer(modifier = Modifier.width(12.dp))
             Surface(
@@ -173,11 +173,11 @@ fun ChatInput(
                         value = text,
                         onValueChange = onTextChange,
                         modifier = Modifier.weight(1f),
-                        placeholder = { 
+                        placeholder = {
                             Text(
-                                "Ask about your fitness...", 
+                                "Ask about your fitness...",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
-                            ) 
+                            )
                         },
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
@@ -203,7 +203,7 @@ fun ChatInput(
                     }
                 }
             }
-            
+
             // Send/Mic button
             FloatingActionButton(
                 onClick = onSend,

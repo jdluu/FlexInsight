@@ -25,7 +25,7 @@ fun ViewModel.safeLaunch(
         val apiError = ErrorHandler.handleError(throwable)
         onError(apiError)
     }
-    
+
     return viewModelScope.launch(exceptionHandler) {
         block()
     }
