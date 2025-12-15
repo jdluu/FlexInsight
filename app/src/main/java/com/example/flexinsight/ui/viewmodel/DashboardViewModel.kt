@@ -2,6 +2,7 @@ package com.example.flexinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flexinsight.data.ai.FlexAIClient
 import com.example.flexinsight.core.errors.ApiError
 import com.example.flexinsight.core.errors.ErrorHandler
 import com.example.flexinsight.data.model.Workout
@@ -35,7 +36,9 @@ data class DashboardUiState(
     val currentStreak: Int = 0,
     val muscleGroupProgress: List<com.example.flexinsight.data.model.MuscleGroupProgress> = emptyList(),
     val networkState: NetworkState = NetworkState.Unknown,
-    val units: String = "Imperial"
+    val units: String = "Imperial",
+    val dailyInsight: String? = null,
+    val isGeneratingInsight: Boolean = false
 ) {
     // Backward compatibility helper
     val isLoading: Boolean
@@ -47,7 +50,8 @@ data class DashboardUiState(
 class DashboardViewModel @Inject constructor(
     private val repository: FlexRepository,
     private val networkMonitor: NetworkMonitor,
-    private val userPreferencesManager: UserPreferencesManager
+    private val userPreferencesManager: UserPreferencesManager,
+    private val aiClient: FlexAIClient
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState(loadingState = LoadingState.Loading))
@@ -156,6 +160,10 @@ class DashboardViewModel @Inject constructor(
                         muscleGroupProgress = muscleGroupProgress,
                         error = null
                     )
+                    
+                    // Generate AI Insight
+                    generateDailyInsight(profileInfo?.displayName ?: "User", stats.currentStreak)
+
                 } catch (e: Exception) {
                     val apiError = ErrorHandler.handleError(e)
                     _uiState.value = _uiState.value.copy(
@@ -170,6 +178,22 @@ class DashboardViewModel @Inject constructor(
                     error = UiError.fromApiError(apiError)
                 )
             }
+        }
+    }
+    
+    private suspend fun generateDailyInsight(userName: String, streak: Int) {
+        if (!aiClient.isAvailable()) return
+        if (_uiState.value.dailyInsight != null) return
+
+        _uiState.value = _uiState.value.copy(isGeneratingInsight = true)
+
+        val prompt = "Give a 1-sentence fitness tip for $userName who has a $streak day streak. Be brief and witty."
+        val result = aiClient.generateResponse(prompt)
+
+        _uiState.value = _uiState.value.copy(isGeneratingInsight = false)
+        
+        if (result is com.example.flexinsight.core.errors.Result.Success) {
+            _uiState.value = _uiState.value.copy(dailyInsight = result.data)
         }
     }
 

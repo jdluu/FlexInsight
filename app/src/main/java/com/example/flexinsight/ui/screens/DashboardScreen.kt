@@ -134,6 +134,8 @@ fun DashboardScreen(
             }
             item {
                 DailyInsightCard(
+                    dailyInsight = uiState.dailyInsight,
+                    isGeneratingInsight = uiState.isGeneratingInsight,
                     onChatClick = { onNavigateToAITrainer() }
                 )
             }
