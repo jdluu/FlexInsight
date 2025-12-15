@@ -110,6 +110,7 @@ fun TotalVolumeCard(
     workoutStats: WorkoutStats? = null,
     volumeTrend: VolumeTrend? = null,
     weeklyVolumeData: List<WeeklyVolumeData> = emptyList(),
+    consistencyData: List<com.example.flexinsight.data.model.DayInfo> = emptyList(),
     useMetric: Boolean = false
 ) {
     Card(
@@ -188,60 +189,87 @@ fun TotalVolumeCard(
                 }
             }
 
-            // Recent 4 weeks trend (simplified)
-            if (weeklyVolumeData.isNotEmpty()) {
+            // Consistency Heatmap (Last 3 Months)
+            if (consistencyData.isNotEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Last 4 Weeks",
+                        text = "Consistency (Last 3 Months)",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        val maxVolume = weeklyVolumeData.maxOfOrNull { it.volume } ?: 1.0
-                        weeklyVolumeData.take(4).reversed().forEachIndexed { index, weekData ->
-                            Column(
-                                modifier = Modifier.weight(1f),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(60.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-                                    contentAlignment = Alignment.BottomCenter
-                                ) {
-                                    val height = if (maxVolume > 0) {
-                                        ((weekData.volume / maxVolume) * 60).coerceAtLeast(4.0).dp
-                                    } else {
-                                        4.dp
-                                    }
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(height)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(MaterialTheme.colorScheme.primary)
-                                    )
-                                }
-                                Text(
-                                    text = "W${index + 1}",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                            }
-                        }
+                    ConsistencyHeatmap(data = consistencyData)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ConsistencyHeatmap(data: List<com.example.flexinsight.data.model.DayInfo>) {
+    // Assuming data contains ~90 days covering the last ~13 weeks
+    // We want to render a grid of squares: 7 rows (days), ~13 columns (weeks)
+    // The data likely comes as a flat list. We need to organize it.
+    // The data is sorted by date ascending? Let's check repository implementation.
+    // Repository getConsistencyData loops 0..days and adds to resultDays.
+    // So data is sorted ascending: oldest -> newest.
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween 
+    ) {
+        // We can use a LazyRow for the columns or just calculate everything if fixed.
+        // Let's use a fixed grid for stability.
+        val columns = 13 // approx 3 months (90 days / 7 = 12.8)
+        
+        // Take the last 7 * columns days to ensure full columns
+        val totalDays = columns * 7
+        val relevantData = data.takeLast(totalDays)
+        
+        // Split into columns (weeks)
+        for (col in 0 until columns) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                for (row in 0 until 7) {
+                    // Index calculation:
+                    // Data is oldest to newest.
+                    // We want to fill columns left to right? or rows?
+                    // Standard is columns = weeks. Rows = days (Mon-Sun).
+                    
+                    // index = col * 7 + row
+                    // But we need to make sure the start day aligns with Monday?
+                    // Repository logic loops 0..days. The start date is arbitrary relative to Mon.
+                    // This creates a misalignment if we blindly map to a grid.
+                    // Ideally the heatmap should show dates correctly aligned.
+                    
+                    // Simpler approach for "visual consistency":
+                    // Just show the last 91 days as a continuous stream wrapped into columns,
+                    // without strict alignment to "Monday" on row 0, unless we want to be fancy.
+                    // Github does align Monday to row 1.
+                    
+                    // Let's stick to a simpler "Activity Grid" where each column is a chunk of 7 days,
+                    // regardless of actual day of week, for purely showing frequency.
+                    // OR, better: Align to bottom right (today).
+                    
+                    val index = relevantData.size - 1 - ((columns - 1 - col) * 7 + (6 - row))
+                    
+                    val dayInfo = relevantData.getOrNull(index)
+                    val color = if (dayInfo?.hasWorkout == true) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
                     }
+                    
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(color)
+                    )
                 }
             }
         }

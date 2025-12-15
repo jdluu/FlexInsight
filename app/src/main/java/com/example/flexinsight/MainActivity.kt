@@ -255,7 +255,7 @@ fun MainScreen(
                         scope.launch { snackbarHostState.showSnackbar("Detail analysis coming soon") }
                     },
                     onNavigateToPRList = {
-                         scope.launch { snackbarHostState.showSnackbar("PR list coming soon") }
+                         navController.navigate(Screen.PRList.route)
                     }
                 )
             }
@@ -263,10 +263,10 @@ fun MainScreen(
                 val viewModel = hiltViewModel<AITrainerViewModel>()
                 AITrainerScreen(viewModel = viewModel)
             }
-                composable(Screen.Planner.route) {
-                    val viewModel = hiltViewModel<PlannerViewModel>()
-                    PlannerScreen(viewModel = viewModel)
-                }
+            composable(Screen.Planner.route) {
+                val viewModel = hiltViewModel<PlannerViewModel>()
+                PlannerScreen(viewModel = viewModel)
+            }
             composable(Screen.Recovery.route) {
                 val viewModel = hiltViewModel<RecoveryViewModel>()
                 RecoveryScreen(viewModel = viewModel)
@@ -274,6 +274,16 @@ fun MainScreen(
             composable(Screen.Settings.route) {
                 val viewModel = hiltViewModel<SettingsViewModel>()
                 SettingsScreen()
+            }
+            composable(Screen.PRList.route) {
+                val viewModel = hiltViewModel<PRListViewModel>()
+                PRListScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToWorkoutDetail = { workoutId ->
+                        navController.navigate(Screen.WorkoutDetail.createRoute(workoutId))
+                    }
+                )
             }
             composable(Screen.WorkoutDetail.route) { backStackEntry ->
                 // Note: hiltViewModel() automatically handles SavedStateHandle injection for arguments

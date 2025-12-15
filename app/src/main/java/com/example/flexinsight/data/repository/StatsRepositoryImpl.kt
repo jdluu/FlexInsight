@@ -200,6 +200,13 @@ class StatsRepositoryImpl(
     }
 
     /**
+     * Get all PRs with details (limit 100)
+     */
+    override suspend fun getAllPRsWithDetails(): List<PRDetails> {
+        return getPRsWithDetails(limit = 100)
+    }
+
+    /**
      * Get muscle group progress for the last N weeks (optimized)
      */
     override suspend fun getMuscleGroupProgress(weeks: Int): List<MuscleGroupProgress> = withContext(dispatcherProvider.default) {
@@ -565,5 +572,50 @@ class StatsRepositoryImpl(
         }
 
         return StatsCalculator.calculateTotalVolume(workouts, allExercises, allSets)
+    }
+
+    /**
+     * Get persistence data for the last N days (Consistency Heatmap)
+     */
+    override suspend fun getConsistencyData(days: Int): List<DayInfo> = withContext(dispatcherProvider.default) {
+        val now = LocalDate.now()
+        // Start date is (days - 1) days ago to include today
+        val startDate = now.minusDays((days - 1).toLong())
+
+        val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        val resultDays = mutableListOf<DayInfo>()
+
+        // Efficiently fetch all workouts for the period
+        val startTimestamp = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val endTimestamp = now.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val allWorkouts = workoutDao.getWorkoutsByDateRangeFlow(startTimestamp, endTimestamp).first()
+
+        for (i in 0 until days) {
+            val date = startDate.plusDays(i.toLong())
+            val dayStart = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val dayEnd = date.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+            // Filter in memory
+            val workouts = allWorkouts.filter { it.startTime in dayStart..dayEnd }
+            val hasWorkout = workouts.isNotEmpty()
+            val isCompleted = workouts.any { it.endTime != null }
+            val workoutCount = workouts.size
+
+            // Get shortened day name (e.g. "Mon")
+            val dayOfWeek = date.dayOfWeek.value // 1 (Mon) to 7 (Sun)
+            val dayName = dayNames[dayOfWeek - 1]
+
+            resultDays.add(
+                DayInfo(
+                    name = dayName,
+                    date = date.dayOfMonth,
+                    timestamp = dayStart,
+                    hasWorkout = hasWorkout,
+                    isCompleted = isCompleted,
+                    workoutCount = workoutCount
+                )
+            )
+        }
+        resultDays
     }
 }

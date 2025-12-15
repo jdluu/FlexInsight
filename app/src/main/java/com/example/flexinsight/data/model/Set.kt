@@ -57,7 +57,9 @@ data class SetResponse(
     @SerializedName("duration_seconds")
     val durationSeconds: Int?,
     @SerializedName("custom_metric")
-    val customMetric: Double?
+    val customMetric: Double?,
+    @SerializedName("personal_record")
+    val personalRecord: Boolean? = false
 ) {
     fun toSet(exerciseId: String): Set {
         // Generate ID from exercise ID and index
@@ -74,7 +76,7 @@ data class SetResponse(
             duration = durationSeconds, // API uses "duration_seconds", we store as "duration"
             restDuration = null, // Not provided in API response
             notes = type, // Store set type as notes for now
-            isPersonalRecord = false,
+            isPersonalRecord = personalRecord ?: false,
             lastSynced = System.currentTimeMillis(),
             needsSync = false
         )

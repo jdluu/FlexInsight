@@ -31,6 +31,7 @@ interface FlexRepository {
     suspend fun calculateWorkoutStats(workout: Workout): SingleWorkoutStats
     fun getRecentPRs(limit: Int = 10): Flow<List<com.example.flexinsight.data.model.Set>>
     suspend fun getPRsWithDetails(limit: Int = 10): List<PRDetails>
+    suspend fun getAllPRsWithDetails(): List<PRDetails>
     suspend fun getMuscleGroupProgress(weeks: Int = 4): List<MuscleGroupProgress>
     suspend fun calculateVolumeTrend(weeks: Int = 4): VolumeTrend
     suspend fun getWeeklyVolumeData(weeks: Int = 4): List<WeeklyVolumeData>
@@ -43,6 +44,7 @@ interface FlexRepository {
     suspend fun getMemberSinceDate(): Long?
     suspend fun calculateAccountAgeDays(): Int
     suspend fun getProfileInfo(): ProfileInfo
+    suspend fun getConsistencyData(days: Int = 90): List<DayInfo>
 
     // Routine operations
     fun getRoutines(): Flow<List<Routine>>

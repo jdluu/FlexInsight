@@ -17,6 +17,8 @@ interface StatsRepository {
 
     suspend fun getPRsWithDetails(limit: Int = 10): List<PRDetails>
 
+    suspend fun getAllPRsWithDetails(): List<PRDetails>
+
     suspend fun getMuscleGroupProgress(weeks: Int = 4): List<MuscleGroupProgress>
 
     suspend fun calculateVolumeTrend(weeks: Int = 4): VolumeTrend
@@ -40,4 +42,6 @@ interface StatsRepository {
     suspend fun calculateAccountAgeDays(): Int
 
     suspend fun getProfileInfo(hasApiKey: Boolean, remoteWorkoutCount: Int? = null): ProfileInfo
+
+    suspend fun getConsistencyData(days: Int = 90): List<DayInfo>
 }

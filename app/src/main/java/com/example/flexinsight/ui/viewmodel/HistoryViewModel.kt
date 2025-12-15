@@ -40,6 +40,8 @@ data class HistoryUiState(
     val weeklyVolumeData: List<WeeklyVolumeData> = emptyList(),
     val durationTrend: List<DailyDurationData> = emptyList(),
     val muscleGroupProgress: List<MuscleGroupProgress> = emptyList(),
+    val volumeBalance: com.example.flexinsight.data.model.VolumeBalance? = null,
+    val consistencyData: List<com.example.flexinsight.data.model.DayInfo> = emptyList(),
     val prsWithDetails: List<PRDetails> = emptyList(),
     val exercises: List<Exercise> = emptyList(),
     val dateFilter: String = "All Time",
@@ -120,6 +122,10 @@ class HistoryViewModel @Inject constructor(
 
             val muscleGroupProgress = runCatching { repository.getMuscleGroupProgress(weeks = 4) }.getOrDefault(emptyList())
 
+            val volumeBalance = runCatching { repository.getVolumeBalance(weeks = 4) }.getOrNull()
+
+            val consistencyData = runCatching { repository.getConsistencyData(days = 90) }.getOrDefault(emptyList())
+
             val exercises = runCatching { repository.getAllExercises().first() }.getOrDefault(emptyList())
 
             _uiState.value = _uiState.value.copy(
@@ -132,6 +138,8 @@ class HistoryViewModel @Inject constructor(
                 weeklyVolumeData = weeklyVolumeData,
                 durationTrend = durationTrend,
                 muscleGroupProgress = muscleGroupProgress,
+                volumeBalance = volumeBalance,
+                consistencyData = consistencyData,
                 prsWithDetails = prsWithDetails,
                 exercises = exercises,
                 error = null

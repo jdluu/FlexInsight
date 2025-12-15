@@ -151,6 +151,7 @@ fun HistoryScreen(
                         workoutStats = uiState.workoutStats,
                         volumeTrend = uiState.volumeTrend,
                         weeklyVolumeData = uiState.weeklyVolumeData,
+                        consistencyData = uiState.consistencyData,
                         useMetric = useMetric
                     )
                 }
@@ -158,7 +159,8 @@ fun HistoryScreen(
                     AnalysisBreakdown(
                         workoutStats = uiState.workoutStats,
                         durationTrend = uiState.durationTrend,
-                        muscleGroupProgress = uiState.muscleGroupProgress
+                        muscleGroupProgress = uiState.muscleGroupProgress,
+                        volumeBalance = uiState.volumeBalance
                     )
                 }
                 item {

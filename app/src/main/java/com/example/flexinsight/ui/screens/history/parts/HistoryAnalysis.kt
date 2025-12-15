@@ -28,7 +28,8 @@ import com.example.flexinsight.ui.theme.TextSecondary
 fun AnalysisBreakdown(
     workoutStats: WorkoutStats? = null,
     durationTrend: List<DailyDurationData> = emptyList(),
-    muscleGroupProgress: List<MuscleGroupProgress> = emptyList()
+    muscleGroupProgress: List<MuscleGroupProgress> = emptyList(),
+    volumeBalance: com.example.flexinsight.data.model.VolumeBalance? = null
 ) {
     Column(
         modifier = Modifier
@@ -47,13 +48,13 @@ fun AnalysisBreakdown(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            AnalysisCard(
-                title = "Volume by Muscle",
+            // Training Split (Balance)
+            VolumeSplitCard(
                 modifier = Modifier.weight(1f),
-                workoutStats = workoutStats,
-                durationTrend = durationTrend,
-                muscleGroupProgress = muscleGroupProgress
+                volumeBalance = volumeBalance
             )
+            
+            // Duration Trend
             AnalysisCard(
                 title = "Duration Trend",
                 modifier = Modifier.weight(1f),
@@ -62,6 +63,81 @@ fun AnalysisBreakdown(
                 muscleGroupProgress = muscleGroupProgress
             )
         }
+    }
+}
+
+@Composable
+fun VolumeSplitCard(
+    modifier: Modifier = Modifier,
+    volumeBalance: com.example.flexinsight.data.model.VolumeBalance?
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Training Split",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            if (volumeBalance != null) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    SplitItem("Push", volumeBalance.push, MaterialTheme.colorScheme.primary)
+                    SplitItem("Pull", volumeBalance.pull, MaterialTheme.colorScheme.secondary)
+                    SplitItem("Legs", volumeBalance.legs, MaterialTheme.colorScheme.tertiary)
+                    if (volumeBalance.cardio > 0) {
+                       SplitItem("Cardio", volumeBalance.cardio, MaterialTheme.colorScheme.error)
+                    }
+                }
+            } else {
+                 Text(
+                    text = "No split data",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SplitItem(name: String, percentage: Float, color: Color) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = name,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "${(percentage * 100).toInt()}%",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        LinearProgressIndicator(
+            progress = { percentage },
+            modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+            color = color,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     }
 }
 
@@ -148,47 +224,6 @@ fun AnalysisCard(
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                }
-            } else {
-                // Volume by Muscle - simplified representation
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (muscleGroupProgress.isNotEmpty()) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.FitnessCenter,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(32.dp)
-                            )
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.Start,
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                val colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primary.copy(alpha = 0.7f), MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
-                                muscleGroupProgress.take(3).forEachIndexed { index, muscle ->
-                                    MuscleLegend(
-                                        name = muscle.muscleGroup,
-                                        color = colors.getOrElse(index) { MaterialTheme.colorScheme.primary }
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        Text(
-                            text = "No muscle group data",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                 }
             }
         }

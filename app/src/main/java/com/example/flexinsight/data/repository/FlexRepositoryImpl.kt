@@ -98,6 +98,10 @@ class FlexRepositoryImpl(
         return statsRepository.getPRsWithDetails(limit)
     }
 
+    override suspend fun getAllPRsWithDetails(): List<PRDetails> {
+        return statsRepository.getAllPRsWithDetails()
+    }
+
     override suspend fun getMuscleGroupProgress(weeks: Int): List<MuscleGroupProgress> {
         return statsRepository.getMuscleGroupProgress(weeks)
     }
@@ -152,6 +156,10 @@ class FlexRepositoryImpl(
         } else null
 
         return statsRepository.getProfileInfo(hasApiKey, remoteCount)
+    }
+
+    override suspend fun getConsistencyData(days: Int): List<DayInfo> {
+        return statsRepository.getConsistencyData(days)
     }
 
     // Routine operations
