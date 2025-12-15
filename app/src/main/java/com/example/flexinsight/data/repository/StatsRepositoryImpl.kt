@@ -259,7 +259,7 @@ class StatsRepositoryImpl(
                 sets = sets,
                 intensity = intensity
             )
-        }.sortedByDescending { it.volume }.take(3)
+        }.sortedByDescending { it.volume }
         
         // Cache the result
         cacheManager.put(cacheKey, progress)
