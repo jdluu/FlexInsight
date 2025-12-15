@@ -92,4 +92,7 @@ dependencies {
     implementation(libs.androidx.hilt.work)
     ksp(libs.hilt.compiler)
     ksp(libs.androidx.hilt.compiler)
+
+    // ML Kit / Gemini Nano
+    implementation("com.google.mlkit:generative-ai:1.0.0-beta01")
 }
