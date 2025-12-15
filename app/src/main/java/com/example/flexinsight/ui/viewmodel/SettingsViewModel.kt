@@ -6,6 +6,8 @@ import com.example.flexinsight.core.errors.ErrorHandler
 import com.example.flexinsight.data.model.ProfileInfo
 import com.example.flexinsight.data.preferences.UserPreferencesManager
 import com.example.flexinsight.data.repository.FlexRepository
+import com.example.flexinsight.core.network.NetworkMonitor
+import com.example.flexinsight.core.network.NetworkState
 import com.example.flexinsight.ui.common.LoadingState
 import com.example.flexinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +28,8 @@ data class SettingsUiState(
     val theme: String = "System",
     val units: String = "Imperial",
     val syncState: LoadingState = LoadingState.Idle,
-    val syncError: UiError? = null
+    val syncError: UiError? = null,
+    val networkState: NetworkState = NetworkState.Unknown
 ) {
     // Backward compatibility helpers
     val isLoading: Boolean
@@ -39,13 +42,20 @@ data class SettingsUiState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val repository: FlexRepository,
-    private val userPreferencesManager: UserPreferencesManager
+    private val userPreferencesManager: UserPreferencesManager,
+    private val networkMonitor: NetworkMonitor
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            networkMonitor.networkState.collect { state ->
+                _uiState.value = _uiState.value.copy(networkState = state)
+            }
+        }
+
         viewModelScope.launch {
             delay(100) // Small delay to ensure database is initialized
             loadSettingsData()

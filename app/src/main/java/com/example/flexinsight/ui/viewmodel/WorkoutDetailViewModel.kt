@@ -11,6 +11,7 @@ import com.example.flexinsight.data.model.Set
 import com.example.flexinsight.data.model.SingleWorkoutStats
 import com.example.flexinsight.data.model.Workout
 import com.example.flexinsight.data.repository.FlexRepository
+import com.example.flexinsight.data.preferences.UserPreferencesManager
 import com.example.flexinsight.ui.common.LoadingState
 import com.example.flexinsight.ui.common.UiError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,7 +33,10 @@ data class WorkoutDetailUiState(
     val error: UiError? = null,
     val workout: Workout? = null,
     val workoutStats: SingleWorkoutStats? = null,
-    val exercisesWithSets: List<ExerciseWithSets> = emptyList()
+    val workout: Workout? = null,
+    val workoutStats: SingleWorkoutStats? = null,
+    val exercisesWithSets: List<ExerciseWithSets> = emptyList(),
+    val units: String = "Imperial"
 ) {
     // Backward compatibility helper
     val isLoading: Boolean
@@ -43,7 +47,12 @@ data class WorkoutDetailUiState(
 class WorkoutDetailViewModel @Inject constructor(
     private val repository: FlexRepository,
     private val exerciseDao: ExerciseDao,
+@HiltViewModel
+class WorkoutDetailViewModel @Inject constructor(
+    private val repository: FlexRepository,
+    private val exerciseDao: ExerciseDao,
     private val setDao: SetDao,
+    private val userPreferencesManager: UserPreferencesManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -53,6 +62,13 @@ class WorkoutDetailViewModel @Inject constructor(
     val uiState: StateFlow<WorkoutDetailUiState> = _uiState.asStateFlow()
 
     init {
+        // Collect units preference
+        viewModelScope.launch {
+            userPreferencesManager.unitsFlow.collect { units ->
+                _uiState.value = _uiState.value.copy(units = units)
+            }
+        }
+
         if (workoutId != null) {
             loadWorkoutData(workoutId)
         } else {

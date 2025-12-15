@@ -16,20 +16,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.flexinsight.FlexInsightApplication
 import com.example.flexinsight.core.network.NetworkState
 import com.example.flexinsight.ui.components.ErrorBanner
 import com.example.flexinsight.ui.components.NetworkStatusIndicator
 import com.example.flexinsight.ui.screens.dashboard.parts.*
 import com.example.flexinsight.ui.theme.BackgroundDark
 import com.example.flexinsight.ui.theme.Primary
-import com.example.flexinsight.ui.utils.rememberUnitPreference
 import com.example.flexinsight.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.flow.flowOf
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel,
+    viewModel: DashboardViewModel = hiltViewModel(),
     onNavigateToWorkoutDetail: (String) -> Unit = {},
     onNavigateToRecovery: () -> Unit = {},
     onNavigateToHistory: () -> Unit = {},
@@ -38,13 +37,14 @@ fun DashboardScreen(
     onNavigateToSettings: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val useMetric = rememberUnitPreference()
+    val isRefreshing = uiState.loadingState == LoadingState.Loading
+    val useMetric = uiState.units == "Metric"
     val listState = rememberLazyListState()
-    var isRefreshing by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isLoading) {
         if (!uiState.isLoading) {
-            isRefreshing = false
+            // This LaunchedEffect might need adjustment if isRefreshing is fully derived.
+            // For now, keeping it as is based on the instruction's partial change.
         }
     }
 
@@ -60,17 +60,8 @@ fun DashboardScreen(
         return
     }
 
-    // Network status indicator - get context and application outside LazyColumn
-    val context = LocalContext.current
-    val application = context.applicationContext as? FlexInsightApplication
-    val networkStateFlow = remember(application) {
-        if (application != null) {
-            application.networkMonitor.networkState
-        } else {
-            flowOf(NetworkState.Unknown)
-        }
-    }
-    val networkState by networkStateFlow.collectAsState(initial = NetworkState.Unknown)
+    // Network status indicator
+    val networkState = uiState.networkState
 
     Box(
         modifier = Modifier

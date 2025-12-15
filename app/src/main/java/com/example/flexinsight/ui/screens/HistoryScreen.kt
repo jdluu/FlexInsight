@@ -14,7 +14,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.flexinsight.ui.theme.*
-import com.example.flexinsight.ui.utils.rememberUnitPreference
 import com.example.flexinsight.ui.viewmodel.HistoryViewModel
 import com.example.flexinsight.ui.screens.history.parts.*
 import com.example.flexinsight.ui.screens.history.parts.formatDateShort
@@ -27,7 +26,7 @@ fun HistoryScreen(
     onNavigateToPRList: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val useMetric = rememberUnitPreference()
+    val useMetric = uiState.units == "Metric"
     var showFilterDialog by remember { mutableStateOf(false) }
 
     // Filter Dialog
@@ -136,6 +135,7 @@ fun HistoryScreen(
                 item {
                     RecentPRsSection(
                         prsWithDetails = uiState.prsWithDetails,
+                        useMetric = useMetric,
                         onNavigateToWorkoutDetail = onNavigateToWorkoutDetail,
                         onViewAllClick = onNavigateToPRList
                     )

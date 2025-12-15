@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.flexinsight.ui.theme.*
-import com.example.flexinsight.ui.utils.rememberUnitPreference
 import com.example.flexinsight.ui.viewmodel.WorkoutDetailViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,7 +24,7 @@ fun WorkoutDetailScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val useMetric = rememberUnitPreference()
+    val useMetric = uiState.units == "Metric"
 
     if (uiState.isLoading) {
         Box(

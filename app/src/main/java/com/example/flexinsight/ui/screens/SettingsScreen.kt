@@ -25,31 +25,13 @@ import com.example.flexinsight.ui.theme.*
 import com.example.flexinsight.ui.viewmodel.SettingsViewModel
 import com.example.flexinsight.ui.common.LoadingState
 import kotlinx.coroutines.launch
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
-    val application = context.applicationContext as? FlexInsightApplication
-
-    if (application == null) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Application error: Failed to initialize",
-                color = MaterialTheme.colorScheme.error
-            )
-        }
-        return
-    }
-
-    val viewModel: SettingsViewModel = viewModel {
-        SettingsViewModel(application.repository, application.userPreferencesManager)
-    }
     val uiState by viewModel.uiState.collectAsState()
 
     val apiKeyManager = remember { ApiKeyManager(context) }
@@ -108,9 +90,7 @@ fun SettingsScreen() {
         }
         item {
             // Network status indicator
-            val networkState by application.networkMonitor.networkState.collectAsState(
-                initial = com.example.flexinsight.core.network.NetworkState.Unknown
-            )
+            val networkState = uiState.networkState
             NetworkStatusIndicator(
                 networkState = networkState,
                 modifier = Modifier

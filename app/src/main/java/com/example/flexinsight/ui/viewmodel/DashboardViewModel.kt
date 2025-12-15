@@ -10,6 +10,9 @@ import com.example.flexinsight.data.model.WeeklyProgress
 import com.example.flexinsight.data.model.SingleWorkoutStats
 import com.example.flexinsight.data.model.ProfileInfo
 import com.example.flexinsight.data.repository.FlexRepository
+import com.example.flexinsight.core.network.NetworkMonitor
+import com.example.flexinsight.core.network.NetworkState
+import com.example.flexinsight.data.preferences.UserPreferencesManager
 import com.example.flexinsight.ui.common.LoadingState
 import com.example.flexinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +33,9 @@ data class DashboardUiState(
     val workoutStats: WorkoutStats? = null,
     val weeklyProgress: List<WeeklyProgress> = emptyList(),
     val currentStreak: Int = 0,
-    val muscleGroupProgress: List<com.example.flexinsight.data.model.MuscleGroupProgress> = emptyList()
+    val muscleGroupProgress: List<com.example.flexinsight.data.model.MuscleGroupProgress> = emptyList(),
+    val networkState: NetworkState = NetworkState.Unknown,
+    val units: String = "Imperial"
 ) {
     // Backward compatibility helper
     val isLoading: Boolean
@@ -40,13 +45,29 @@ data class DashboardUiState(
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val repository: FlexRepository
+    private val repository: FlexRepository,
+    private val networkMonitor: NetworkMonitor,
+    private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
     init {
+        // Collect network state
+        viewModelScope.launch {
+            networkMonitor.networkState.collect { state ->
+                _uiState.value = _uiState.value.copy(networkState = state)
+            }
+        }
+
+        // Collect units preference
+        viewModelScope.launch {
+            userPreferencesManager.unitsFlow.collect { units ->
+                _uiState.value = _uiState.value.copy(units = units)
+            }
+        }
+
         // Delay initialization slightly to ensure database is ready
         viewModelScope.launch {
             delay(100) // Small delay to ensure database is initialized

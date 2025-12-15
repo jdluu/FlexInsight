@@ -13,6 +13,7 @@ import com.example.flexinsight.data.model.VolumeTrend
 import com.example.flexinsight.data.model.WeeklyVolumeData
 import com.example.flexinsight.data.model.DailyDurationData
 import com.example.flexinsight.data.model.MuscleGroupProgress
+import com.example.flexinsight.data.preferences.UserPreferencesManager
 import com.example.flexinsight.data.repository.FlexRepository
 import com.example.flexinsight.ui.common.LoadingState
 import com.example.flexinsight.ui.common.UiError
@@ -40,7 +41,8 @@ data class HistoryUiState(
     val muscleGroupProgress: List<MuscleGroupProgress> = emptyList(),
     val prsWithDetails: List<PRDetails> = emptyList(),
     val exercises: List<Exercise> = emptyList(),
-    val dateFilter: String = "All Time"
+    val dateFilter: String = "All Time",
+    val units: String = "Imperial"
 ) {
     // Backward compatibility helper
     val isLoading: Boolean
@@ -50,13 +52,21 @@ data class HistoryUiState(
 
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
-    private val repository: FlexRepository
+    private val repository: FlexRepository,
+    private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HistoryUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<HistoryUiState> = _uiState.asStateFlow()
 
     init {
+        // Collect units preference
+        viewModelScope.launch {
+            userPreferencesManager.unitsFlow.collect { units ->
+                _uiState.value = _uiState.value.copy(units = units)
+            }
+        }
+
         // Delay initialization slightly to ensure database is ready
         viewModelScope.launch {
             delay(100) // Small delay to ensure database is initialized
