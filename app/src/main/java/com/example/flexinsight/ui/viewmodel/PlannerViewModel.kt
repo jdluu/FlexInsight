@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import com.example.flexinsight.ui.utils.safeLaunch
 import com.example.flexinsight.ui.utils.toApiError
+import com.example.flexinsight.data.ai.FlexAIClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -186,7 +187,7 @@ class PlannerViewModel @Inject constructor(
             // Construct specific prompt
             val balance = _uiState.value.volumeBalance
             val focus = if (balance != null) {
-                "My volume balance is: Push=${balance.pushPercentage}%, Pull=${balance.pullPercentage}%, Legs=${balance.legsPercentage}%. "
+                "My volume balance is: Push=${(balance.push * 100).toInt()}%, Pull=${(balance.pull * 100).toInt()}%, Legs=${(balance.legs * 100).toInt()}%. "
             } else ""
 
             val prompt = "Create a structured gym workout plan for today. " +

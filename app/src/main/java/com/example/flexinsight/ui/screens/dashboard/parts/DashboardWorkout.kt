@@ -51,7 +51,7 @@ fun FeaturedWorkoutCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(240.dp)
+                .heightIn(min = 240.dp)
         ) {
             // Background gradient overlay
             Box(

@@ -62,7 +62,7 @@ interface FlexApiService {
     @GET("v1/exercise_templates")
     suspend fun getExerciseTemplates(
         @Query("page") page: Int = 1,
-        @Query("pageSize") pageSize: Int = 50
+        @Query("pageSize") pageSize: Int = 10
     ): Response<PaginatedExerciseTemplatesResponse>
 
     /**

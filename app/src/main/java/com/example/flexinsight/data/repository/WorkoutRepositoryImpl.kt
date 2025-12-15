@@ -196,7 +196,27 @@ class WorkoutRepositoryImpl(
 
         // Check if we have any workouts in the database (for incremental sync)
         val mostRecentSynced = workoutDao.getMostRecentSyncedTimestamp()
-        val isIncrementalSync = mostRecentSynced != null
+        val localCount = workoutDao.getWorkoutCount()
+        
+        // Check remote count to see if we are missing data (backfill needed)
+        // This prevents the issue where we have a recent timestamp but are missing older workouts
+        var shouldForceFullSync = false
+        try {
+            val remoteCountResult = getRemoteWorkoutCount()
+            if (remoteCountResult is Result.Success) {
+                val remoteCount = remoteCountResult.data
+                // If we have significantly fewer workouts than remote, force full sync
+                if (localCount < remoteCount) {
+                    shouldForceFullSync = true
+                    com.example.flexinsight.core.logger.AppLogger.d("Force full sync: Local $localCount < Remote $remoteCount")
+                }
+            }
+        } catch (e: Exception) {
+            // Ignore error, proceed with standard logic
+            com.example.flexinsight.core.logger.AppLogger.e("Failed to check remote count during sync: ${e.message}")
+        }
+
+        val isIncrementalSync = mostRecentSynced != null && !shouldForceFullSync
 
         // Try events endpoint first for incremental sync
         if (isIncrementalSync) {
@@ -217,7 +237,7 @@ class WorkoutRepositoryImpl(
             var allWorkoutsExist = false
 
             while (hasMore && !allWorkoutsExist) {
-                val response = apiService.getWorkouts(page, 50)
+                val response = apiService.getWorkouts(page, 10)
 
                 if (response.isSuccessful) {
                     val paginatedResponse = response.body() ?: return Result.error(
@@ -249,8 +269,10 @@ class WorkoutRepositoryImpl(
 
                     // Save workouts (fetch full details for each)
                     workoutsList.forEach { workoutSummary ->
-                        // Check if we need to fetch details (if not incremental, or if missing locally)
-                        val shouldFetch = !isIncrementalSync || workoutDao.getWorkoutById(workoutSummary.id) == null
+                        // Optimize: Only fetch details if we don't have the workout locally
+                        // This allows efficient backfilling without re-downloading existing workouts
+                        val existingWorkout = workoutDao.getWorkoutById(workoutSummary.id)
+                        val shouldFetch = existingWorkout == null
 
                         if (shouldFetch) {
                             try {

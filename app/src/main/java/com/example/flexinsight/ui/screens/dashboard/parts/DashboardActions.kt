@@ -27,20 +27,16 @@ import com.example.flexinsight.ui.theme.TextSecondary
 
 @Composable
 fun DailyInsightCard(
+    dailyInsight: String? = null,
+    isGeneratingInsight: Boolean = false,
     onChatClick: () -> Unit = {}
 ) {
     Card(
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
         onClick = onChatClick
     ) {
         Column(
@@ -48,28 +44,72 @@ fun DailyInsightCard(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Row(
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
-                        lineHeight = 20.sp,
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
                     )
-                    TextButton(
-                        onClick = onChatClick,
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text(
-                            text = "Chat with Trainer",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Daily Insight",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
                 }
+            }
+
+            if (isGeneratingInsight) {
+                 Row(
+                     verticalAlignment = Alignment.CenterVertically,
+                     horizontalArrangement = Arrangement.spacedBy(8.dp)
+                 ) {
+                     CircularProgressIndicator(
+                         modifier = Modifier.size(16.dp),
+                         strokeWidth = 2.dp,
+                         color = MaterialTheme.colorScheme.primary
+                     )
+                     Text(
+                         text = "Generating tip...",
+                         fontSize = 14.sp,
+                         color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+                         lineHeight = 20.sp,
+                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                     )
+                 }
+            } else {
+                Text(
+                    text = dailyInsight ?: "Consistency is key! Complete today's workout to keep your streak alive.",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
+                    lineHeight = 20.sp,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
+            }
+
+            TextButton(
+                onClick = onChatClick,
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text(
+                    text = "Chat with Trainer",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(14.dp)
+                )
             }
         }
     }

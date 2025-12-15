@@ -93,6 +93,8 @@ dependencies {
     ksp(libs.hilt.compiler)
     ksp(libs.androidx.hilt.compiler)
 
-    // ML Kit / Gemini Nano
-    implementation("com.google.mlkit:generative-ai:1.0.0-beta01")
+    // ML Kit Prompt API (Gemini Nano)
+    implementation("com.google.mlkit:genai-prompt:1.0.0-alpha1")
+    implementation("com.google.guava:guava:32.0.1-jre")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
 }

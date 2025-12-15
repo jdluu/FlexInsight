@@ -4,6 +4,7 @@ import com.example.flexinsight.core.errors.ApiError
 import com.example.flexinsight.core.network.NetworkMonitor
 import com.example.flexinsight.core.network.NetworkState
 import com.example.flexinsight.data.repository.FlexRepository
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,13 +32,16 @@ class SyncManager(
      * Performs a manual sync (user-triggered)
      * Always attempts sync regardless of network state or last sync time
      */
+
     suspend fun syncManually(): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
+                Log.d("SyncManager", "Starting manual sync")
                 _syncState.value = SyncState.Syncing
 
                 // Check network before syncing
                 if (!networkMonitor.hasNetworkConnection()) {
+                    Log.w("SyncManager", "Manual sync aborted: No network")
                     val error = ApiError.NetworkError.NoConnection
                     _syncState.value = SyncState.Error(error)
                     return@withContext Result.failure(Exception(error.message))
@@ -46,9 +50,11 @@ class SyncManager(
                 repository.syncAllData()
 
                 lastSyncTime = System.currentTimeMillis()
+                Log.d("SyncManager", "Manual sync successful")
                 _syncState.value = SyncState.Success(lastSyncTime)
                 Result.success(Unit)
             } catch (e: Exception) {
+                Log.e("SyncManager", "Manual sync failed", e)
                 val error = if (e is ApiError) {
                     e
                 } else {
@@ -60,28 +66,26 @@ class SyncManager(
         }
     }
 
-    /**
-     * Performs a background sync if conditions are met
-     * Only syncs if:
-     * - Network is available
-     * - Last sync was more than minSyncIntervalMillis ago
-     */
     suspend fun syncIfNeeded(): Boolean {
         return withContext(Dispatchers.IO) {
             // Check if we should sync
             if (!shouldSync()) {
+                Log.d("SyncManager", "Skipping background sync (conditions not met)")
                 return@withContext false
             }
 
             try {
+                Log.d("SyncManager", "Starting background sync")
                 _syncState.value = SyncState.Syncing
 
                 repository.syncAllData()
 
                 lastSyncTime = System.currentTimeMillis()
+                Log.d("SyncManager", "Background sync successful")
                 _syncState.value = SyncState.Success(lastSyncTime)
                 true
             } catch (e: Exception) {
+                Log.e("SyncManager", "Background sync failed", e)
                 // Don't update state for background sync failures
                 // They're silent and won't interrupt the user
                 false

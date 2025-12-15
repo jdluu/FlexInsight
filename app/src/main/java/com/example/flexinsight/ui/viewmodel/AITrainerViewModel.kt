@@ -91,7 +91,7 @@ class AITrainerViewModel @Inject constructor(
         viewModelScope.launch {
             // 2. Build History
             val history = _uiState.value.messages.map { msg ->
-                val role = if (msg.isContext) "user" else "model" // Map ChatMessage to role
+                val role = if (msg.sender == "user") "user" else "model"
                 role to msg.text
             }
 

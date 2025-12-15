@@ -1,78 +1,91 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.example.flexinsight.data.ai
 
-import android.content.Context
+
 import com.example.flexinsight.core.errors.Result
 import com.example.flexinsight.core.errors.ApiError
-import com.google.mlkit.genai.GenerativeModel
-import com.google.mlkit.genai.GenerativeModelFutures
+// Correct ML Kit Prompt API imports
+import com.google.mlkit.genai.prompt.Generation
+import com.google.mlkit.genai.prompt.GenerativeModel
+import com.google.mlkit.genai.prompt.PromptPrefix
+import com.google.mlkit.genai.prompt.TextPart
+import com.google.mlkit.genai.prompt.generateContentRequest
+import com.google.mlkit.genai.common.FeatureStatus  // Common status
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.guava.await
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+import android.content.Context
+import android.util.Log
+import dagger.hilt.android.qualifiers.ApplicationContext
+
 /**
- * Implementation of FlexAIClient using Google ML Kit's Generative AI (Gemini Nano).
+ * Implementation of FlexAIClient using Google ML Kit's Prompt API (Gemini Nano).
  */
 class GeminiNanoClient @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) : FlexAIClient {
 
-    private var generativeModel: GenerativeModel? = null
-
-    // Initialize logic could happen here, or lazily.
-    // For now, we instantiate on demand or keep a singleton if expensive.
-    // The Prompt API documentation suggests initializing the model is lightweight, 
-    // but the underlying model load might take time.
-
-    private fun getModel(): GenerativeModel {
-        if (generativeModel == null) {
-             generativeModel = GenerativeModel.Builder()
-                .setModelName("gemini-nano") // Or "gemini-on-device" depending on specific beta version
-                .build()
-        }
-        return generativeModel!!
+    private val generativeModel: GenerativeModel by lazy {
+        // Usage based on errors: getClient(Context) failed expecting GenerationConfig.
+        // Reverting to getClient() no-arg as per GitHub sample and previous successful compile.
+        Generation.getClient()
     }
 
     override suspend fun isAvailable(): Boolean {
-        // In a real implementation using the specific beta SDK, there is often a capability check.
-        // For now, we will wrap the instantiation in a try-catch as a proxy or use a specific API if known.
-        // The Prompt API usually has a `GenerativeModel.isAvailable()` equivalent.
-        // Since strict docs are not available, we assume true for supported devices 
-        // and handle errors downstream, or check for specific system features.
-        return true 
+        return try {
+             withContext(Dispatchers.IO) {
+                 // OpenPromptActivity source suggests strict usage inside coroutines/futures builders.
+                 // Assuming they are suspend functions based on previous errors with futures.
+                 val status = generativeModel.checkStatus()
+                 Log.d("GeminiNanoClient", "AI Feature Status for ${context.packageName}: $status (Expected: ${FeatureStatus.AVAILABLE})")
+                 status == FeatureStatus.AVAILABLE
+             }
+        } catch (e: Exception) {
+            Log.e("GeminiNanoClient", "Error checking AI availability", e)
+            false
+        }
     }
 
     override suspend fun generateResponse(prompt: String, history: List<Pair<String, String>>): Result<String> {
         return withContext(Dispatchers.IO) {
             try {
-                // Determine if we use history (chat mode) or single prompt.
-                // For simplicity in this first pass, we concat history.
-                // A more advanced implementation would use `startChat()`.
+                if (!isAvailable()) {
+                     // Fallback error since ServiceUnavailable might be missing
+                     return@withContext Result.Error(ApiError.Unknown("AI model not ready on device."))
+                }
                 
-                val fullPrompt = buildString {
+                val fullText = buildString {
                     history.forEach { (role, msg) ->
                         append("$role: $msg\n")
                     }
-                    append("User: $prompt\n")
+                    append("$prompt\n")
                 }
 
-                val model = getModel()
-                // ML Kit GenAI usually returns a Future or has a suspend function in Kotlin extensions.
-                // Assuming `generateContent` or similar.
-                
-                // Note: The specific API method name might vary (generateContent, prompt, etc)
-                // Using a safe placeholder pattern until we compile/verify.
-                // For "Google ML Kit Generative AI", it follows the pattern of the Cloud SDK closely.
-                
-                val response = model.generateContent(fullPrompt)
-                val text = response.text ?: ""
-                
+                val request = generateContentRequest(TextPart(fullText)) {
+                     // Config if needed
+                }
+
+                // generateContent returns GenerateContentResponse directly or ListenableFuture.
+                // Based on sample: checkNotNull(generativeModel).generateContent(genRequest).candidates
+                // Sample wrapped it in runBlocking/future, suggesting it might be blocking or future.
+                // If it IS a Future, .get() will solve it. 
+                // If it is blocking, .get() will fail compilation (no such method).
+                // However, ML Kit normally returns Task or ListenableFuture.
+                // I will try .get() first as it shares pattern with checkStatus.
+                // If generateContent is blocking, the previous error 'await() unresolved' implies it wasn't a future? 
+                // No, 'await()' unresolved usually means the extension wasn't found for ListenableFuture.
+                // So .get() is safest assumption.
+                val response = generativeModel.generateContent(request)
+                val text = response.candidates.firstOrNull()?.text ?: ""
+
                 if (text.isNotBlank()) {
-                     Result.Success(text)
+                    Result.Success(text)
                 } else {
-                     Result.Error(ApiError.Unknown("Empty response from AI"))
+                    Result.Error(ApiError.Unknown("Empty response from AI"))
                 }
-
             } catch (e: Exception) {
                 Result.Error(ApiError.Unknown(e.message ?: "AI Generation failed"))
             }

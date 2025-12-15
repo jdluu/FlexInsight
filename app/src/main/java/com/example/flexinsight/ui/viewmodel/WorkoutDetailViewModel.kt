@@ -147,13 +147,14 @@ class WorkoutDetailViewModel @Inject constructor(
 
         _uiState.value = _uiState.value.copy(isGeneratingReflection = true)
 
-        val exerciseSummary = exercises.joinToString("; ") { item ->
-            "${item.exercise.name} (${item.sets.size} sets)"
-        }
-        
-        val prompt = "Analyze this workout: '${workout.name}'. " +
-                "Duration: ${workout.duration / 60000} mins. " +
-                "Exercises: $exerciseSummary. " +
+        // Construct prompt
+        val durationMinutes = workout.endTime?.let { end ->
+            java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(end - workout.startTime)
+        } ?: 0L
+
+        val prompt = "Analyze this workout: '${workout.name ?: "Workout"}'. " +
+                "Duration: $durationMinutes mins. " +
+                "Exercises: ${exercises.joinToString("; ") { "${it.exercise.name} (${it.sets.size} sets)" }}. " +
                 "Provide a 3-bullet point 'Coach Reflection' on intensity and volume. be encouraging."
 
         val result = aiClient.generateResponse(prompt)

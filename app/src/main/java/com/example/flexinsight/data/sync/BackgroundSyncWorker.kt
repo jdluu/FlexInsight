@@ -1,6 +1,7 @@
 package com.example.flexinsight.data.sync
 
 import android.content.Context
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -21,10 +22,13 @@ class BackgroundSyncWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
+            Log.d("BackgroundSyncWorker", "Running periodic sync worker")
             // Perform sync
             repository.syncAllData()
+            Log.d("BackgroundSyncWorker", "Periodic sync worker success")
             Result.success()
         } catch (e: Exception) {
+            Log.e("BackgroundSyncWorker", "Periodic sync worker failed", e)
             // Retry on failure (WorkManager will handle retry logic)
             Result.retry()
         }

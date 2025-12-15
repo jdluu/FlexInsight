@@ -37,16 +37,17 @@ fun FlexBottomNavigation(
         NavItem("settings", "Profile", Icons.Default.Person)
     )
 
-    Box(
+        Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 12.dp)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(horizontal = 20.dp, vertical = 8.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(72.dp)
-                .clip(RoundedCornerShape(36.dp))
+                .height(60.dp)
+                .clip(RoundedCornerShape(30.dp))
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
@@ -55,7 +56,7 @@ fun FlexBottomNavigation(
                         )
                     )
                 )
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(36.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(30.dp))
                 .padding(horizontal = 8.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
@@ -83,15 +84,15 @@ fun BottomNavItem(
         modifier = modifier
             .fillMaxHeight()
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Box(
             modifier = Modifier
-                .height(32.dp)
-                .width(56.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .height(28.dp)
+                .width(50.dp)
+                .clip(RoundedCornerShape(14.dp))
                 .background(
                     if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                     else Color.Transparent
@@ -105,12 +106,12 @@ fun BottomNavItem(
                 modifier = Modifier.size(20.dp)
             )
         }
-        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = item.label,
-            fontSize = 10.sp,
+            fontSize = 9.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp)
         )
     }
 }
