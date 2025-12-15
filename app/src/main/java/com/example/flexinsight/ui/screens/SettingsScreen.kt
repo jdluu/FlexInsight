@@ -70,6 +70,19 @@ fun SettingsScreen() {
         apiKey = apiKeyManager.getApiKey()
     }
     
+    // Sync Status Feedback
+    LaunchedEffect(uiState.syncState) {
+        when (val state = uiState.syncState) {
+            is LoadingState.Success -> {
+                snackbarHostState.showSnackbar("Sync completed successfully")
+            }
+            is LoadingState.Error -> {
+                snackbarHostState.showSnackbar("Sync failed: ${state.error.message}")
+            }
+            else -> {}
+        }
+    }
+    
     if (uiState.isLoading) {
         Box(
             modifier = Modifier

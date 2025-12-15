@@ -48,10 +48,12 @@ class SettingsViewModel(
         }
     }
     
-    private fun loadSettingsData() {
+    private fun loadSettingsData(isRefresh: Boolean = false) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
+                if (!isRefresh) {
+                    _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
+                }
                 
                 // Load profile info
                 val profileInfo = try {
@@ -116,8 +118,8 @@ class SettingsViewModel(
                 _uiState.value = _uiState.value.copy(syncState = LoadingState.Loading, syncError = null)
                 repository.syncAllData()
                 _uiState.value = _uiState.value.copy(syncState = LoadingState.Success, syncError = null)
-                // Reload profile info after sync
-                loadSettingsData()
+                // Reload profile info after sync (silent refresh)
+                loadSettingsData(isRefresh = true)
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
@@ -187,7 +189,6 @@ class SettingsViewModel(
     }
 
     fun refresh() {
-        loadSettingsData()
+        loadSettingsData(isRefresh = true)
     }
 }
-
