@@ -2,6 +2,7 @@ package com.example.flexinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flexinsight.data.ai.FlexAIClient
 import com.example.flexinsight.core.errors.ErrorHandler
 import com.example.flexinsight.data.model.PersonalRecord
 import com.example.flexinsight.data.model.Set
@@ -42,7 +43,9 @@ data class HistoryUiState(
     val prsWithDetails: List<PRDetails> = emptyList(),
     val exercises: List<Exercise> = emptyList(),
     val dateFilter: String = "All Time",
-    val units: String = "Imperial"
+    val units: String = "Imperial",
+    val aiTrendAnalysis: String? = null,
+    val isGeneratingTrend: Boolean = false
 ) {
     // Backward compatibility helper
     val isLoading: Boolean
@@ -53,7 +56,8 @@ data class HistoryUiState(
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     private val repository: FlexRepository,
-    private val userPreferencesManager: UserPreferencesManager
+    private val userPreferencesManager: UserPreferencesManager,
+    private val aiClient: FlexAIClient
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HistoryUiState(loadingState = LoadingState.Loading))
@@ -88,7 +92,6 @@ class HistoryViewModel @Inject constructor(
             val workouts = repository.getWorkouts().first()
 
             // Optional data: Load with fail-safe defaults using runCatching
-
             val stats = runCatching { repository.calculateStats() }
                 .getOrDefault(WorkoutStats(
                     totalWorkouts = 0,
@@ -103,30 +106,21 @@ class HistoryViewModel @Inject constructor(
                     bestWeekDate = null
                 ))
 
-            val count = runCatching {
-                repository.getProfileInfo().totalWorkouts
-            }.getOrDefault(0)
+            val count = runCatching { repository.getProfileInfo().totalWorkouts }.getOrDefault(0)
 
-            val prs = runCatching { repository.getRecentPRs(limit = 10).first() }
-                .getOrDefault(emptyList())
+            val prs = runCatching { repository.getRecentPRs(limit = 10).first() }.getOrDefault(emptyList())
 
-            val prsWithDetails = runCatching { repository.getPRsWithDetails(limit = 10) }
-                .getOrDefault(emptyList())
+            val prsWithDetails = runCatching { repository.getPRsWithDetails(limit = 10) }.getOrDefault(emptyList())
 
-            val volumeTrend = runCatching { repository.calculateVolumeTrend(weeks = 4) }
-                .getOrNull()
+            val volumeTrend = runCatching { repository.calculateVolumeTrend(weeks = 4) }.getOrNull()
 
-            val weeklyVolumeData = runCatching { repository.getWeeklyVolumeData(weeks = 4) }
-                .getOrDefault(emptyList())
+            val weeklyVolumeData = runCatching { repository.getWeeklyVolumeData(weeks = 4) }.getOrDefault(emptyList())
 
-            val durationTrend = runCatching { repository.getDurationTrend(weeks = 6) }
-                .getOrDefault(emptyList())
+            val durationTrend = runCatching { repository.getDurationTrend(weeks = 6) }.getOrDefault(emptyList())
 
-            val muscleGroupProgress = runCatching { repository.getMuscleGroupProgress(weeks = 4) }
-                .getOrDefault(emptyList())
+            val muscleGroupProgress = runCatching { repository.getMuscleGroupProgress(weeks = 4) }.getOrDefault(emptyList())
 
-            val exercises = runCatching { repository.getAllExercises().first() }
-                .getOrDefault(emptyList())
+            val exercises = runCatching { repository.getAllExercises().first() }.getOrDefault(emptyList())
 
             _uiState.value = _uiState.value.copy(
                 loadingState = LoadingState.Success,
@@ -142,8 +136,34 @@ class HistoryViewModel @Inject constructor(
                 exercises = exercises,
                 error = null
             )
+            
+            // Generate AI Insight
+            generateTrendAnalysis(stats, count)
         }
     }
+
+    private suspend fun generateTrendAnalysis(stats: WorkoutStats, count: Int) {
+        if (!aiClient.isAvailable()) return
+        if (_uiState.value.aiTrendAnalysis != null) return
+
+        _uiState.value = _uiState.value.copy(isGeneratingTrend = true)
+
+        val prompt = "Analyze my gym progress. " +
+                "Total workouts: $count. " +
+                "Total Volume: ${(stats.totalVolume / 1000).toInt()}k kg. " +
+                "Streak: ${stats.currentStreak} days. " +
+                "Write a 1-sentence summary of my consistency and a short motivational quote."
+
+        val result = aiClient.generateResponse(prompt)
+
+        _uiState.value = _uiState.value.copy(isGeneratingTrend = false)
+
+        if (result is com.example.flexinsight.core.errors.Result.Success) {
+            _uiState.value = _uiState.value.copy(aiTrendAnalysis = result.data)
+        }
+    }
+    
+    // ... existing helper methods ...
 
     fun refresh() {
         loadHistoryData()
