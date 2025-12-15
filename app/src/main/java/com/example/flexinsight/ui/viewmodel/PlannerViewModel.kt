@@ -136,7 +136,6 @@ class PlannerViewModel(
                 weekCalendarData = weekCalendarData,
                 selectedDayIndex = selectedDayIndex,
                 selectedDayWorkouts = selectedDayWorkouts,
-                selectedDayWorkouts = selectedDayWorkouts,
                 routines = routinesRequest,
                 routineFolders = routineFolders,
                 volumeBalance = volumeBalance,

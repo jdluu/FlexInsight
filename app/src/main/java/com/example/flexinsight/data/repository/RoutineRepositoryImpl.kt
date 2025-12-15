@@ -3,6 +3,7 @@ package com.example.flexinsight.data.repository
 import com.example.flexinsight.core.errors.ApiError
 import com.example.flexinsight.core.errors.ErrorHandler
 import com.example.flexinsight.core.errors.Result
+import com.example.flexinsight.data.model.toRoutineFolder
 import com.example.flexinsight.core.logger.AppLogger
 import com.example.flexinsight.core.network.NetworkMonitor
 import com.example.flexinsight.data.api.FlexApiClient
