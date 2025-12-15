@@ -2,6 +2,7 @@ package com.example.flexinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flexinsight.data.ai.FlexAIClient
 import com.example.flexinsight.data.repository.FlexRepository
 import com.example.flexinsight.ui.common.LoadingState
 import com.example.flexinsight.ui.common.UiError
@@ -22,7 +23,9 @@ data class RecoveryUiState(
     val recoveryScore: Int = 85, // Default/Placeholder
     val trainingLoadStatus: TrainingLoadStatus = TrainingLoadStatus.Optimal,
     val sleepHours: Double = 7.5,
-    val sorenessLevel: String = "Low"
+    val sorenessLevel: String = "Low",
+    val aiInsight: String? = null,
+    val isGeneratingInsight: Boolean = false
 )
 
 enum class TrainingLoadStatus {
@@ -32,7 +35,8 @@ enum class TrainingLoadStatus {
 
 @HiltViewModel
 class RecoveryViewModel @Inject constructor(
-    private val repository: FlexRepository
+    private val repository: FlexRepository,
+    private val aiClient: FlexAIClient
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecoveryUiState(loadingState = LoadingState.Loading))
@@ -52,9 +56,6 @@ class RecoveryViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
 
             // Calculate Training Load based on volume trend
-            // If current volume > 1.2 * previous, it's High
-            // If current volume < 0.8 * previous, it's Low
-            // Else Optimal
             val volumeTrend = try {
                  repository.calculateVolumeTrend(4)
             } catch (e: Exception) {
@@ -72,14 +73,32 @@ class RecoveryViewModel @Inject constructor(
                 TrainingLoadStatus.Optimal
             }
 
-            // For demo purposes, we can keep some hardcoded values like sleep/soreness
-            // or fetch them if we had a sleep repo. We'll stick to calculating the Load.
-
             _uiState.value = _uiState.value.copy(
                 loadingState = LoadingState.Success,
                 trainingLoadStatus = loadStatus,
                 error = null
             )
+            
+            // Trigger AI Insight if available
+            generateRecoveryInsight(loadStatus, volumeTrend?.currentVolume ?: 0.0)
+        }
+    }
+
+    private suspend fun generateRecoveryInsight(status: TrainingLoadStatus, currentVolume: Double) {
+        if (!aiClient.isAvailable()) return
+
+        _uiState.value = _uiState.value.copy(isGeneratingInsight = true)
+
+        val prompt = "My training load status is $status with a current volume of $currentVolume kg. " +
+                "My reported mood is ${_uiState.value.moodValue}/10. " +
+                "Provide a short, 2-sentence recovery recommendation."
+
+        val result = aiClient.generateResponse(prompt)
+
+        _uiState.value = _uiState.value.copy(isGeneratingInsight = false)
+        
+        if (result is com.example.flexinsight.core.errors.Result.Success) {
+            _uiState.value = _uiState.value.copy(aiInsight = result.data)
         }
     }
 

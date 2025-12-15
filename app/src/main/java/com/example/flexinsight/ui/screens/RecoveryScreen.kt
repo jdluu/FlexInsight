@@ -35,6 +35,31 @@ fun RecoveryScreen(
             RecoveryScoreCard()
         }
         item {
+             if (uiState.isGeneratingInsight) {
+                 Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
+                     Row(verticalAlignment = Alignment.CenterVertically) {
+                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                         Spacer(modifier = Modifier.width(8.dp))
+                         Text("Smart Analysis running...", style = MaterialTheme.typography.bodySmall)
+                     }
+                 }
+             } else if (uiState.aiInsight != null) {
+                 Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+                 ) {
+                     Column(modifier = Modifier.padding(16.dp)) {
+                         Row(verticalAlignment = Alignment.CenterVertically) {
+                             // Icon could go here
+                             Text("AI Insight", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                         }
+                         Spacer(modifier = Modifier.height(4.dp))
+                         Text(uiState.aiInsight!!, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                     }
+                 }
+             }
+        }
+        item {
             SleepRestSection()
         }
         item {
