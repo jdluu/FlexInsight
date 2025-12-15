@@ -35,7 +35,11 @@ data class DashboardUiState(
         get() = loadingState.isLoading
 }
 
-class DashboardViewModel(
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
     private val repository: FlexRepository
 ) : ViewModel() {
 

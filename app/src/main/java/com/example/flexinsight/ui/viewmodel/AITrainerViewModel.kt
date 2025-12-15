@@ -17,7 +17,11 @@ data class AITrainerUiState(
     val isTyping: Boolean = false
 )
 
-class AITrainerViewModel(
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class AITrainerViewModel @Inject constructor(
     private val repository: FlexRepository
 ) : ViewModel() {
 

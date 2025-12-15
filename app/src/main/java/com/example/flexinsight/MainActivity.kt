@@ -1,49 +1,54 @@
 package com.example.flexinsight
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.foundation.isSystemInDarkTheme
 import com.example.flexinsight.data.preferences.ApiKeyManager
 import com.example.flexinsight.data.preferences.UserPreferencesManager
+import com.example.flexinsight.data.sync.SyncManager
+import com.example.flexinsight.ui.common.LocalSnackbarHostState
 import com.example.flexinsight.ui.components.FlexBottomNavigation
 import com.example.flexinsight.ui.navigation.Screen
 import com.example.flexinsight.ui.screens.*
 import com.example.flexinsight.ui.theme.FlexInsightTheme
-import com.example.flexinsight.ui.viewmodel.DashboardViewModel
-import com.example.flexinsight.ui.viewmodel.HistoryViewModel
+import com.example.flexinsight.ui.viewmodel.*
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import com.example.flexinsight.ui.common.LocalSnackbarHostState
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var userPreferencesManager: UserPreferencesManager
+
+    @Inject
+    lateinit var apiKeyManager: ApiKeyManager
+
+    @Inject
+    lateinit var syncManager: SyncManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val application = getApplication()
-            val userPreferencesManager = remember {
-                application?.let { UserPreferencesManager(it) }
-            }
-
-            val themePreference by userPreferencesManager?.themeFlow?.collectAsState(initial = "System") ?: remember { mutableStateOf("System") }
+            val themePreference by userPreferencesManager.themeFlow.collectAsState(initial = "System")
 
             val darkTheme = when (themePreference) {
                 "Dark" -> true
@@ -52,43 +57,21 @@ class MainActivity : ComponentActivity() {
             }
 
             FlexInsightTheme(darkTheme = darkTheme) {
-                MainScreen()
+                MainScreen(
+                    apiKeyManager = apiKeyManager,
+                    syncManager = syncManager
+                )
             }
         }
     }
 }
 
 @Composable
-fun getApplication(): FlexInsightApplication? {
-    val context = LocalContext.current
-    return context.applicationContext as? FlexInsightApplication
-}
-
-@Composable
-fun MainScreen() {
-    val application = getApplication()
-
-    if (application == null) {
-        // Show error screen if application can't be accessed
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Application error: Failed to initialize",
-                color = MaterialTheme.colorScheme.error
-            )
-        }
-        return
-    }
-
-    val context = LocalContext.current
-    val apiKeyManager = remember { ApiKeyManager(context) }
+fun MainScreen(
+    apiKeyManager: ApiKeyManager,
+    syncManager: SyncManager
+) {
     val scope = rememberCoroutineScope()
-
     var showApiKeyPrompt by remember { mutableStateOf(false) }
 
     // Check for API key on first launch
@@ -106,7 +89,7 @@ fun MainScreen() {
 
     // Sync on app resume
     LaunchedEffect(Unit) {
-        application.syncManager.syncOnResume()
+        syncManager.syncOnResume()
     }
 
     val navController = rememberNavController()
@@ -238,9 +221,7 @@ fun MainScreen() {
                 modifier = Modifier.padding(innerPadding)
             ) {
             composable(Screen.Dashboard.route) {
-                val viewModel: DashboardViewModel = viewModel {
-                    DashboardViewModel(application.repository)
-                }
+                val viewModel = hiltViewModel<DashboardViewModel>()
                 DashboardScreen(
                     viewModel = viewModel,
                     onNavigateToWorkoutDetail = { workoutId ->
@@ -264,9 +245,7 @@ fun MainScreen() {
                 )
             }
             composable(Screen.History.route) {
-                val viewModel: HistoryViewModel = viewModel {
-                    HistoryViewModel(application.repository)
-                }
+                val viewModel = hiltViewModel<HistoryViewModel>()
                 HistoryScreen(
                     viewModel = viewModel,
                     onNavigateToWorkoutDetail = { workoutId ->
@@ -281,38 +260,24 @@ fun MainScreen() {
                 )
             }
             composable(Screen.AITrainer.route) {
-                val viewModel: com.example.flexinsight.ui.viewmodel.AITrainerViewModel = viewModel {
-                    com.example.flexinsight.ui.viewmodel.AITrainerViewModel(application.repository)
-                }
+                val viewModel = hiltViewModel<AITrainerViewModel>()
                 AITrainerScreen(viewModel = viewModel)
             }
                 composable(Screen.Planner.route) {
-                    val viewModel: com.example.flexinsight.ui.viewmodel.PlannerViewModel = viewModel {
-                        com.example.flexinsight.ui.viewmodel.PlannerViewModel(application.repository)
-                    }
+                    val viewModel = hiltViewModel<PlannerViewModel>()
                     PlannerScreen(viewModel = viewModel)
                 }
             composable(Screen.Recovery.route) {
-                val viewModel: com.example.flexinsight.ui.viewmodel.RecoveryViewModel = viewModel {
-                    com.example.flexinsight.ui.viewmodel.RecoveryViewModel(application.repository)
-                }
+                val viewModel = hiltViewModel<RecoveryViewModel>()
                 RecoveryScreen(viewModel = viewModel)
             }
             composable(Screen.Settings.route) {
-                val viewModel: com.example.flexinsight.ui.viewmodel.SettingsViewModel = viewModel {
-                    com.example.flexinsight.ui.viewmodel.SettingsViewModel(application.repository, application.userPreferencesManager)
-                }
+                val viewModel = hiltViewModel<SettingsViewModel>()
                 SettingsScreen()
             }
             composable(Screen.WorkoutDetail.route) { backStackEntry ->
-                val workoutId = backStackEntry.arguments?.getString("workoutId")
-                val viewModel: com.example.flexinsight.ui.viewmodel.WorkoutDetailViewModel = viewModel {
-                    com.example.flexinsight.ui.viewmodel.WorkoutDetailViewModel(
-                        repository = application.repository,
-                        database = application.database,
-                        workoutId = workoutId
-                    )
-                }
+                // Note: hiltViewModel() automatically handles SavedStateHandle injection for arguments
+                val viewModel = hiltViewModel<WorkoutDetailViewModel>()
                 WorkoutDetailScreen(
                     viewModel = viewModel,
                     onNavigateBack = {

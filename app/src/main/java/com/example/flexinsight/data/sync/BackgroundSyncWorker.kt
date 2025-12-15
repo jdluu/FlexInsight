@@ -1,31 +1,28 @@
 package com.example.flexinsight.data.sync
 
 import android.content.Context
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import androidx.work.workDataOf
+import com.example.flexinsight.data.repository.FlexRepository
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
 /**
  * WorkManager worker for periodic background sync.
  * Syncs data from Hevy API when network is available.
- *
- * Note: Repository injection will be handled by WorkManagerFactory
  */
-class BackgroundSyncWorker(
-    context: Context,
-    params: WorkerParameters
+@HiltWorker
+class BackgroundSyncWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted params: WorkerParameters,
+    private val repository: FlexRepository
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
         return try {
-            // Get repository from application
-            val app = applicationContext as? com.example.flexinsight.FlexInsightApplication
-            if (app == null) {
-                return Result.failure()
-            }
-
             // Perform sync
-            app.repository.syncAllData()
+            repository.syncAllData()
             Result.success()
         } catch (e: Exception) {
             // Retry on failure (WorkManager will handle retry logic)

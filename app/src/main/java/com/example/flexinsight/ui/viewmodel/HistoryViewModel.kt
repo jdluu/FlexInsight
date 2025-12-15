@@ -45,7 +45,11 @@ data class HistoryUiState(
         get() = loadingState.isLoading
 }
 
-class HistoryViewModel(
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class HistoryViewModel @Inject constructor(
     private val repository: FlexRepository
 ) : ViewModel() {
 

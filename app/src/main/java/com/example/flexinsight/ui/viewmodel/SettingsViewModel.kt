@@ -33,7 +33,11 @@ data class SettingsUiState(
         get() = syncState.isLoading
 }
 
-class SettingsViewModel(
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
     private val repository: FlexRepository,
     private val userPreferencesManager: UserPreferencesManager
 ) : ViewModel() {

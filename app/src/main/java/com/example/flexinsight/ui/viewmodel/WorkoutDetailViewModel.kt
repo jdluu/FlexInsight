@@ -1,9 +1,11 @@
 package com.example.flexinsight.ui.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flexinsight.core.errors.ErrorHandler
-import com.example.flexinsight.data.local.FlexDatabase
+import com.example.flexinsight.data.local.dao.ExerciseDao
+import com.example.flexinsight.data.local.dao.SetDao
 import com.example.flexinsight.data.model.Exercise
 import com.example.flexinsight.data.model.Set
 import com.example.flexinsight.data.model.SingleWorkoutStats
@@ -11,11 +13,13 @@ import com.example.flexinsight.data.model.Workout
 import com.example.flexinsight.data.repository.FlexRepository
 import com.example.flexinsight.ui.common.LoadingState
 import com.example.flexinsight.ui.common.UiError
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class ExerciseWithSets(
     val exercise: Exercise,
@@ -35,17 +39,18 @@ data class WorkoutDetailUiState(
         get() = loadingState.isLoading
 }
 
-class WorkoutDetailViewModel(
+@HiltViewModel
+class WorkoutDetailViewModel @Inject constructor(
     private val repository: FlexRepository,
-    private val database: FlexDatabase,
-    workoutId: String?
+    private val exerciseDao: ExerciseDao,
+    private val setDao: SetDao,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val workoutId: String? = savedStateHandle["workoutId"]
 
     private val _uiState = MutableStateFlow(WorkoutDetailUiState(loadingState = LoadingState.Loading))
     val uiState: StateFlow<WorkoutDetailUiState> = _uiState.asStateFlow()
-
-    private val exerciseDao = database.exerciseDao()
-    private val setDao = database.setDao()
 
     init {
         if (workoutId != null) {

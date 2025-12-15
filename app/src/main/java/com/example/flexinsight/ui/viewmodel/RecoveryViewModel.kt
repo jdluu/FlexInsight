@@ -27,7 +27,11 @@ enum class TrainingLoadStatus {
     Low, Optimal, High
 }
 
-class RecoveryViewModel(
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class RecoveryViewModel @Inject constructor(
     private val repository: FlexRepository
 ) : ViewModel() {
 

@@ -33,7 +33,11 @@ data class PlannerUiState(
         get() = loadingState.isLoading
 }
 
-class PlannerViewModel(
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
+@HiltViewModel
+class PlannerViewModel @Inject constructor(
     private val repository: FlexRepository
 ) : ViewModel() {
 
