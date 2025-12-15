@@ -586,9 +586,10 @@ class StatsRepositoryImpl(
         val resultDays = mutableListOf<DayInfo>()
 
         // Efficiently fetch all workouts for the period
-        val startTimestamp = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val endTimestamp = now.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val allWorkouts = workoutDao.getWorkoutsByDateRangeFlow(startTimestamp, endTimestamp).first()
+        // Optimization: Use getAllWorkoutsFlow() instead of DateRange to avoid potential db lock/timeout issues
+        // with complex range queries on some devices. Memory filtering is fast enough for < 1000 workouts.
+        val daysStartTimestamp = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val allWorkouts = workoutDao.getAllWorkoutsFlow().first()
 
         for (i in 0 until days) {
             val date = startDate.plusDays(i.toLong())

@@ -125,6 +125,7 @@ class HistoryViewModel @Inject constructor(
             val volumeBalance = runCatching { repository.getVolumeBalance(weeks = 4) }.getOrNull()
 
             val consistencyData = runCatching { repository.getConsistencyData(days = 90) }.getOrDefault(emptyList())
+            // val consistencyData = emptyList<com.example.flexinsight.data.model.DayInfo>()
 
             val exercises = runCatching { repository.getAllExercises().first() }.getOrDefault(emptyList())
 
