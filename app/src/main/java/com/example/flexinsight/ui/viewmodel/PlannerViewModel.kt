@@ -28,7 +28,9 @@ data class PlannerUiState(
     val routines: List<Routine> = emptyList(),
     val routineFolders: List<RoutineFolder> = emptyList(),
     val volumeBalance: VolumeBalance? = null,
-    val muscleGroupProgress: List<MuscleGroupProgress> = emptyList()
+    val muscleGroupProgress: List<MuscleGroupProgress> = emptyList(),
+    val aiPlan: String? = null,
+    val isGeneratingPlan: Boolean = false
 ) {
     // Backward compatibility helper
     val isLoading: Boolean
@@ -38,7 +40,8 @@ data class PlannerUiState(
 
 @HiltViewModel
 class PlannerViewModel @Inject constructor(
-    private val repository: FlexRepository
+    private val repository: FlexRepository,
+    private val aiClient: FlexAIClient
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlannerUiState(loadingState = LoadingState.Loading))
@@ -51,6 +54,13 @@ class PlannerViewModel @Inject constructor(
         }
     }
 
+    // ... (existing helper methods if any, but we are replacing the whole class body so ensure we keep loadPlannerData etc. or just update specific parts. 
+    // Wait, the instruction says "replace the entire ViewModel content" usually, but here I can target the constructor and the generateAIWorkout method + UiState data class.
+    // However, since I need to inject the client in the constructor which is at the top, and add the method at the bottom, and update the data class, it's safer to do a few replaces or one big one.
+    // Let's do one big replace to ensure consistency and avoid line number shifts.)
+    
+    // Actually, looking at the file content, I can replace the whole file content to be safe and clean.
+    
     fun loadPlannerData() {
         safeLaunch(onError = { apiError ->
             _uiState.value = _uiState.value.copy(
@@ -60,78 +70,32 @@ class PlannerViewModel @Inject constructor(
         }) {
             _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
 
-            // Load individual components with separate try-catch blocks to prevent one failure from blocking everything
-            // Note: In a real app we might use async/await to load in parallel, but here we keep it simple or follow existing flow
+            // Load components (keeping existing logic)
+            val weeklyGoalProgress = try { repository.getWeeklyGoalProgress(target = 5) } catch (e: Exception) { null }
+            val weekCalendarData = try { repository.getWeekCalendarData() } catch (e: Exception) { emptyList() }
+            val routinesRequest = try { repository.getRoutines().first() } catch (e: Exception) { emptyList() }
+            val routineFolders = try { repository.getRoutineFolders() } catch (e: Exception) { emptyList() }
+            val volumeBalance = try { repository.getVolumeBalance(weeks = 4) } catch (e: Exception) { null }
+            val muscleGroupProgress = try { repository.getMuscleGroupProgress(weeks = 4) } catch (e: Exception) { emptyList() }
 
-            // Load weekly goal progress
-            val weeklyGoalProgress = try {
-                repository.getWeeklyGoalProgress(target = 5)
-            } catch (e: Exception) {
-                null
-            }
-
-            // Load week calendar data
-            val weekCalendarData = try {
-                repository.getWeekCalendarData()
-            } catch (e: Exception) {
-                emptyList()
-            }
-
-            // Load routines
-            val routinesRequest = try {
-                repository.getRoutines().first()
-            } catch (e: Exception) {
-                emptyList()
-            }
-
-            // Load routine folders
-            val routineFolders = try {
-                repository.getRoutineFolders()
-            } catch (e: Exception) {
-                emptyList()
-            }
-
-            // Load volume balance
-            val volumeBalance = try {
-                repository.getVolumeBalance(weeks = 4)
-            } catch (e: Exception) {
-                null
-            }
-
-            // Load muscle group progress for recommendations
-            val muscleGroupProgress = try {
-                repository.getMuscleGroupProgress(weeks = 4)
-            } catch (e: Exception) {
-                emptyList()
-            }
-
-            // Load workouts for selected day (default to current day)
             var selectedDayWorkouts = emptyList<PlannedWorkout>()
             var selectedDayIndex = _uiState.value.selectedDayIndex
 
-            // If this is the initial load (selectedDayIndex is 0), find today's index
             if (selectedDayIndex == 0 && weekCalendarData.isNotEmpty()) {
                 val today = System.currentTimeMillis()
                 val todayIndex = weekCalendarData.indexOfFirst { dayInfo ->
-                    // Check if the day matches today (same day, ignoring time)
                     val dayStart = dayInfo.timestamp
-                    val dayEnd = dayStart + 24 * 60 * 60 * 1000 // Add 24 hours
-                    today >= dayStart && today < dayEnd
+                    val dayEnd = dayStart + 24 * 60 * 60 * 1000
+                    today in dayStart until dayEnd
                 }
-
-                // If today is found in the week, use it; otherwise keep 0
-                if (todayIndex >= 0) {
-                    selectedDayIndex = todayIndex
-                }
+                if (todayIndex >= 0) selectedDayIndex = todayIndex
             }
 
             if (weekCalendarData.isNotEmpty() && selectedDayIndex < weekCalendarData.size) {
                 try {
                     val selectedDay = weekCalendarData[selectedDayIndex]
                     selectedDayWorkouts = repository.getPlannedWorkoutsForDay(selectedDay.timestamp)
-                } catch (e: Exception) {
-                    // Continue with empty list if it fails
-                }
+                } catch (e: Exception) { }
             }
 
             _uiState.value = _uiState.value.copy(
@@ -174,7 +138,6 @@ class PlannerViewModel @Inject constructor(
         safeLaunch(onError = { apiError ->
             _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
         }) {
-            // Optimistic update
             val updatedWorkouts = _uiState.value.selectedDayWorkouts.map {
                 if (it.id == workoutId) it.copy(isCompleted = isCompleted) else it
             }
@@ -183,7 +146,6 @@ class PlannerViewModel @Inject constructor(
             val result = repository.updateWorkoutStatus(workoutId, isCompleted)
 
             if (result is com.example.flexinsight.core.errors.Result.Error) {
-                // Revert on failure
                 val revertedWorkouts = _uiState.value.selectedDayWorkouts.map {
                     if (it.id == workoutId) it.copy(isCompleted = !isCompleted) else it
                 }
@@ -192,7 +154,6 @@ class PlannerViewModel @Inject constructor(
                     error = UiError.fromApiError(result.error)
                 )
             } else {
-                // Refresh data to update stats/calendar
                 loadPlannerData()
             }
         }
@@ -203,20 +164,51 @@ class PlannerViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
         }) {
             val result = repository.rescheduleWorkout(workoutId, newDate)
-
             if (result is com.example.flexinsight.core.errors.Result.Success) {
                 loadPlannerData()
             } else if (result is com.example.flexinsight.core.errors.Result.Error) {
-                _uiState.value = _uiState.value.copy(
-                    error = UiError.fromApiError(result.error)
-                )
+                _uiState.value = _uiState.value.copy(error = UiError.fromApiError(result.error))
             }
         }
     }
 
     fun generateAIWorkout() {
-        // AI implementation not yet available
-        // Could show a toast or message in UI state if needed
+        viewModelScope.launch {
+            if (!aiClient.isAvailable()) {
+                _uiState.value = _uiState.value.copy(
+                    aiPlan = "Sorry, AI features are not supported on this device."
+                )
+                return@launch
+            }
+
+            _uiState.value = _uiState.value.copy(isGeneratingPlan = true, aiPlan = null)
+
+            // Construct specific prompt
+            val balance = _uiState.value.volumeBalance
+            val focus = if (balance != null) {
+                "My volume balance is: Push=${balance.pushPercentage}%, Pull=${balance.pullPercentage}%, Legs=${balance.legsPercentage}%. "
+            } else ""
+
+            val prompt = "Create a structured gym workout plan for today. " +
+                    focus +
+                    "I am an intermediate lifter. " +
+                    "Format it clearly with Exercise, Sets, and Reps. " +
+                    "Keep it under 6 exercises."
+
+            val result = aiClient.generateWorkoutPlan(prompt)
+
+            _uiState.value = _uiState.value.copy(isGeneratingPlan = false)
+
+            if (result is com.example.flexinsight.core.errors.Result.Success) {
+                _uiState.value = _uiState.value.copy(aiPlan = result.data)
+            } else {
+                _uiState.value = _uiState.value.copy(aiPlan = "Failed to generate plan. Please try again.")
+            }
+        }
+    }
+    
+    fun clearAIPlan() {
+        _uiState.value = _uiState.value.copy(aiPlan = null)
     }
 }
 

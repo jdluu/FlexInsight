@@ -87,6 +87,43 @@ fun PlannerScreen(
         )
     }
 
+    if (uiState.isGeneratingPlan) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("Generating Workout Plan") },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Analyzing your stats...")
+                }
+            },
+            confirmButton = {}
+        )
+    }
+
+    uiState.aiPlan?.let { plan ->
+        AlertDialog(
+            onDismissRequest = { viewModel.clearAIPlan() },
+            title = { Text("AI Suggested Workout") },
+            text = {
+                LazyColumn {
+                    item {
+                        Text(plan)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.clearAIPlan() }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -124,7 +161,6 @@ fun PlannerScreen(
                 volumeBalance = uiState.volumeBalance,
                 muscleGroupProgress = uiState.muscleGroupProgress,
                 onGeneratePlan = {
-                    scope.launch { snackbarHostState.showSnackbar("AI Plan Generation coming soon") }
                     viewModel.generateAIWorkout()
                 }
             )
