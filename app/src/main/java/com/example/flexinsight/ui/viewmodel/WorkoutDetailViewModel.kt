@@ -3,6 +3,7 @@ package com.example.flexinsight.ui.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flexinsight.data.ai.FlexAIClient
 import com.example.flexinsight.core.errors.ErrorHandler
 import com.example.flexinsight.data.local.dao.ExerciseDao
 import com.example.flexinsight.data.local.dao.SetDao
@@ -34,7 +35,9 @@ data class WorkoutDetailUiState(
     val workout: Workout? = null,
     val workoutStats: SingleWorkoutStats? = null,
     val exercisesWithSets: List<ExerciseWithSets> = emptyList(),
-    val units: String = "Imperial"
+    val units: String = "Imperial",
+    val aiReflection: String? = null,
+    val isGeneratingReflection: Boolean = false
 ) {
     // Backward compatibility helper
     val isLoading: Boolean
@@ -47,6 +50,7 @@ class WorkoutDetailViewModel @Inject constructor(
     private val exerciseDao: ExerciseDao,
     private val setDao: SetDao,
     private val userPreferencesManager: UserPreferencesManager,
+    private val aiClient: FlexAIClient,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -121,6 +125,10 @@ class WorkoutDetailViewModel @Inject constructor(
                     exercisesWithSets = exercisesWithSets,
                     error = null
                 )
+                
+                // Trigger analysis
+                generateWorkoutAnalysis(workout, exercisesWithSets)
+                
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
                 _uiState.value = _uiState.value.copy(
@@ -128,6 +136,32 @@ class WorkoutDetailViewModel @Inject constructor(
                     error = UiError.fromApiError(apiError)
                 )
             }
+        }
+    }
+
+    private suspend fun generateWorkoutAnalysis(workout: Workout, exercises: List<ExerciseWithSets>) {
+        if (!aiClient.isAvailable()) return
+
+        // Check if we already have analysis to avoid re-generating (optional optimization)
+        if (_uiState.value.aiReflection != null) return
+
+        _uiState.value = _uiState.value.copy(isGeneratingReflection = true)
+
+        val exerciseSummary = exercises.joinToString("; ") { item ->
+            "${item.exercise.name} (${item.sets.size} sets)"
+        }
+        
+        val prompt = "Analyze this workout: '${workout.name}'. " +
+                "Duration: ${workout.duration / 60000} mins. " +
+                "Exercises: $exerciseSummary. " +
+                "Provide a 3-bullet point 'Coach Reflection' on intensity and volume. be encouraging."
+
+        val result = aiClient.generateResponse(prompt)
+
+        _uiState.value = _uiState.value.copy(isGeneratingReflection = false)
+
+        if (result is com.example.flexinsight.core.errors.Result.Success) {
+            _uiState.value = _uiState.value.copy(aiReflection = result.data)
         }
     }
 
