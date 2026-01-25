@@ -53,5 +53,25 @@ interface WorkoutDao {
 
     @Query("UPDATE workouts SET lastSynced = :timestamp, needsSync = 0 WHERE id = :workoutId")
     suspend fun markWorkoutSynced(workoutId: String, timestamp: Long = System.currentTimeMillis())
+
+    /**
+     * Inserts or updates a complete workout with its related exercises and sets atomically.
+     */
+    @Transaction
+    suspend fun insertWorkoutWithDetails(
+        workout: Workout,
+        exercises: List<com.example.flexinsight.data.model.Exercise>,
+        sets: List<com.example.flexinsight.data.model.Set>,
+        exerciseDao: com.example.flexinsight.data.local.dao.ExerciseDao,
+        setDao: com.example.flexinsight.data.local.dao.SetDao
+    ) {
+        insertWorkout(workout)
+        
+        // Clear existing related data to ensure clean state on update
+        exerciseDao.deleteExercisesByWorkoutId(workout.id)
+        
+        exerciseDao.insertExercises(exercises)
+        setDao.insertSets(sets)
+    }
 }
 

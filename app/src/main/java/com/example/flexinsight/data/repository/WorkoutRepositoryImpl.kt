@@ -338,22 +338,29 @@ class WorkoutRepositoryImpl(
     }
 
     /**
-     * Saves a workout with its exercises and sets to the database
+     * Saves a workout with its exercises and sets to the database atomically
      */
     override suspend fun saveWorkoutWithExercisesAndSets(workoutResponse: com.example.flexinsight.data.model.WorkoutResponse) {
         val workout = workoutResponse.toWorkout()
-        workoutDao.insertWorkout(workout)
+        val exercises = mutableListOf<com.example.flexinsight.data.model.Exercise>()
+        val sets = mutableListOf<com.example.flexinsight.data.model.Set>()
 
-        // Insert exercises and sets
         workoutResponse.exercises?.forEach { exerciseResponse ->
             val exercise = exerciseResponse.toExercise(workoutResponse.id)
-            exerciseDao.insertExercise(exercise)
+            exercises.add(exercise)
 
             exerciseResponse.sets?.forEach { setResponse ->
-                val set = setResponse.toSet(exercise.id)
-                setDao.insertSet(set)
+                sets.add(setResponse.toSet(exercise.id))
             }
         }
+
+        workoutDao.insertWorkoutWithDetails(
+            workout = workout,
+            exercises = exercises,
+            sets = sets,
+            exerciseDao = exerciseDao,
+            setDao = setDao
+        )
     }
 
     /**

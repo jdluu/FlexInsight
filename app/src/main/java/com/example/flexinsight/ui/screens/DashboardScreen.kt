@@ -22,7 +22,9 @@ import com.example.flexinsight.ui.components.NetworkStatusIndicator
 import com.example.flexinsight.ui.common.LoadingState
 import com.example.flexinsight.ui.screens.dashboard.parts.*
 import com.example.flexinsight.ui.theme.BackgroundDark
-import com.example.flexinsight.ui.theme.Primary
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
+import com.example.flexinsight.data.model.ProfileInfo
 import com.example.flexinsight.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.flow.flowOf
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -103,7 +105,6 @@ fun DashboardScreen(
                     )
                 }
             }
-
             item {
                 DashboardHeader(
                     profileInfo = uiState.profileInfo,

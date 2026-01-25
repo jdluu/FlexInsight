@@ -6,22 +6,13 @@ import com.example.flexinsight.core.dispatchers.DispatcherProvider
 import com.example.flexinsight.core.network.NetworkMonitor
 import com.example.flexinsight.data.api.FlexApiClient
 import com.example.flexinsight.data.cache.CacheManager
+import com.example.flexinsight.data.cache.CacheStrategy
 import com.example.flexinsight.data.local.FlexDatabase
 import com.example.flexinsight.data.local.dao.ExerciseDao
 import com.example.flexinsight.data.local.dao.SetDao
 import com.example.flexinsight.data.local.dao.WorkoutDao
 import com.example.flexinsight.data.preferences.ApiKeyManager
-import com.example.flexinsight.data.preferences.UserPreferencesManager
-import com.example.flexinsight.data.repository.ExerciseRepository
-import com.example.flexinsight.data.repository.ExerciseRepositoryImpl
-import com.example.flexinsight.data.repository.FlexRepository
-import com.example.flexinsight.data.repository.FlexRepositoryImpl
-import com.example.flexinsight.data.repository.RoutineRepository
-import com.example.flexinsight.data.repository.RoutineRepositoryImpl
-import com.example.flexinsight.data.repository.StatsRepository
-import com.example.flexinsight.data.repository.StatsRepositoryImpl
-import com.example.flexinsight.data.repository.WorkoutRepository
-import com.example.flexinsight.data.repository.WorkoutRepositoryImpl
+import com.example.flexinsight.data.repository.*
 import com.example.flexinsight.data.sync.SyncManager
 import dagger.Module
 import dagger.Provides
@@ -32,30 +23,12 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DataModule {
+object RepositoryModule {
 
     @Provides
     @Singleton
     fun provideDispatcherProvider(): DispatcherProvider {
         return DefaultDispatcherProvider()
-    }
-
-    @Provides
-    @Singleton
-    fun provideApiKeyManager(@ApplicationContext context: Context): ApiKeyManager {
-        return ApiKeyManager(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideUserPreferencesManager(@ApplicationContext context: Context): UserPreferencesManager {
-        return UserPreferencesManager(context)
-    }
-
-    @Provides
-    @Singleton
-    fun provideNetworkMonitor(@ApplicationContext context: Context): NetworkMonitor {
-        return NetworkMonitor(context)
     }
 
     @Provides
@@ -133,7 +106,7 @@ object DataModule {
         exerciseRepository: ExerciseRepository,
         cacheManager: CacheManager,
         dispatcherProvider: DispatcherProvider,
-        cacheStrategy: com.example.flexinsight.data.cache.CacheStrategy,
+        cacheStrategy: CacheStrategy,
         getWorkoutStatsUseCase: com.example.flexinsight.domain.usecase.GetWorkoutStatsUseCase,
         getPRDetailsUseCase: com.example.flexinsight.domain.usecase.GetPRDetailsUseCase,
         getMuscleGroupProgressUseCase: com.example.flexinsight.domain.usecase.GetMuscleGroupProgressUseCase,

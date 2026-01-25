@@ -14,6 +14,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.LazyColumn
 import com.example.flexinsight.ui.theme.*
 import com.example.flexinsight.ui.screens.recovery.parts.*
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
+import com.example.flexinsight.data.model.MuscleGroup
 import com.example.flexinsight.ui.viewmodel.RecoveryViewModel
 
 @Composable
