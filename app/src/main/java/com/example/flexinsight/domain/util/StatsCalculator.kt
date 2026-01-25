@@ -1,4 +1,4 @@
-package com.example.flexinsight.data.repository
+package com.example.flexinsight.domain.util
 
 import com.example.flexinsight.data.model.*
 import java.time.*
@@ -169,12 +169,8 @@ object StatsCalculator {
 
         // Initialize map with empty lists
         DayOfWeek.values().forEach { day ->
-            if (day != DayOfWeek.SUNDAY) { // Exclude Sunday if 6-day week logic, or keep all
-                 dayGroups[day] = mutableListOf()
-            }
+            dayGroups[day] = mutableListOf()
         }
-        // Assuming we want Mon-Sun or Mon-Sat based on existing logic which used 0-6 index
-        // Existing logic used: Mon(0) to Sat(5) + Sun(6)
 
         workouts.forEach { workout ->
              if (workout.endTime != null && workout.startTime >= startDate && workout.startTime <= endDate) {
@@ -188,14 +184,11 @@ object StatsCalculator {
              }
         }
 
-        // Map to display order M, T, W, T, F, S, S?
-        // Original logic had explicit mapping. Let's return Mon-Sat(Sun)
+        // Map to display order M, T, W, T, F, S, S
         val displayDays = listOf(
             DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
             DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY
-        ) // Original code seemed to map only 6 days? Let's verify existing logic.
-        // Existing: dayLabels = listOf("M", "T", "W", "T", "F", "S"). Size 6.
-        // Sunday (6) was handled in switch but label list only has 6 items.
+        )
 
         return displayDays.map { day ->
             val durations = dayGroups[day] ?: emptyList()
@@ -219,9 +212,6 @@ object StatsCalculator {
             .toEpochMilli()
     }
 
-    /**
-     * Get end of the day timestamp.
-     */
     /**
      * Get end of the day timestamp.
      */

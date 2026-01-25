@@ -91,7 +91,8 @@ object DataModule {
         apiKeyManager: ApiKeyManager,
         networkMonitor: NetworkMonitor,
         apiClient: FlexApiClient,
-        cacheManager: CacheManager
+        cacheManager: CacheManager,
+        syncManager: SyncManager
     ): WorkoutRepository {
         return WorkoutRepositoryImpl(
             workoutDao = workoutDao,
@@ -100,7 +101,8 @@ object DataModule {
             apiKeyManager = apiKeyManager,
             networkMonitor = networkMonitor,
             apiClient = apiClient,
-            cacheManager = cacheManager
+            cacheManager = cacheManager,
+            syncManager = syncManager
         )
     }
 
@@ -130,7 +132,13 @@ object DataModule {
         setDao: SetDao,
         exerciseRepository: ExerciseRepository,
         cacheManager: CacheManager,
-        dispatcherProvider: DispatcherProvider
+        dispatcherProvider: DispatcherProvider,
+        cacheStrategy: com.example.flexinsight.data.cache.CacheStrategy,
+        getWorkoutStatsUseCase: com.example.flexinsight.domain.usecase.GetWorkoutStatsUseCase,
+        getPRDetailsUseCase: com.example.flexinsight.domain.usecase.GetPRDetailsUseCase,
+        getMuscleGroupProgressUseCase: com.example.flexinsight.domain.usecase.GetMuscleGroupProgressUseCase,
+        getWeeklyProgressUseCase: com.example.flexinsight.domain.usecase.GetWeeklyProgressUseCase,
+        getMuscleRecoveryUseCase: com.example.flexinsight.domain.usecase.GetMuscleRecoveryUseCase
     ): StatsRepository {
         return StatsRepositoryImpl(
             workoutDao = workoutDao,
@@ -138,7 +146,13 @@ object DataModule {
             setDao = setDao,
             exerciseRepository = exerciseRepository,
             cacheManager = cacheManager,
-            dispatcherProvider = dispatcherProvider
+            dispatcherProvider = dispatcherProvider,
+            cacheStrategy = cacheStrategy,
+            getWorkoutStatsUseCase = getWorkoutStatsUseCase,
+            getPRDetailsUseCase = getPRDetailsUseCase,
+            getMuscleGroupProgressUseCase = getMuscleGroupProgressUseCase,
+            getWeeklyProgressUseCase = getWeeklyProgressUseCase,
+            getMuscleRecoveryUseCase = getMuscleRecoveryUseCase
         )
     }
 
@@ -169,18 +183,8 @@ object DataModule {
     @Provides
     @Singleton
     fun provideSyncManager(
-        repository: FlexRepository,
-        networkMonitor: NetworkMonitor
+        @ApplicationContext context: Context
     ): SyncManager {
-        return SyncManager(
-            repository = repository,
-            networkMonitor = networkMonitor
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun provideSyncScheduler(@ApplicationContext context: Context): com.example.flexinsight.data.sync.SyncScheduler {
-        return com.example.flexinsight.data.sync.SyncScheduler(context)
+        return SyncManager(context)
     }
 }

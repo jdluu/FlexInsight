@@ -44,4 +44,6 @@ interface StatsRepository {
     suspend fun getProfileInfo(hasApiKey: Boolean, remoteWorkoutCount: Int? = null): ProfileInfo
 
     suspend fun getConsistencyData(days: Int = 90): List<DayInfo>
+
+    suspend fun getMuscleRecoveryStatus(): Map<MuscleGroup, Float>
 }
