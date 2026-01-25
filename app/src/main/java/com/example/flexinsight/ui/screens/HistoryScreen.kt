@@ -1,6 +1,7 @@
 package com.example.flexinsight.ui.screens
 
 import androidx.compose.foundation.background
+import com.example.flexinsight.ui.components.WorkoutHistoryListSkeleton
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,13 +46,13 @@ fun HistoryScreen(
     }
 
     if (uiState.isLoading) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            HistoryHeader(onFilterClick = {})
+            WorkoutHistoryListSkeleton()
         }
         return
     }

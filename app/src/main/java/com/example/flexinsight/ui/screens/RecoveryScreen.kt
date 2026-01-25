@@ -19,11 +19,24 @@ import com.example.flexinsight.R
 import com.example.flexinsight.data.model.MuscleGroup
 import com.example.flexinsight.ui.viewmodel.RecoveryViewModel
 
+import com.example.flexinsight.ui.components.RecoverySkeleton
+
 @Composable
 fun RecoveryScreen(
     viewModel: RecoveryViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            RecoverySkeleton()
+        }
+        return
+    }
 
     LazyColumn(
         modifier = Modifier

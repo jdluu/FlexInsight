@@ -1,6 +1,5 @@
 package com.example.flexinsight.ui.screens
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +19,8 @@ import com.example.flexinsight.ui.screens.planner.parts.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
+import com.example.flexinsight.ui.components.PlannerSkeleton
+
 @Composable
 fun PlannerScreen(
     viewModel: PlannerViewModel = viewModel()
@@ -32,10 +33,9 @@ fun PlannerScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            PlannerSkeleton()
         }
         return
     }

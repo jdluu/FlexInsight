@@ -1,9 +1,14 @@
 package com.example.flexinsight.ui.screens
 
 import androidx.compose.foundation.background
+import com.example.flexinsight.ui.components.FeaturedWorkoutCardSkeleton
+import com.example.flexinsight.ui.components.StatsSkeleton
+import com.example.flexinsight.ui.components.shimmerEffect
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,13 +57,24 @@ fun DashboardScreen(
     }
 
     if (uiState.isLoading && !isRefreshing) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
+                .background(MaterialTheme.colorScheme.background)
+                .padding(top = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            Box(modifier = Modifier.height(16.dp)) // Padding
+            FeaturedWorkoutCardSkeleton()
+            StatsSkeleton()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .shimmerEffect()
+            )
         }
         return
     }
