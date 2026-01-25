@@ -23,4 +23,10 @@ interface FlexAIClient {
      * specialized method for generating workout plans (to enforce structured prompts internaly)
      */
     suspend fun generateWorkoutPlan(prompt: String): Result<String>
+
+    /**
+     * Generates a streaming response for values as they are generated.
+     * Returns a Flow that emits chunks of the response.
+     */
+    fun generateResponseStream(prompt: String, history: List<Pair<String, String>> = emptyList()): kotlinx.coroutines.flow.Flow<String>
 }

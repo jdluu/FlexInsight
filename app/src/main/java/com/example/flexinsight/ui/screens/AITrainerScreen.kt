@@ -60,9 +60,7 @@ fun AITrainerScreen(
             }
         }
 
-        if (uiState.isAiAvailable) {
-            QuickActionChips()
-        }
+
 
         ChatInput(
             text = inputText,

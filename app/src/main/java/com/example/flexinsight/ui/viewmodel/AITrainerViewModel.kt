@@ -25,11 +25,14 @@ data class AITrainerUiState(
 @HiltViewModel
 class AITrainerViewModel @Inject constructor(
     private val repository: FlexRepository,
-    private val aiClient: FlexAIClient
+    private val aiClient: FlexAIClient,
+    private val buildAiContextUseCase: com.example.flexinsight.domain.usecase.BuildAiContextUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AITrainerUiState())
     val uiState: StateFlow<AITrainerUiState> = _uiState.asStateFlow()
+
+    private var systemContext: String? = null
 
     init {
         checkAiAvailability()
@@ -53,23 +56,18 @@ class AITrainerViewModel @Inject constructor(
     private suspend fun loadDynamicContextAndGreeting() {
         _uiState.value = _uiState.value.copy(isTyping = true)
 
-        val latestWorkout = try {
-            repository.getRecentWorkouts(1).first().firstOrNull()
+        // Generate rich context from repositories
+        val context = try {
+            buildAiContextUseCase()
         } catch (e: Exception) {
-            null
+            "User Data unavailable. Act as a fitness coach."
         }
-
-        // Construct initial context prompt
-        val contextPrompt = if (latestWorkout != null) {
-            "The user's last workout was '${latestWorkout.name}' on ${java.util.Date(latestWorkout.startTime)}. " +
-            "Act as a professional fitness coach. Greet the user and ask how they are feeling after their last session."
-        } else {
-            "The user has no recorded workouts. Act as a professional fitness coach. " +
-            "Greet the user enthusiastically and ask them about their fitness goals."
-        }
+        systemContext = context // Store for future turns
         
-        // We treat the "system instructions" as a prompt for the greeting generation here
-        val result = aiClient.generateResponse(contextPrompt)
+        // Construct prompt that includes the context for the INITIAL greeting
+        val greetingPrompt = "$context\n\nBased on the above context, greet the user and ask a relevant question about their training."
+        
+        val result = aiClient.generateResponse(greetingPrompt)
         
         _uiState.value = _uiState.value.copy(isTyping = false)
 
@@ -86,28 +84,77 @@ class AITrainerViewModel @Inject constructor(
 
         // 1. Add User Message
         addMessage(ChatMessage("user", text, true))
-        _uiState.value = _uiState.value.copy(isTyping = true)
+        _uiState.value = _uiState.value.copy(
+            isTyping = true,
+            error = null // Clear previous errors
+        )
 
         viewModelScope.launch {
             // 2. Build History
-            val history = _uiState.value.messages.map { msg ->
-                val role = if (msg.sender == "user") "user" else "model"
-                role to msg.text
+            val history = mutableListOf<Pair<String, String>>()
+            
+            // Inject System Context as the very first 'user' message (hidden from UI)
+            // or as a distinct role if client supported it. For now, prepending to user history is safest for Nano.
+            systemContext?.let {
+                history.add("user" to "System Context:\n$it")
+                history.add("model" to "Understood. I will act as a fitness coach with that context.")
             }
 
-            // 3. Generate Response
-            val result = aiClient.generateResponse(text, history)
-            
-            _uiState.value = _uiState.value.copy(isTyping = false)
+            // Append actual chat history
+            _uiState.value.messages.forEach { msg ->
+                val role = if (msg.sender == "user") "user" else "model"
+                history.add(role to msg.text)
+            }
 
-            when (result) {
-                is Result.Success -> {
-                    addMessage(ChatMessage("ai", result.data, false))
+            // 3. Prepare AI Message Placeholder
+            var currentMessageId: String? = null
+            var fullResponseBuilder = StringBuilder()
+
+            try {
+                aiClient.generateResponseStream(text, history).collect { chunk ->
+                    if (chunk.startsWith("Error:")) {
+                        // Handle streaming error reported as text
+                         _uiState.value = _uiState.value.copy(
+                            isTyping = false,
+                            error = chunk
+                        )
+                    } else {
+                        fullResponseBuilder.append(chunk)
+                        val currentText = fullResponseBuilder.toString()
+                        
+                        if (currentMessageId == null) {
+                            // First chunk received: Create specific message instance
+                            _uiState.value = _uiState.value.copy(isTyping = false)
+                            val newMessage = ChatMessage("ai", currentText, false)
+                            addMessage(newMessage)
+                            currentMessageId = "started"
+                        } else {
+                            // Update last message
+                             updateLastMessage(currentText)
+                        }
+                    }
                 }
-                is Result.Error -> {
-                    _uiState.value = _uiState.value.copy(error = result.error.message)
-                    addMessage(ChatMessage("ai", "I'm having trouble thinking right now. Please try again.", false))
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isTyping = false,
+                    error = e.message
+                )
+                if (currentMessageId == null) {
+                     addMessage(ChatMessage("ai", "I'm having trouble thinking right now. Please try again.", false))
                 }
+            } finally {
+                 _uiState.value = _uiState.value.copy(isTyping = false)
+            }
+        }
+    }
+    
+    private fun updateLastMessage(newText: String) {
+        val currentList = _uiState.value.messages.toMutableList()
+        if (currentList.isNotEmpty()) {
+            val lastMsg = currentList.last()
+            if (lastMsg.sender == "ai") {
+                currentList[currentList.lastIndex] = lastMsg.copy(text = newText)
+                _uiState.value = _uiState.value.copy(messages = currentList)
             }
         }
     }
