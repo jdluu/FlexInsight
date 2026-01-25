@@ -113,5 +113,24 @@ class UserPreferencesManager(private val context: Context) {
             preferences[DISPLAY_NAME] = name
         }
     }
+
+    /**
+     * Get force AI enable preference (Developer Option)
+     */
+    private val FORCE_AI_ENABLE = booleanPreferencesKey("force_ai_enable")
+
+    val forceAiEnableFlow: Flow<Boolean> = context.userPreferencesDataStore.data.map { preferences ->
+        preferences[FORCE_AI_ENABLE] ?: false
+    }
+
+    suspend fun getForceAiEnable(): Boolean {
+        return forceAiEnableFlow.first()
+    }
+
+    suspend fun setForceAiEnable(enabled: Boolean) {
+        context.userPreferencesDataStore.edit { preferences ->
+            preferences[FORCE_AI_ENABLE] = enabled
+        }
+    }
 }
 

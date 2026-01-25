@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">FlexInsight</string>
+    <string name="api_key_required_title">Hevy API Key Required</string>
+    <string name="api_key_required_message">To use FlexInsight, you need to provide your Hevy API key. You can get it from https://hevy.com/settings?developer</string>
+    <string name="api_key_label">API Key</string>
+    <string name="api_key_placeholder">Enter your API key</string>
+    <string name="api_key_error_length">Must be at least 10 characters</string>
+    <string name="save">Save</string>
 </resources>
