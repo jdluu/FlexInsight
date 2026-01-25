@@ -185,10 +185,18 @@ fun HistoryScreen(
             }
             2 -> { // Compare Tab
                 item {
-                    EmptyStateMessage(
-                        message = "Comparison Tool Coming Soon!\nCompare your progress across different time periods.",
-                        isPlaceholder = true
-                    )
+                    val comparisonData = uiState.compareData
+                    if (comparisonData != null) {
+                        ComparisonView(
+                            data = comparisonData,
+                            useMetric = useMetric
+                        )
+                    } else {
+                        EmptyStateMessage(
+                            message = "Not enough data to generate comparison yet.",
+                            isPlaceholder = true
+                        )
+                    }
                 }
             }
         }

@@ -25,7 +25,8 @@ data class RecoveryUiState(
     val sleepHours: Double = 7.5,
     val sorenessLevel: String = "Low",
     val aiInsight: String? = null,
-    val isGeneratingInsight: Boolean = false
+    val isGeneratingInsight: Boolean = false,
+    val muscleRecovery: Map<com.example.flexinsight.data.model.MuscleGroup, Float> = emptyMap()
 )
 
 enum class TrainingLoadStatus {
@@ -76,6 +77,7 @@ class RecoveryViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(
                 loadingState = LoadingState.Success,
                 trainingLoadStatus = loadStatus,
+                muscleRecovery = repository.getMuscleRecoveryStatus(),
                 error = null
             )
             

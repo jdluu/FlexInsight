@@ -116,7 +116,7 @@ fun SettingsScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    onDismiss = { /* TODO: Add dismiss action */ }
+                    onDismiss = { viewModel.clearError() }
                 )
             }
         }
@@ -213,6 +213,15 @@ fun SettingsScreen(
                 onClick = {
                     scope.launch { snackbarHostState.showSnackbar("Documentation coming soon") }
                 }
+            )
+        }
+        item {
+            SectionTitle("Developer Options")
+            ToggleItem(
+                title = "Force Enable AI",
+                icon = Icons.Default.Build,
+                checked = uiState.forceAiEnable,
+                onToggleChange = { viewModel.updateForceAiEnable(it) }
             )
         }
         item {

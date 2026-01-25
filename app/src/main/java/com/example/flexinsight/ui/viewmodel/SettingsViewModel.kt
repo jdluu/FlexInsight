@@ -29,7 +29,8 @@ data class SettingsUiState(
     val units: String = "Imperial",
     val syncState: LoadingState = LoadingState.Idle,
     val syncError: UiError? = null,
-    val networkState: NetworkState = NetworkState.Unknown
+    val networkState: NetworkState = NetworkState.Unknown,
+    val forceAiEnable: Boolean = false
 ) {
     // Backward compatibility helpers
     val isLoading: Boolean
@@ -59,6 +60,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             delay(100) // Small delay to ensure database is initialized
             loadSettingsData()
+            // Observe force enable changes
+            userPreferencesManager.forceAiEnableFlow.collect { enabled ->
+                 _uiState.value = _uiState.value.copy(forceAiEnable = enabled)
+            }
         }
     }
 
@@ -94,6 +99,12 @@ class SettingsViewModel @Inject constructor(
                 } catch (e: Exception) {
                     "Imperial"
                 }
+                
+                val forceAi = try {
+                    userPreferencesManager.getForceAiEnable()
+                } catch (e: Exception) {
+                    false
+                }
 
                 val displayName = try {
                     userPreferencesManager.getDisplayName()
@@ -114,6 +125,7 @@ class SettingsViewModel @Inject constructor(
                     weeklyGoal = weeklyGoal,
                     theme = theme,
                     units = units,
+                    forceAiEnable = forceAi,
                     error = null
                 )
             } catch (e: Exception) {
@@ -176,6 +188,15 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun updateForceAiEnable(enabled: Boolean) {
+        safeLaunch(onError = { apiError ->
+            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+        }) {
+            userPreferencesManager.setForceAiEnable(enabled)
+            _uiState.value = _uiState.value.copy(forceAiEnable = enabled)
+        }
+    }
+
 
 
     fun clearCache() {
@@ -204,5 +225,9 @@ class SettingsViewModel @Inject constructor(
 
     fun refresh() {
         loadSettingsData(isRefresh = true)
+    }
+
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(error = null)
     }
 }

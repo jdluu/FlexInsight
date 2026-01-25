@@ -68,7 +68,9 @@ fun RecoveryScreen(
             SleepRestSection()
         }
         item {
-            FatigueSection()
+            FatigueSection(
+                muscleRecovery = uiState.muscleRecovery
+            )
         }
         item {
             MoodLogSection(

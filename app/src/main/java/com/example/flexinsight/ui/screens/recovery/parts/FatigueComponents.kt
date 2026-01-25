@@ -23,16 +23,21 @@ import com.example.flexinsight.ui.theme.RedAccent
 import com.example.flexinsight.ui.theme.SurfaceVariant
 import com.example.flexinsight.ui.theme.TextSecondary
 
+import com.example.flexinsight.data.model.MuscleGroup
+import com.example.flexinsight.ui.components.MuscleHeatmap
+
 @Composable
-fun FatigueSection() {
+fun FatigueSection(
+    muscleRecovery: Map<MuscleGroup, Float>
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Fatigue",
+            text = "Muscle Recovery",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -40,79 +45,25 @@ fun FatigueSection() {
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                                Color.Transparent
-                            )
-                        )
-                    )
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Column {
-                            Text(
-                                text = "Leg Day (Heavy)",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "Yesterday at 6:00 PM",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Surface(
-                            shape = RoundedCornerShape(16.dp),
-                            color = MaterialTheme.colorScheme.error.copy(alpha = 0.2f),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.2f))
-                        ) {
-                            Text(
-                                text = "Recovering",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                letterSpacing = 1.sp
-                            )
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        FatigueStatBox(
-                            label = "Elapsed",
-                            value = "14h",
-                            icon = Icons.Default.Timer,
-                            modifier = Modifier.weight(1f)
-                        )
-                        FatigueStatBox(
-                            label = "Train In",
-                            value = "6h",
-                            icon = Icons.Default.Bolt,
-                            modifier = Modifier.weight(1f),
-                            isHighlighted = true
-                        )
-                    }
-                }
+                MuscleHeatmap(
+                    recoveryMap = muscleRecovery,
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Text(
+                    text = "Glow indicates fatigue level. Green is fully recovered.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }

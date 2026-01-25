@@ -133,6 +133,12 @@ fun DashboardScreen(
                 )
             }
             item {
+                RecoveryPreviewCard(
+                    muscleRecovery = uiState.muscleRecovery,
+                    onClick = { onNavigateToRecovery() }
+                )
+            }
+            item {
                 DailyInsightCard(
                     dailyInsight = uiState.dailyInsight,
                     isGeneratingInsight = uiState.isGeneratingInsight,

@@ -38,7 +38,8 @@ data class DashboardUiState(
     val networkState: NetworkState = NetworkState.Unknown,
     val units: String = "Imperial",
     val dailyInsight: String? = null,
-    val isGeneratingInsight: Boolean = false
+    val isGeneratingInsight: Boolean = false,
+    val muscleRecovery: Map<com.example.flexinsight.data.model.MuscleGroup, Float> = emptyMap()
 ) {
     // Backward compatibility helper
     val isLoading: Boolean
@@ -51,7 +52,10 @@ class DashboardViewModel @Inject constructor(
     private val repository: FlexRepository,
     private val networkMonitor: NetworkMonitor,
     private val userPreferencesManager: UserPreferencesManager,
-    private val aiClient: FlexAIClient
+    private val aiClient: FlexAIClient,
+    private val getWorkoutStatsUseCase: com.example.flexinsight.domain.usecase.GetWorkoutStatsUseCase,
+    private val getWeeklyProgressUseCase: com.example.flexinsight.domain.usecase.GetWeeklyProgressUseCase,
+    private val getMuscleRecoveryUseCase: com.example.flexinsight.domain.usecase.GetMuscleRecoveryUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState(loadingState = LoadingState.Loading))
@@ -117,7 +121,7 @@ class DashboardViewModel @Inject constructor(
 
                     // Load stats
                     val stats = try {
-                        repository.calculateStats()
+                        getWorkoutStatsUseCase()
                     } catch (e: Exception) {
                         WorkoutStats(
                             totalWorkouts = 0,
@@ -136,7 +140,7 @@ class DashboardViewModel @Inject constructor(
                     // Load weekly progress
                     var weeklyProgress = emptyList<com.example.flexinsight.data.model.WeeklyProgress>()
                     try {
-                        weeklyProgress = repository.getWeeklyProgress(weeks = 4)
+                        weeklyProgress = getWeeklyProgressUseCase(weeks = 4)
                     } catch (e: Exception) {
                         // Continue with empty progress if it fails
                     }
@@ -158,6 +162,7 @@ class DashboardViewModel @Inject constructor(
                         weeklyProgress = weeklyProgress,
                         currentStreak = stats.currentStreak,
                         muscleGroupProgress = muscleGroupProgress,
+                        muscleRecovery = getMuscleRecoveryUseCase(),
                         error = null
                     )
                     
