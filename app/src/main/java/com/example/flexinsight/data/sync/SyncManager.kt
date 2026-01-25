@@ -1,138 +1,85 @@
 package com.example.flexinsight.data.sync
 
-import com.example.flexinsight.core.errors.ApiError
-import com.example.flexinsight.core.network.NetworkMonitor
-import com.example.flexinsight.core.network.NetworkState
-import com.example.flexinsight.data.repository.FlexRepository
-import android.util.Log
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import android.content.Context
+import androidx.work.*
+import com.example.flexinsight.core.logger.AppLogger
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
- * Manages sync state and coordinates background sync operations.
- * Implements smart sync strategy: manual + background + on resume
+ * Manages background synchronization tasks using WorkManager.
+ * Centralizes sync scheduling for the entire application.
  */
-class SyncManager(
-    private val repository: FlexRepository,
-    private val networkMonitor: NetworkMonitor,
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
+@Singleton
+class SyncManager @Inject constructor(
+    @ApplicationContext private val context: Context
 ) {
-    private val _syncState = MutableStateFlow<SyncState>(SyncState.Idle)
-    val syncState: StateFlow<SyncState> = _syncState.asStateFlow()
+    private val workManager = WorkManager.getInstance(context)
 
-    private var lastSyncTime: Long = 0L
-    private val minSyncIntervalMillis = 15 * 60 * 1000L // 15 minutes
-
-    /**
-     * Performs a manual sync (user-triggered)
-     * Always attempts sync regardless of network state or last sync time
-     */
-
-    suspend fun syncManually(): Result<Unit> {
-        return withContext(Dispatchers.IO) {
-            try {
-                Log.d("SyncManager", "Starting manual sync")
-                _syncState.value = SyncState.Syncing
-
-                // Check network before syncing
-                if (!networkMonitor.hasNetworkConnection()) {
-                    Log.w("SyncManager", "Manual sync aborted: No network")
-                    val error = ApiError.NetworkError.NoConnection
-                    _syncState.value = SyncState.Error(error)
-                    return@withContext Result.failure(Exception(error.message))
-                }
-
-                repository.syncAllData()
-
-                lastSyncTime = System.currentTimeMillis()
-                Log.d("SyncManager", "Manual sync successful")
-                _syncState.value = SyncState.Success(lastSyncTime)
-                Result.success(Unit)
-            } catch (e: Exception) {
-                Log.e("SyncManager", "Manual sync failed", e)
-                val error = if (e is ApiError) {
-                    e
-                } else {
-                    ApiError.Unknown(e.message ?: "Unknown sync error", e)
-                }
-                _syncState.value = SyncState.Error(error)
-                Result.failure(e)
-            }
-        }
-    }
-
-    suspend fun syncIfNeeded(): Boolean {
-        return withContext(Dispatchers.IO) {
-            // Check if we should sync
-            if (!shouldSync()) {
-                Log.d("SyncManager", "Skipping background sync (conditions not met)")
-                return@withContext false
-            }
-
-            try {
-                Log.d("SyncManager", "Starting background sync")
-                _syncState.value = SyncState.Syncing
-
-                repository.syncAllData()
-
-                lastSyncTime = System.currentTimeMillis()
-                Log.d("SyncManager", "Background sync successful")
-                _syncState.value = SyncState.Success(lastSyncTime)
-                true
-            } catch (e: Exception) {
-                Log.e("SyncManager", "Background sync failed", e)
-                // Don't update state for background sync failures
-                // They're silent and won't interrupt the user
-                false
-            }
-        }
+    companion object {
+        private const val TAG = "SyncManager"
+        const val MANUAL_SYNC_WORK_NAME = "manual_sync_work"
+        const val PERIODIC_SYNC_WORK_NAME = "periodic_sync_work"
     }
 
     /**
-     * Syncs on app resume if conditions are met
+     * Enqueues an immediate one-time sync task.
+     * This is useful when the user completes a workout or manually pulls to refresh.
      */
-    fun syncOnResume() {
-        scope.launch {
-            syncIfNeeded()
-        }
+    fun syncNow() {
+        AppLogger.d("Requesting immediate background sync", tag = TAG)
+        
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val syncRequest = OneTimeWorkRequestBuilder<BackgroundSyncWorker>()
+            .setConstraints(constraints)
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+            .addTag(TAG)
+            .build()
+
+        workManager.enqueueUniqueWork(
+            MANUAL_SYNC_WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            syncRequest
+        )
     }
 
     /**
-     * Determines if a sync should be performed
+     * Schedules a periodic background sync to keep the local database fresh.
      */
-    private suspend fun shouldSync(): Boolean {
-        // Check network availability
-        if (!networkMonitor.hasNetworkConnection()) {
-            return false
-        }
+    fun schedulePeriodicSync(intervalHours: Long = 6) {
+        AppLogger.d("Scheduling periodic sync every $intervalHours hours", tag = TAG)
 
-        // Check if enough time has passed since last sync
-        val timeSinceLastSync = System.currentTimeMillis() - lastSyncTime
-        if (timeSinceLastSync < minSyncIntervalMillis) {
-            return false
-        }
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiresBatteryNotLow(true)
+            .build()
 
-        // Don't sync if already syncing
-        if (_syncState.value is SyncState.Syncing) {
-            return false
-        }
+        val periodicSyncRequest = PeriodicWorkRequestBuilder<BackgroundSyncWorker>(
+            intervalHours, TimeUnit.HOURS
+        )
+            .setConstraints(constraints)
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+            .addTag(TAG)
+            .build()
 
-        return true
+        workManager.enqueueUniquePeriodicWork(
+            PERIODIC_SYNC_WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            periodicSyncRequest
+        )
     }
 
     /**
-     * Gets the time since last successful sync in milliseconds
+     * Stop all background sync tasks.
      */
-    fun getTimeSinceLastSync(): Long {
-        return if (lastSyncTime > 0) {
-            System.currentTimeMillis() - lastSyncTime
-        } else {
-            Long.MAX_VALUE // Never synced
-        }
+    fun cancelAllSync() {
+        AppLogger.d("Cancelling all sync tasks", tag = TAG)
+        workManager.cancelUniqueWork(MANUAL_SYNC_WORK_NAME)
+        workManager.cancelUniqueWork(PERIODIC_SYNC_WORK_NAME)
     }
 }

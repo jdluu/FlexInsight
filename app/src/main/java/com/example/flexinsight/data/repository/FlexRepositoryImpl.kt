@@ -72,6 +72,14 @@ class FlexRepositoryImpl(
         return workoutRepository.getWorkoutCount()
     }
 
+    override suspend fun getExercisesByWorkoutId(workoutId: String): List<Exercise> {
+        return workoutRepository.getExercisesByWorkoutId(workoutId)
+    }
+
+    override suspend fun getSetsByExerciseId(exerciseId: String): List<com.example.flexinsight.data.model.Set> {
+        return workoutRepository.getSetsByExerciseId(exerciseId)
+    }
+
     override suspend fun updateWorkoutStatus(workoutId: String, isCompleted: Boolean): Result<Unit> {
         return workoutRepository.updateWorkoutStatus(workoutId, isCompleted, if (isCompleted) System.currentTimeMillis() else null)
     }
@@ -160,6 +168,10 @@ class FlexRepositoryImpl(
 
     override suspend fun getConsistencyData(days: Int): List<DayInfo> {
         return statsRepository.getConsistencyData(days)
+    }
+
+    override suspend fun getMuscleRecoveryStatus(): Map<com.example.flexinsight.data.model.MuscleGroup, Float> {
+        return statsRepository.getMuscleRecoveryStatus()
     }
 
     // Routine operations

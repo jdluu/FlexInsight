@@ -31,7 +31,8 @@ class WorkoutRepositoryImpl(
     private val apiKeyManager: ApiKeyManager,
     private val networkMonitor: com.example.flexinsight.core.network.NetworkMonitor,
     private val apiClient: com.example.flexinsight.data.api.FlexApiClient,
-    private val cacheManager: com.example.flexinsight.data.cache.CacheManager
+    private val cacheManager: com.example.flexinsight.data.cache.CacheManager,
+    private val syncManager: com.example.flexinsight.data.sync.SyncManager
 ) : WorkoutRepository {
     private var apiService: FlexApiService? = null
     private var currentApiKey: String? = null
@@ -170,6 +171,14 @@ class WorkoutRepositoryImpl(
             val error = ErrorHandler.handleError(e)
             Result.error(error)
         }
+    }
+
+    override suspend fun getExercisesByWorkoutId(workoutId: String): List<Exercise> {
+        return exerciseDao.getExercisesByWorkoutId(workoutId)
+    }
+
+    override suspend fun getSetsByExerciseId(exerciseId: String): List<com.example.flexinsight.data.model.Set> {
+        return setDao.getSetsByExerciseId(exerciseId)
     }
 
     /**
@@ -484,7 +493,8 @@ class WorkoutRepositoryImpl(
 
         workoutDao.updateWorkout(updatedWorkout)
 
-        // In a real app with sync, we would queue this for sync here
+        // Queue for background sync immediately
+        syncManager.syncNow()
 
         return Result.success(Unit)
     }
@@ -502,7 +512,8 @@ class WorkoutRepositoryImpl(
 
         workoutDao.updateWorkout(updatedWorkout)
 
-        // In a real app with sync, we would queue this for sync here
+        // Queue for background sync immediately
+        syncManager.syncNow()
 
         return Result.success(Unit)
     }

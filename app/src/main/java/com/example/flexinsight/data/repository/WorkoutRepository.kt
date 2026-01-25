@@ -3,6 +3,7 @@ package com.example.flexinsight.data.repository
 import com.example.flexinsight.core.errors.Result
 import com.example.flexinsight.data.model.Workout
 import com.example.flexinsight.data.model.WorkoutResponse
+import com.example.flexinsight.data.model.Exercise
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -20,7 +21,8 @@ interface WorkoutRepository {
     fun getWorkoutByIdFlow(workoutId: String): Flow<Workout?>
 
     fun getWorkoutCount(): Flow<Int>
-
+    suspend fun getExercisesByWorkoutId(workoutId: String): List<Exercise>
+    suspend fun getSetsByExerciseId(exerciseId: String): List<com.example.flexinsight.data.model.Set>
     suspend fun getRemoteWorkoutCount(): Result<Int>
 
     fun getWorkoutsByDateRange(startTimestamp: Long, endTimestamp: Long): Flow<List<Workout>>

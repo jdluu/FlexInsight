@@ -23,6 +23,8 @@ interface FlexRepository {
     suspend fun getWorkoutById(workoutId: String): Workout?
     fun getWorkoutByIdFlow(workoutId: String): Flow<Workout?>
     fun getWorkoutCount(): Flow<Int>
+    suspend fun getExercisesByWorkoutId(workoutId: String): List<Exercise>
+    suspend fun getSetsByExerciseId(exerciseId: String): List<com.example.flexinsight.data.model.Set>
     suspend fun updateWorkoutStatus(workoutId: String, isCompleted: Boolean): Result<Unit>
     suspend fun rescheduleWorkout(workoutId: String, newStartTime: Long): Result<Unit>
 
@@ -45,6 +47,7 @@ interface FlexRepository {
     suspend fun calculateAccountAgeDays(): Int
     suspend fun getProfileInfo(): ProfileInfo
     suspend fun getConsistencyData(days: Int = 90): List<DayInfo>
+    suspend fun getMuscleRecoveryStatus(): Map<MuscleGroup, Float>
 
     // Routine operations
     fun getRoutines(): Flow<List<Routine>>
