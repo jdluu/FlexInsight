@@ -1,5 +1,6 @@
 package com.example.flexinsight.ui.screens.dashboard.parts
 
+import com.example.flexinsight.ui.components.EmptyStateIllustration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -193,22 +194,15 @@ fun FeaturedWorkoutCardPlaceholder() {
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(280.dp)
-                .padding(20.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "No workouts yet. Start your first workout!",
-                color = TextSecondary,
-                fontSize = 16.sp
-            )
-        }
+        EmptyStateIllustration(
+            icon = Icons.Default.FitnessCenter,
+            title = "No Workouts Yet",
+            description = "Start your fitness journey by completing your first workout in Hevy.",
+            modifier = Modifier.padding(vertical = 16.dp)
+        )
     }
 }
 

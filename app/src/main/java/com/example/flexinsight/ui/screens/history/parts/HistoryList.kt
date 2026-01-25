@@ -27,6 +27,8 @@ import com.example.flexinsight.ui.theme.TextSecondary
 import com.example.flexinsight.ui.utils.UnitConverter
 import com.example.flexinsight.ui.screens.history.parts.formatDateShort
 
+import com.example.flexinsight.ui.components.EmptyStateIllustration
+
 @Composable
 fun RecentPRsSection(
     prsWithDetails: List<PRDetails> = emptyList(),
@@ -63,18 +65,17 @@ fun RecentPRsSection(
         }
 
         if (prsWithDetails.isEmpty()) {
-            Text(
-                text = "🏆 No personal records yet!\n\nKeep pushing your limits - your first PR is just one workout away. Track your progress and celebrate every milestone.",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = 20.sp,
-                modifier = Modifier.padding(vertical = 16.dp)
+            EmptyStateIllustration(
+                icon = Icons.Default.FitnessCenter,
+                title = "No PRs Yet",
+                description = "Keep pushing your limits - your first PR is just one workout away.",
+                modifier = Modifier.padding(bottom = 16.dp)
             )
         } else {
+            // ... grouping logic ...
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Track which exercises have been seen to mark newest PR per exercise
                 val exercisePRs = prsWithDetails.groupBy { it.exerciseName }
                 val newestPRPerExercise = exercisePRs.mapValues { (_, prs) -> prs.maxByOrNull { it.date } }
 
@@ -98,35 +99,11 @@ fun RecentPRsSection(
 
 @Composable
 fun EmptyStateMessage(message: String, isPlaceholder: Boolean = false) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Surface(
-            modifier = Modifier.size(64.dp),
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
-        Text(
-            text = message,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 16.sp,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            fontWeight = FontWeight.Medium
-        )
-    }
+    EmptyStateIllustration(
+        icon = Icons.Default.Info,
+        title = if (isPlaceholder) "Working on it..." else "Empty",
+        description = message
+    )
 }
 
 @Composable
