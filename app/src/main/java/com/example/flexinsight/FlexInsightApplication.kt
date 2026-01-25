@@ -3,7 +3,7 @@ package com.example.flexinsight
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.example.flexinsight.data.sync.SyncScheduler
+import com.example.flexinsight.data.sync.SyncManager
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -11,7 +11,7 @@ import javax.inject.Inject
 class FlexInsightApplication : Application(), Configuration.Provider {
 
     @Inject
-    lateinit var syncScheduler: SyncScheduler
+    lateinit var syncManager: SyncManager
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
@@ -25,7 +25,7 @@ class FlexInsightApplication : Application(), Configuration.Provider {
         super.onCreate()
 
         // Schedule periodic background sync
-        syncScheduler.schedulePeriodicSync()
+        syncManager.schedulePeriodicSync()
     }
 }
 

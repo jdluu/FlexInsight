@@ -4,19 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.flexinsight.data.preferences.ApiKeyManager
@@ -24,10 +20,9 @@ import com.example.flexinsight.data.preferences.UserPreferencesManager
 import com.example.flexinsight.data.sync.SyncManager
 import com.example.flexinsight.ui.common.LocalSnackbarHostState
 import com.example.flexinsight.ui.components.FlexBottomNavigation
+import com.example.flexinsight.ui.navigation.FlexAppNavigation
 import com.example.flexinsight.ui.navigation.Screen
-import com.example.flexinsight.ui.screens.*
 import com.example.flexinsight.ui.theme.FlexInsightTheme
-import com.example.flexinsight.ui.viewmodel.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -87,10 +82,6 @@ fun MainScreen(
         }
     }
 
-    // Sync on app resume
-    LaunchedEffect(Unit) {
-        syncManager.syncOnResume()
-    }
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -106,84 +97,13 @@ fun MainScreen(
 
     // API Key Prompt Dialog
     if (showApiKeyPrompt) {
-        var apiKeyText by remember { mutableStateOf("") }
-        // Basic validation logic matching ApiKeyManager
-        val isValid = apiKeyText.isNotBlank() && apiKeyText.length >= 10
-        var error by remember { mutableStateOf<String?>(null) }
-
-        AlertDialog(
-            onDismissRequest = { /* Don't allow dismissing without API key */ },
-            title = {
-                Text(
-                    text = "Hevy API Key Required",
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "To use FlexInsight, you need to provide your Hevy API key. You can get it from https://hevy.com/settings?developer",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 14.sp
-                    )
-                    OutlinedTextField(
-                        value = apiKeyText,
-                        onValueChange = { apiKeyText = it },
-                        label = { Text("API Key", color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                        placeholder = { Text("Enter your API key", color = MaterialTheme.colorScheme.outline) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.3f),
-                            focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        singleLine = true,
-                        isError = !isValid && apiKeyText.isNotEmpty(),
-                        supportingText = {
-                            if (!isValid && apiKeyText.isNotEmpty()) {
-                                Text(
-                                    text = "Must be at least 10 characters",
-                                    color = MaterialTheme.colorScheme.error,
-                                    fontSize = 12.sp
-                                )
-                            }
-                        }
-                    )
-                    val errorText = error
-                    if (errorText != null) {
-                        Text(
-                            text = errorText,
-                            color = MaterialTheme.colorScheme.error,
-                            fontSize = 12.sp
-                        )
-                    }
+        ApiKeyPromptDialog(
+            onSave = { apiKey ->
+                scope.launch {
+                    apiKeyManager.saveApiKey(apiKey)
+                    showApiKeyPrompt = false
                 }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                         scope.launch {
-                            apiKeyManager.saveApiKey(apiKeyText)
-                            showApiKeyPrompt = false
-                        }
-                    },
-                    enabled = isValid,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                    )
-                ) {
-                    Text("Save", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
-                }
-            },
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+            }
         )
     }
 
@@ -215,87 +135,87 @@ fun MainScreen(
                 }
             }
         ) { innerPadding ->
-            NavHost(
+            FlexAppNavigation(
                 navController = navController,
-                startDestination = Screen.Dashboard.route,
                 modifier = Modifier.padding(innerPadding)
-            ) {
-            composable(Screen.Dashboard.route) {
-                val viewModel = hiltViewModel<DashboardViewModel>()
-                DashboardScreen(
-                    viewModel = viewModel,
-                    onNavigateToWorkoutDetail = { workoutId ->
-                        navController.navigate(Screen.WorkoutDetail.createRoute(workoutId))
-                    },
-                    onNavigateToRecovery = {
-                        navController.navigate(Screen.Recovery.route)
-                    },
-                    onNavigateToHistory = {
-                        navController.navigate(Screen.History.route)
-                    },
-                    onNavigateToAITrainer = {
-                        navController.navigate(Screen.AITrainer.route)
-                    },
-                    onNavigateToPlanner = {
-                        navController.navigate(Screen.Planner.route)
-                    },
-                    onNavigateToSettings = {
-                        navController.navigate(Screen.Settings.route)
-                    }
-                )
-            }
-            composable(Screen.History.route) {
-                val viewModel = hiltViewModel<HistoryViewModel>()
-                HistoryScreen(
-                    viewModel = viewModel,
-                    onNavigateToWorkoutDetail = { workoutId ->
-                        navController.navigate(Screen.WorkoutDetail.createRoute(workoutId))
-                    },
-                    onNavigateToAnalysis = {
-                        scope.launch { snackbarHostState.showSnackbar("Detail analysis coming soon") }
-                    },
-                    onNavigateToPRList = {
-                         navController.navigate(Screen.PRList.route)
-                    }
-                )
-            }
-            composable(Screen.AITrainer.route) {
-                val viewModel = hiltViewModel<AITrainerViewModel>()
-                AITrainerScreen(viewModel = viewModel)
-            }
-            composable(Screen.Planner.route) {
-                val viewModel = hiltViewModel<PlannerViewModel>()
-                PlannerScreen(viewModel = viewModel)
-            }
-            composable(Screen.Recovery.route) {
-                val viewModel = hiltViewModel<RecoveryViewModel>()
-                RecoveryScreen(viewModel = viewModel)
-            }
-            composable(Screen.Settings.route) {
-                val viewModel = hiltViewModel<SettingsViewModel>()
-                SettingsScreen()
-            }
-            composable(Screen.PRList.route) {
-                val viewModel = hiltViewModel<PRListViewModel>()
-                PRListScreen(
-                    viewModel = viewModel,
-                    onNavigateBack = { navController.popBackStack() },
-                    onNavigateToWorkoutDetail = { workoutId ->
-                        navController.navigate(Screen.WorkoutDetail.createRoute(workoutId))
-                    }
-                )
-            }
-            composable(Screen.WorkoutDetail.route) { backStackEntry ->
-                // Note: hiltViewModel() automatically handles SavedStateHandle injection for arguments
-                val viewModel = hiltViewModel<WorkoutDetailViewModel>()
-                WorkoutDetailScreen(
-                    viewModel = viewModel,
-                    onNavigateBack = {
-                        navController.popBackStack()
-                    }
-                )
-            }
+            )
         }
     }
 }
+
+@Composable
+fun ApiKeyPromptDialog(onSave: (String) -> Unit) {
+    var apiKeyText by remember { mutableStateOf("") }
+    // Basic validation logic matching ApiKeyManager
+    val isValid = apiKeyText.isNotBlank() && apiKeyText.length >= 10
+    var error by remember { mutableStateOf<String?>(null) } // Keep potential for future use
+
+    AlertDialog(
+        onDismissRequest = { /* Don't allow dismissing without API key */ },
+        title = {
+            Text(
+                text = stringResource(R.string.api_key_required_title),
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.api_key_required_message),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 14.sp
+                )
+                OutlinedTextField(
+                    value = apiKeyText,
+                    onValueChange = { apiKeyText = it },
+                    label = { Text(stringResource(R.string.api_key_label), color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                    placeholder = { Text(stringResource(R.string.api_key_placeholder), color = MaterialTheme.colorScheme.outline) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.3f),
+                        focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    singleLine = true,
+                    isError = !isValid && apiKeyText.isNotEmpty(),
+                    supportingText = {
+                        if (!isValid && apiKeyText.isNotEmpty()) {
+                            Text(
+                                text = stringResource(R.string.api_key_error_length),
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                )
+                if (error != null) {
+                    Text(
+                        text = error!!,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSave(apiKeyText) },
+                enabled = isValid,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                )
+            ) {
+                Text(stringResource(R.string.save), color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+    )
 }
