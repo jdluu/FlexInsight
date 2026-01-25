@@ -66,23 +66,6 @@ fun MainScreen(
     apiKeyManager: ApiKeyManager,
     syncManager: SyncManager
 ) {
-    val scope = rememberCoroutineScope()
-    var showApiKeyPrompt by remember { mutableStateOf(false) }
-
-    // Check for API key on first launch
-    LaunchedEffect(Unit) {
-        try {
-            val hasApiKey = apiKeyManager.hasApiKey()
-            if (!hasApiKey) {
-                showApiKeyPrompt = true
-            }
-        } catch (e: Exception) {
-            // If API key check fails, show prompt anyway
-            showApiKeyPrompt = true
-        }
-    }
-
-
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Dashboard.route
@@ -94,18 +77,6 @@ fun MainScreen(
         Screen.Recovery.route,
         Screen.Settings.route
     )
-
-    // API Key Prompt Dialog
-    if (showApiKeyPrompt) {
-        ApiKeyPromptDialog(
-            onSave = { apiKey ->
-                scope.launch {
-                    apiKeyManager.saveApiKey(apiKey)
-                    showApiKeyPrompt = false
-                }
-            }
-        )
-    }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -141,81 +112,4 @@ fun MainScreen(
             )
         }
     }
-}
-
-@Composable
-fun ApiKeyPromptDialog(onSave: (String) -> Unit) {
-    var apiKeyText by remember { mutableStateOf("") }
-    // Basic validation logic matching ApiKeyManager
-    val isValid = apiKeyText.isNotBlank() && apiKeyText.length >= 10
-    var error by remember { mutableStateOf<String?>(null) } // Keep potential for future use
-
-    AlertDialog(
-        onDismissRequest = { /* Don't allow dismissing without API key */ },
-        title = {
-            Text(
-                text = stringResource(R.string.api_key_required_title),
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.api_key_required_message),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 14.sp
-                )
-                OutlinedTextField(
-                    value = apiKeyText,
-                    onValueChange = { apiKeyText = it },
-                    label = { Text(stringResource(R.string.api_key_label), color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                    placeholder = { Text(stringResource(R.string.api_key_placeholder), color = MaterialTheme.colorScheme.outline) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.3f),
-                        focusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    ),
-                    singleLine = true,
-                    isError = !isValid && apiKeyText.isNotEmpty(),
-                    supportingText = {
-                        if (!isValid && apiKeyText.isNotEmpty()) {
-                            Text(
-                                text = stringResource(R.string.api_key_error_length),
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 12.sp
-                            )
-                        }
-                    }
-                )
-                if (error != null) {
-                    Text(
-                        text = error!!,
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 12.sp
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { onSave(apiKeyText) },
-                enabled = isValid,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                )
-            ) {
-                Text(stringResource(R.string.save), color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
-            }
-        },
-        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
-    )
 }

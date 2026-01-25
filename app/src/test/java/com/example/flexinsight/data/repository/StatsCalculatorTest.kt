@@ -1,4 +1,4 @@
-package com.example.flexinsight.data.repository
+package com.example.flexinsight.domain.util
 
 import com.example.flexinsight.data.model.Exercise
 import com.example.flexinsight.data.model.Set
@@ -6,9 +6,7 @@ import com.example.flexinsight.data.model.Workout
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
-import java.time.temporal.ChronoUnit
 
 class StatsCalculatorTest {
 
@@ -18,6 +16,7 @@ class StatsCalculatorTest {
             name = "Workout $id",
             startTime = startTime,
             endTime = endTime,
+            notes = null,
             routineId = null
         )
     }
@@ -37,11 +36,15 @@ class StatsCalculatorTest {
         return Set(
             id = id,
             exerciseId = exerciseId,
-            index = 0,
-            type = "normal",
+            number = 1,
             weight = weight,
             reps = reps,
-            rpe = null
+            rpe = null,
+            distance = null,
+            duration = null,
+            restDuration = null,
+            notes = null,
+            isPersonalRecord = false
         )
     }
 

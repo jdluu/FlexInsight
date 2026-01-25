@@ -12,6 +12,14 @@ import com.example.flexinsight.ui.screens.*
 import com.example.flexinsight.ui.viewmodel.*
 import kotlinx.coroutines.launch
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.flexinsight.ui.screens.OnboardingScreen
+
+import androidx.compose.runtime.LaunchedEffect
+import com.example.flexinsight.ui.common.LoadingState
+
 @Composable
 fun FlexAppNavigation(
     navController: NavHostController,
@@ -19,6 +27,20 @@ fun FlexAppNavigation(
 ) {
     val snackbarHostState = LocalSnackbarHostState.current
     val scope = rememberCoroutineScope()
+    
+    // Check for API key and redirect to Onboarding if missing
+    val settingsViewModel = hiltViewModel<SettingsViewModel>()
+    val settingsUiState by settingsViewModel.uiState.collectAsState()
+    
+    LaunchedEffect(settingsUiState.apiKey, settingsUiState.loadingState) {
+        if (settingsUiState.loadingState is LoadingState.Success && settingsUiState.apiKey.isNullOrBlank()) {
+             if (navController.currentDestination?.route != Screen.Onboarding.route) {
+                navController.navigate(Screen.Onboarding.route) {
+                    popUpTo(Screen.Dashboard.route) { inclusive = true }
+                }
+             }
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -103,6 +125,13 @@ fun FlexAppNavigation(
                     navController.popBackStack()
                 }
             )
+        }
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(onComplete = {
+                navController.navigate(Screen.Dashboard.route) {
+                    popUpTo(Screen.Onboarding.route) { inclusive = true }
+                }
+            })
         }
     }
 }

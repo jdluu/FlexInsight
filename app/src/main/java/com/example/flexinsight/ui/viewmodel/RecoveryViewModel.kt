@@ -27,7 +27,9 @@ data class RecoveryUiState(
     val aiInsight: String? = null,
     val isGeneratingInsight: Boolean = false,
     val muscleRecovery: Map<com.example.flexinsight.data.model.MuscleGroup, Float> = emptyMap()
-)
+) {
+    val isLoading: Boolean get() = loadingState.isLoading
+}
 
 enum class TrainingLoadStatus {
     Low, Optimal, High

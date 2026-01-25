@@ -23,6 +23,7 @@ import javax.inject.Inject
 data class SettingsUiState(
     val loadingState: LoadingState = LoadingState.Idle,
     val error: UiError? = null,
+    val apiKey: String? = null,
     val profileInfo: ProfileInfo? = null,
     val weeklyGoal: Int = 5,
     val theme: String = "System",
@@ -44,6 +45,7 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     private val repository: FlexRepository,
     private val userPreferencesManager: UserPreferencesManager,
+    private val apiKeyManager: com.example.flexinsight.data.preferences.ApiKeyManager,
     private val networkMonitor: NetworkMonitor
 ) : ViewModel() {
 
@@ -60,6 +62,14 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             delay(100) // Small delay to ensure database is initialized
             loadSettingsData()
+            
+            // Observe API key changes
+            apiKeyManager.apiKeyFlow.collect { key ->
+                _uiState.value = _uiState.value.copy(apiKey = key)
+            }
+        }
+        
+        viewModelScope.launch {
             // Observe force enable changes
             userPreferencesManager.forceAiEnableFlow.collect { enabled ->
                  _uiState.value = _uiState.value.copy(forceAiEnable = enabled)
@@ -229,5 +239,18 @@ class SettingsViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    fun saveApiKey(key: String) {
+        viewModelScope.launch {
+            try {
+                apiKeyManager.saveApiKey(key)
+                _uiState.value = _uiState.value.copy(apiKey = key)
+                refresh()
+            } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
+                _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+            }
+        }
     }
 }
