@@ -11,10 +11,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.flexinsight.R
 import com.example.flexinsight.data.model.PlannedWorkout
 import com.example.flexinsight.ui.theme.*
 import com.example.flexinsight.ui.viewmodel.PlannerViewModel
+import com.example.flexinsight.ui.viewmodel.SaveToHevyStatus
 import com.example.flexinsight.ui.screens.planner.parts.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -53,7 +56,7 @@ fun PlannerScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = uiState.error?.message ?: "Unknown error",
+                    text = uiState.error?.message ?: stringResource(id = R.string.error_unknown_fallback),
                     color = MaterialTheme.colorScheme.error,
                     fontSize = 16.sp
                 )
@@ -61,7 +64,7 @@ fun PlannerScreen(
                     onClick = { viewModel.refresh() },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Retry", color = MaterialTheme.colorScheme.onPrimary)
+                    Text(stringResource(id = R.string.action_retry), color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
@@ -80,7 +83,8 @@ fun PlannerScreen(
                 workout.id?.let { id ->
                     viewModel.rescheduleWorkout(id, calendar.timeInMillis)
                 }
-                scope.launch { snackbarHostState.showSnackbar("Moved to tomorrow") }
+                val snackbarMsg = context.getString(R.string.planner_snackbar_moved_tomorrow)
+                scope.launch { snackbarHostState.showSnackbar(snackbarMsg) }
                 showRescheduleDialog = null
             },
             onDismiss = { showRescheduleDialog = null }
@@ -90,7 +94,7 @@ fun PlannerScreen(
     if (uiState.isGeneratingPlan) {
         AlertDialog(
             onDismissRequest = {},
-            title = { Text("Generating Workout Plan") },
+            title = { Text(stringResource(id = R.string.planner_toast_generating_title)) },
             text = {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -98,7 +102,7 @@ fun PlannerScreen(
                 ) {
                     CircularProgressIndicator()
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Analyzing your stats...")
+                    Text(stringResource(id = R.string.planner_toast_analyzing))
                 }
             },
             confirmButton = {}
@@ -108,7 +112,7 @@ fun PlannerScreen(
     uiState.aiPlan?.let { plan ->
         AlertDialog(
             onDismissRequest = { viewModel.clearAIPlan() },
-            title = { Text("AI Suggested Workout") },
+            title = { Text(stringResource(id = R.string.planner_dialog_ai_title)) },
             text = {
                 LazyColumn {
                     item {
@@ -117,11 +121,47 @@ fun PlannerScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { viewModel.clearAIPlan() }) {
-                    Text("Close")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    when (uiState.saveToHevyStatus) {
+                        is SaveToHevyStatus.Saving -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        }
+                        is SaveToHevyStatus.Success -> {
+                            Text(
+                                "Saved",
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.labelLarge,
+                                modifier = Modifier.align(Alignment.CenterVertically)
+                            )
+                        }
+                        else -> {
+                            TextButton(
+                                onClick = { viewModel.pushRoutineToHevy("AI Workout") }
+                            ) {
+                                Text("Save to Hevy")
+                            }
+                        }
+                    }
+
+                    TextButton(onClick = { viewModel.clearAIPlan() }) {
+                        Text(stringResource(id = R.string.action_close))
+                    }
                 }
             }
         )
+    }
+
+    LaunchedEffect(uiState.saveToHevyStatus) {
+        when (val status = uiState.saveToHevyStatus) {
+            is SaveToHevyStatus.Error -> {
+                snackbarHostState.showSnackbar(status.message)
+                viewModel.clearSaveStatus()
+            }
+            else -> {}
+        }
     }
 
     LazyColumn(
