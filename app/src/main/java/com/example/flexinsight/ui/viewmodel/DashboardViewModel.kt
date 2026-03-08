@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -103,71 +105,81 @@ class DashboardViewModel @Inject constructor(
                 try {
                     val latestWorkout = workouts.firstOrNull()
 
-                    // Load profile info
-                    val profileInfo = try {
-                        repository.getProfileInfo()
-                    } catch (e: Exception) {
-                        null
-                    }
-
-                    // Calculate latest workout stats
-                    val latestWorkoutStats = latestWorkout?.let {
-                        try {
-                            repository.calculateWorkoutStats(it)
-                        } catch (e: Exception) {
-                            null
+                    // Execute independent fetches concurrently using async
+                    coroutineScope {
+                        val profileInfoDeferred = async {
+                            try { repository.getProfileInfo() } catch (e: Exception) { 
+                                android.util.Log.e("DashboardViewModel", "Failed to load profile info", e)
+                                null 
+                            }
                         }
-                    }
+                        
+                        val latestWorkoutStatsDeferred = async {
+                            latestWorkout?.let {
+                                try { repository.calculateWorkoutStats(it) } catch (e: Exception) { 
+                                    android.util.Log.e("DashboardViewModel", "Failed to calculate latest workout stats", e)
+                                    null 
+                                }
+                            }
+                        }
+                        
+                        val statsDeferred = async {
+                            try { getWorkoutStatsUseCase() } catch (e: Exception) {
+                                android.util.Log.e("DashboardViewModel", "Failed to calculate overall workout stats", e)
+                                WorkoutStats(
+                                    totalWorkouts = 0, totalVolume = 0.0, averageVolume = 0.0,
+                                    totalSets = 0, totalDuration = 0L, averageDuration = 0L,
+                                    currentStreak = 0, longestStreak = 0, bestWeekVolume = 0.0,
+                                    bestWeekDate = null
+                                )
+                            }
+                        }
+                        
+                        val weeklyProgressDeferred = async {
+                            try { getWeeklyProgressUseCase(weeks = 4) } catch (e: Exception) { 
+                                android.util.Log.e("DashboardViewModel", "Failed to get weekly progress", e)
+                                emptyList() 
+                            }
+                        }
+                        
+                        val muscleGroupProgressDeferred = async {
+                            try { repository.getMuscleGroupProgress(weeks = 4) } catch (e: Exception) { 
+                                android.util.Log.e("DashboardViewModel", "Failed to get muscle group progress", e)
+                                emptyList() 
+                            }
+                        }
+                        
+                        val muscleRecoveryDeferred = async {
+                            try { getMuscleRecoveryUseCase() } catch (e: Exception) { 
+                                android.util.Log.e("DashboardViewModel", "Failed to get muscle recovery", e)
+                                emptyMap() 
+                            }
+                        }
 
-                    // Load stats
-                    val stats = try {
-                        getWorkoutStatsUseCase()
-                    } catch (e: Exception) {
-                        WorkoutStats(
-                            totalWorkouts = 0,
-                            totalVolume = 0.0,
-                            averageVolume = 0.0,
-                            totalSets = 0,
-                            totalDuration = 0L,
-                            averageDuration = 0L,
-                            currentStreak = 0,
-                            longestStreak = 0,
-                            bestWeekVolume = 0.0,
-                            bestWeekDate = null
+                        // Await all results
+                        val profileInfo = profileInfoDeferred.await()
+                        val latestWorkoutStats = latestWorkoutStatsDeferred.await()
+                        val stats = statsDeferred.await()
+                        val weeklyProgress = weeklyProgressDeferred.await()
+                        val muscleGroupProgress = muscleGroupProgressDeferred.await()
+                        val muscleRecovery = muscleRecoveryDeferred.await()
+
+                        _uiState.value = _uiState.value.copy(
+                            loadingState = LoadingState.Success,
+                            profileInfo = profileInfo,
+                            latestWorkout = latestWorkout,
+                            latestWorkoutStats = latestWorkoutStats,
+                            workoutStats = stats,
+                            weeklyProgress = weeklyProgress,
+                            currentStreak = stats.currentStreak,
+                            muscleGroupProgress = muscleGroupProgress,
+                            muscleRecovery = muscleRecovery,
+                            error = null
                         )
+                        
+                        // Generate AI Insight
+                        generateDailyInsight(profileInfo?.displayName ?: "User", stats.currentStreak)
                     }
-
-                    // Load weekly progress
-                    var weeklyProgress = emptyList<com.example.flexinsight.data.model.WeeklyProgress>()
-                    try {
-                        weeklyProgress = getWeeklyProgressUseCase(weeks = 4)
-                    } catch (e: Exception) {
-                        // Continue with empty progress if it fails
-                    }
-
-                    // Load muscle group progress
-                    var muscleGroupProgress = emptyList<com.example.flexinsight.data.model.MuscleGroupProgress>()
-                    try {
-                        muscleGroupProgress = repository.getMuscleGroupProgress(weeks = 4)
-                    } catch (e: Exception) {
-                        // Continue with empty progress if it fails
-                    }
-
-                    _uiState.value = _uiState.value.copy(
-                        loadingState = LoadingState.Success,
-                        profileInfo = profileInfo,
-                        latestWorkout = latestWorkout,
-                        latestWorkoutStats = latestWorkoutStats,
-                        workoutStats = stats,
-                        weeklyProgress = weeklyProgress,
-                        currentStreak = stats.currentStreak,
-                        muscleGroupProgress = muscleGroupProgress,
-                        muscleRecovery = getMuscleRecoveryUseCase(),
-                        error = null
-                    )
-                    
-                    // Generate AI Insight
-                    generateDailyInsight(profileInfo?.displayName ?: "User", stats.currentStreak)
 
                 } catch (e: Exception) {
                     val apiError = ErrorHandler.handleError(e)

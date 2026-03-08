@@ -61,7 +61,7 @@ fun RecoveryScreen(
                      Row(verticalAlignment = Alignment.CenterVertically) {
                          CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                          Spacer(modifier = Modifier.width(8.dp))
-                         Text("Smart Analysis running...", style = MaterialTheme.typography.bodySmall)
+                         Text(stringResource(id = R.string.recovery_smart_analysis_running), style = MaterialTheme.typography.bodySmall)
                      }
                  }
              } else if (uiState.aiInsight != null) {
@@ -72,7 +72,7 @@ fun RecoveryScreen(
                      Column(modifier = Modifier.padding(16.dp)) {
                          Row(verticalAlignment = Alignment.CenterVertically) {
                              // Icon could go here
-                             Text("AI Insight", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                             Text(stringResource(id = R.string.recovery_ai_insight), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onTertiaryContainer)
                          }
                          Spacer(modifier = Modifier.height(4.dp))
                          Text(uiState.aiInsight!!, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)

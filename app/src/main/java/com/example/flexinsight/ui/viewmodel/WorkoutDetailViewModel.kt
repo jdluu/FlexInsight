@@ -98,6 +98,7 @@ class WorkoutDetailViewModel @Inject constructor(
                 val workoutStats = try {
                     repository.calculateWorkoutStats(workout)
                 } catch (e: Exception) {
+                    android.util.Log.e("WorkoutDetailVM", "Failed to calculate stats", e)
                     null
                 }
 
@@ -105,6 +106,7 @@ class WorkoutDetailViewModel @Inject constructor(
                 val exercises = try {
                     exerciseDao.getExercisesByWorkoutIdFlow(workoutId).first()
                 } catch (e: Exception) {
+                    android.util.Log.e("WorkoutDetailVM", "Failed to load exercises", e)
                     emptyList()
                 }
 
@@ -113,6 +115,7 @@ class WorkoutDetailViewModel @Inject constructor(
                     val sets = try {
                         setDao.getSetsByExerciseIdFlow(exercise.id).first()
                     } catch (e: Exception) {
+                        android.util.Log.e("WorkoutDetailVM", "Failed to load sets for exercise ${exercise.id}", e)
                         emptyList()
                     }
                     ExerciseWithSets(exercise, sets)

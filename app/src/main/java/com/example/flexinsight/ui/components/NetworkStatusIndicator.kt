@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.flexinsight.core.network.NetworkState
 import com.example.flexinsight.ui.theme.*
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 
 /**
  * Composable for displaying network connectivity status
@@ -38,7 +40,7 @@ fun NetworkStatusIndicator(
                         fontSize = 8.sp
                     )
                     Text(
-                        text = "No internet connection",
+                        text = stringResource(id = R.string.network_status_no_connection),
                         color = RedAccent,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium

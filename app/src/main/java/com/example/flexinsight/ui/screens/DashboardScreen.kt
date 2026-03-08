@@ -32,7 +32,7 @@ import com.example.flexinsight.R
 import com.example.flexinsight.data.model.ProfileInfo
 import com.example.flexinsight.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.flow.flowOf
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 @Composable
 fun DashboardScreen(
@@ -130,14 +130,13 @@ fun DashboardScreen(
             }
             item {
                 uiState.latestWorkout?.let { workout ->
-                    FeaturedWorkoutCard(
+                    LastSessionAnalysisCard(
                         workout = workout,
                         workoutStats = uiState.latestWorkoutStats,
                         useMetric = useMetric,
                         onClick = { onNavigateToWorkoutDetail(workout.id) }
                     )
                 } ?: run {
-                    // Show placeholder if no workout
                     FeaturedWorkoutCardPlaceholder()
                 }
             }

@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -20,6 +21,8 @@ import com.example.flexinsight.ui.screens.history.parts.PRCard
 import com.example.flexinsight.ui.screens.history.parts.formatDateShort
 import com.example.flexinsight.ui.utils.UnitConverter
 import com.example.flexinsight.ui.viewmodel.PRListViewModel
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,10 +37,10 @@ fun PRListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Personal Records") },
+                title = { Text(stringResource(id = R.string.pr_list_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.action_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -63,9 +66,13 @@ fun PRListScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                EmptyStateMessage(message = "No Personal Records found yet. Keep training!")
+                EmptyStateMessage(message = stringResource(id = R.string.pr_list_empty_state))
             }
         } else {
+            val sortedPrs = remember(uiState.prs) { uiState.prs.sortedByDescending { it.date } }
+            val exercisePRs = remember(sortedPrs) { sortedPrs.groupBy { it.exerciseName } }
+            val newestPRPerExercise = remember(exercisePRs) { exercisePRs.mapValues { (_, prs) -> prs.maxByOrNull { it.date } } }
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -74,24 +81,12 @@ fun PRListScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Group PRs by exercise? Or just list them chronologically descending?
-                // Chronological descending (newest first) seems best for "Recent PRs" feel,
-                // but let's confirm. The VM just returns list. Assuming repo returns them sorted.
-                // Assuming `getAllPRsWithDetails` calls `getPRsWithDetails` which calls `setDao.getRecentPRsFlow`
-                // which uses `ORDER BY id DESC`. Since ID contains index, it might not be strictly chronological across workouts unless ID implies time.
-                // Actually `getRecentPRsFlow` orders by `id DESC`.
-                // The API ID format is `workoutId_exerciseId_setIndex`.
-                // This might not sort strictly by time if workoutIds aren't time-sortable.
-                // But typically we want date sorting.
-                // Let's sort client side to be safe.
-                
-                val sortedPrs = uiState.prs.sortedByDescending { it.date }
 
-                // Determine "newest" PR per exercise for highlighting
-                 val exercisePRs = sortedPrs.groupBy { it.exerciseName }
-                 val newestPRPerExercise = exercisePRs.mapValues { (_, prs) -> prs.maxByOrNull { it.date } }
 
-                items(sortedPrs) { prDetails ->
+                items(
+                    items = sortedPrs,
+                    key = { prDetails -> prDetails.setId }
+                ) { prDetails ->
                     val isNewPR = newestPRPerExercise[prDetails.exerciseName]?.setId == prDetails.setId
                     val convertedWeight = UnitConverter.convertWeight(prDetails.weight, useMetric)
                     

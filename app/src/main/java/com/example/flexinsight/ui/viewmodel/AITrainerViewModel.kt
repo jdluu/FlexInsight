@@ -60,6 +60,7 @@ class AITrainerViewModel @Inject constructor(
         val context = try {
             buildAiContextUseCase()
         } catch (e: Exception) {
+            android.util.Log.e("AITrainerViewModel", "Failed to build AI context", e)
             "User Data unavailable. Act as a fitness coach."
         }
         systemContext = context // Store for future turns
@@ -135,6 +136,7 @@ class AITrainerViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
+                android.util.Log.e("AITrainerViewModel", "Failed to generate stream response", e)
                 _uiState.value = _uiState.value.copy(
                     isTyping = false,
                     error = e.message

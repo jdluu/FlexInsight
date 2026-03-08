@@ -3,16 +3,22 @@ package com.example.flexinsight.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.flexinsight.ui.theme.*
 import com.example.flexinsight.ui.viewmodel.WorkoutDetailViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -51,7 +57,7 @@ fun WorkoutDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = uiState.error?.message ?: "Unknown error",
+                    text = uiState.error?.message ?: stringResource(id = R.string.error_unknown_fallback),
                     color = MaterialTheme.colorScheme.error,
                     fontSize = 16.sp
                 )
@@ -59,7 +65,7 @@ fun WorkoutDetailScreen(
                     onClick = { viewModel.refresh() },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Retry", color = MaterialTheme.colorScheme.onPrimary)
+                    Text(stringResource(id = R.string.action_retry), color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
@@ -76,7 +82,7 @@ fun WorkoutDetailScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Workout not found",
+                text = stringResource(id = R.string.workout_not_found),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp
             )
@@ -92,22 +98,25 @@ fun WorkoutDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(bottom = 100.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         item {
             WorkoutDetailHeader(
-                title = workout.name ?: "Workout",
+                title = workout.name ?: stringResource(id = R.string.workout_default_title),
                 date = dateString,
                 onNavigateBack = onNavigateBack
             )
         }
         item {
-            WorkoutStatsCard(
-                stats = uiState.workoutStats,
-                totalReps = uiState.exercisesWithSets.sumOf { it.sets.sumOf { set -> set.reps ?: 0 } },
-                useMetric = useMetric
-            )
+            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                WorkoutStatsCard(
+                    stats = uiState.workoutStats,
+                    exercisesWithSets = uiState.exercisesWithSets,
+                    totalReps = uiState.exercisesWithSets.sumOf { it.sets.sumOf { set -> set.reps ?: 0 } },
+                    useMetric = useMetric
+                )
+            }
         }
         item {
             ExercisesSection(
@@ -117,37 +126,51 @@ fun WorkoutDetailScreen(
         }
         if (workout.notes != null && workout.notes.isNotBlank()) {
             item {
-                NotesSection(notes = workout.notes)
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    NotesSection(notes = workout.notes)
+                }
             }
         }
         if (uiState.isGeneratingReflection) {
             item {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Box(modifier = Modifier.padding(16.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onTertiaryContainer)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Coach is analyzing...", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.6f)),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp)
+                    ) {
+                        Box(modifier = Modifier.padding(20.dp).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 3.dp, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(stringResource(id = R.string.workout_coach_analyzing), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onTertiaryContainer, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
             }
         } else if (uiState.aiReflection != null) {
             item {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                             // Could add icon here
-                             Text("Coach Assessment", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(20.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Icon(
+                                    imageVector = Icons.Default.SmartToy,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Text(stringResource(id = R.string.workout_coach_assessment), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onTertiaryContainer, fontWeight = FontWeight.ExtraBold)
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(uiState.aiReflection!!, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onTertiaryContainer, lineHeight = 24.sp)
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(uiState.aiReflection!!, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)
                     }
                 }
             }

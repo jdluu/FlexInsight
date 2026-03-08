@@ -53,7 +53,10 @@ fun WeekCalendar(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(weekCalendarData.size) { index ->
+        items(
+            count = weekCalendarData.size,
+            key = { index -> index }
+        ) { index ->
             val dayData = weekCalendarData[index]
             // Check if this day is today (same day, ignoring time)
             val dayStart = dayData.timestamp

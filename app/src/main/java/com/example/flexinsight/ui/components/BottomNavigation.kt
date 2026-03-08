@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.sp
 import com.example.flexinsight.ui.theme.Primary
 import com.example.flexinsight.ui.theme.SurfaceCard
 import com.example.flexinsight.ui.theme.TextSecondary
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 
 @Composable
 fun FlexBottomNavigation(
@@ -30,11 +32,11 @@ fun FlexBottomNavigation(
     modifier: Modifier = Modifier
 ) {
     val navItems = listOf(
-        NavItem("dashboard", "Dashboard", Icons.Default.Dashboard),
-        NavItem("history", "History", Icons.Default.History),
-        NavItem("ai_trainer", "AI Trainer", Icons.Default.SmartToy),
-        NavItem("planner", "Planner", Icons.Default.CalendarMonth),
-        NavItem("settings", "Profile", Icons.Default.Person)
+        NavItem("dashboard", stringResource(id = R.string.nav_dashboard), Icons.Default.Dashboard),
+        NavItem("history", stringResource(id = R.string.nav_history), Icons.Default.History),
+        NavItem("ai_trainer", stringResource(id = R.string.nav_ai_trainer), Icons.Default.SmartToy),
+        NavItem("planner", stringResource(id = R.string.nav_planner), Icons.Default.CalendarMonth),
+        NavItem("settings", stringResource(id = R.string.nav_profile), Icons.Default.Person)
     )
 
         Box(

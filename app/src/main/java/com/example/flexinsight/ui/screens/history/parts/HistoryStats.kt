@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -17,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 import com.example.flexinsight.data.model.MuscleGroupProgress
 import com.example.flexinsight.data.model.VolumeTrend
 import com.example.flexinsight.data.model.WeeklyVolumeData
@@ -25,8 +28,6 @@ import com.example.flexinsight.ui.theme.Primary
 import com.example.flexinsight.ui.theme.SurfaceCardAlt
 import com.example.flexinsight.ui.theme.TextSecondary
 import com.example.flexinsight.ui.utils.UnitConverter
-import com.example.flexinsight.ui.screens.history.parts.formatVolumeWithCommas
-import com.example.flexinsight.ui.screens.history.parts.formatPercentageChange
 
 @Composable
 fun StatsGrid(
@@ -49,9 +50,9 @@ fun StatsGrid(
             .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("$workoutCount", "Workouts", modifier = Modifier.weight(1f))
-        StatCard(avgVolumeFormatted, "Avg Vol ($unitLabel)", modifier = Modifier.weight(1f))
-        StatCard(bestWeek, "Best Week", modifier = Modifier.weight(1f), isHighlighted = true)
+        StatCard("$workoutCount", stringResource(id = R.string.history_comparison_workouts), modifier = Modifier.weight(1f))
+        StatCard(avgVolumeFormatted, stringResource(id = R.string.history_avg_vol_label, unitLabel), modifier = Modifier.weight(1f))
+        StatCard(bestWeek, stringResource(id = R.string.history_best_week), modifier = Modifier.weight(1f), isHighlighted = true)
     }
 }
 
@@ -59,47 +60,29 @@ fun StatsGrid(
 fun StatCard(value: String, label: String, modifier: Modifier = Modifier, isHighlighted: Boolean = false) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.secondaryContainer
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            if (value.contains("k")) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(
-                        text = value.substringBefore("k"),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = "k",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            } else {
-                Text(
-                    text = value,
-                    fontSize = if (isHighlighted) 20.sp else 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                )
-            }
             Text(
-                text = label,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = value,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.ExtraBold,
+                color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = label.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                letterSpacing = 0.5.sp
             )
         }
     }
@@ -117,12 +100,13 @@ fun TotalVolumeCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column(
             modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -131,32 +115,33 @@ fun TotalVolumeCard(
             ) {
                 Column {
                     Text(
-                        text = "Total Volume",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = stringResource(id = R.string.history_comparison_total_volume),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = 0.5.sp
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.Bottom
                     ) {
                         Text(
                             text = workoutStats?.let { formatVolumeWithCommas(UnitConverter.convertVolume(it.totalVolume, useMetric)) } ?: "0",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = UnitConverter.getWeightUnit(useMetric),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Normal,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 6.dp)
                         )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = workoutStats?.let { "Across ${it.totalWorkouts} workouts" } ?: "No workouts yet",
+                        text = workoutStats?.let { stringResource(id = R.string.history_across_workouts, it.totalWorkouts) } ?: stringResource(id = R.string.history_no_workouts_yet),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -196,7 +181,7 @@ fun TotalVolumeCard(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(
-                        text = "Consistency (Last 3 Months)",
+                        text = stringResource(id = R.string.history_consistency_title),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -210,52 +195,33 @@ fun TotalVolumeCard(
 
 @Composable
 fun ConsistencyHeatmap(data: List<com.example.flexinsight.data.model.DayInfo>) {
-    // We want to render a grid: 7 rows (days), ~13 columns (weeks)
-    // Plus labels: Month names on top, Day names on left.
-    
     val columns = 13
     val rows = 7
     val totalDays = columns * rows
     val relevantData = data.takeLast(totalDays)
     
-    // Day Labels (Mon, Wed, Fri) used by GitHub, we can use Mon, Wed, Fri or just M, W, F
-    // The data loop in repository matches Mon(0)..Sun(6) if aligned?
-    // Actually repository generates N days ending today.
-    // So the last column ends on "Today".
-    // Does that mean the rows align to Mon-Sun? No.
-    // If the data is just a flat list of last 90 days, we need to be careful.
-    // Ideally, for a calendar heatmap, rows SHOULD be fixed Day of Week (Mon, Tue...)
-    
-    // Let's verify alignment. 
-    // If we fill columns from top to bottom, then left to right?
-    // GitHub fills Column 1 (Mon-Sun), Column 2 (Mon-Sun).
-    // Our data is a linear time series.
-    // We need to determine the DayOfWeek of the FIRST data point to know where to start in the first column.
-    
     if (relevantData.isEmpty()) return
 
-    // Find the offset of the first item
-    // DayInfo names are "Mon", "Tue" etc.
-    // Let's rely on that.
+    val lastItem = relevantData.last()
+    val lastDayOfWeek = java.time.Instant.ofEpochMilli(lastItem.timestamp)
+             .atZone(java.time.ZoneId.systemDefault())
+             .dayOfWeek.value // 1(Mon)..7(Sun)
     
     Column(modifier = Modifier.fillMaxWidth()) {
-        // Month Labels
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 30.dp, bottom = 4.dp), // indent for day labels
+                .padding(start = 30.dp, bottom = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Simplified: Just show Start, Middle, End month? 
-            // Or try to place them accurately.
-            // Let's just place 3 labels for now spread out.
-            val months = relevantData.map { 
-                 java.time.Instant.ofEpochMilli(it.timestamp)
-                     .atZone(java.time.ZoneId.systemDefault())
-                     .month.name.take(3)
-            }.distinct()
+            val months = remember(relevantData) {
+                relevantData.map { 
+                     java.time.Instant.ofEpochMilli(it.timestamp)
+                         .atZone(java.time.ZoneId.systemDefault())
+                         .month.name.take(3)
+                }.distinct()
+            }
             
-            // Show up to 3 distinct months
             months.take(3).forEach { monthName ->
                 Text(
                     text = monthName,
@@ -266,113 +232,54 @@ fun ConsistencyHeatmap(data: List<com.example.flexinsight.data.model.DayInfo>) {
             }
         }
         
-        Row(modifier = Modifier.fillMaxWidth()) {
-            // Day Labels Column
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Column(
-                modifier = Modifier.padding(end = 6.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp) // matches box spacing?
+               verticalArrangement = Arrangement.SpaceBetween,
+               modifier = Modifier.height((10 * 7 + 4 * 6).dp)
             ) {
-                 // GitHub shows Mon, Wed, Fri. 
-                 // We will show Mon, Wed, Fri, Sun to be helpful.
-                 // We need to match the height of the boxes (10.dp) + spacing (4.dp)
-                 // This is tricky with Text vs Box sizing.
-                 
-                 // Let's just show labels for specific rows: 1 (Mon), 3 (Wed), 5 (Fri)
-                 // Assuming Row 0 is Mon?
-                 // We need to align the data first so Row 0 IS Monday.
+                Text(stringResource(id = R.string.day_mon), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(id = R.string.day_thu), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(id = R.string.day_sun), fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            // Actually, calculating alignment is hard without data inspection.
-            // Let's do a Grid Layout where we explicitly place items by (col, row).
-            
-            // Let's try a simpler robust layout:
-            // Just columns of 7 dots.
-            // But we need to shift the first column based on start day?
-            // If today is Friday, the last dot is Friday (Row 4).
-            // That means the current week column is partially filled up to Friday.
-            
-            // It's easier to verify:
-            // Last item in `relevantData` is TODAY.
-            // Let's verify day of week of last item.
-            val lastItem = relevantData.last()
-            val lastDayOfWeek = java.time.Instant.ofEpochMilli(lastItem.timestamp)
-                     .atZone(java.time.ZoneId.systemDefault())
-                     .dayOfWeek.value // 1(Mon)..7(Sun)
-            
-            // If last item is Fri (5), it should be at Row 4 (0-indexed).
-            // So we fill backwards?
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Day Labels (Left)
-                Column(
-                   verticalArrangement = Arrangement.SpaceBetween,
-                   modifier = Modifier.height((10 * 7 + 4 * 6).dp) // 7 boxes + 6 gaps
-                ) {
-                    Text("Mon", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    // Text("Wed", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("Thu", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("Sun", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
 
-                // The Grid
-                // We need to construct a grid 7 rows x N columns.
-                // We map date -> (row, col)
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                val grid = Array(columns) { Array<com.example.flexinsight.data.model.DayInfo?>(rows) { null } }
                 
-                // Let's reconstruct the data into a grid.
-                // We want ~13 columns.
-                // The last column should contain Today.
-                // Today is at row (headerDayOfWeek - 1).
+                var dataIdx = relevantData.lastIndex
+                var currentCol = columns - 1
+                var currentRow = lastDayOfWeek - 1
                 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    // We need to pad the START of the data so that the first item is a Monday?
-                    // OR just fill the grid cells.
-                    
-                    // Simple logic: 
-                    // Create a grid of empty cells (7 rows x 13 cols).
-                    // Populate from bottom-right (Today) moving backwards.
-                    
-                    val grid = Array(columns) { Array<com.example.flexinsight.data.model.DayInfo?>(rows) { null } }
-                    
-                    // Fill backwards
-                    var dataIdx = relevantData.lastIndex
-                    var currentCol = columns - 1
-                    // Today's Row
-                    var currentRow = lastDayOfWeek - 1 // 0=Mon, 6=Sun
-                    
-                    while (dataIdx >= 0 && currentCol >= 0) {
-                        grid[currentCol][currentRow] = relevantData[dataIdx]
-                        dataIdx--
-                        currentRow--
-                        if (currentRow < 0) {
-                            currentRow = 6
-                            currentCol--
-                        }
+                while (dataIdx >= 0 && currentCol >= 0) {
+                    grid[currentCol][currentRow] = relevantData[dataIdx]
+                    dataIdx--
+                    currentRow--
+                    if (currentRow < 0) {
+                        currentRow = 6
+                        currentCol--
                     }
-                    
-                    // Render Grid
-                    for (c in 0 until columns) {
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            for (r in 0 until rows) {
-                                val dayInfo = grid[c][r]
-                                val color = if (dayInfo?.hasWorkout == true) {
-                                    MaterialTheme.colorScheme.primary
-                                } else if (dayInfo != null) {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                } else {
-                                    Color.Transparent // No data (future or pre-history padding)
-                                }
-                                
-                                Box(
-                                    modifier = Modifier
-                                        .size(10.dp)
-                                        .clip(RoundedCornerShape(2.dp))
-                                        .background(color)
-                                )
+                }
+                
+                for (c in 0 until columns) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        for (r in 0 until rows) {
+                            val dayInfo = grid[c][r]
+                            val color = if (dayInfo?.hasWorkout == true) {
+                                MaterialTheme.colorScheme.primary
+                            } else if (dayInfo != null) {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            } else {
+                                Color.Transparent
                             }
+                            
+                            Box(
+                                modifier = Modifier
+                                    .size(10.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(color)
+                            )
                         }
                     }
                 }
@@ -424,7 +331,7 @@ fun AIInsightsCard(
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
-                        text = "AI INSIGHTS",
+                        text = stringResource(id = R.string.history_ai_insights_header),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
@@ -432,7 +339,7 @@ fun AIInsightsCard(
                     )
                 }
                 Text(
-                    text = "Complete 10+ workouts to unlock AI-powered insights about your training patterns, muscle balance, and recovery recommendations.",
+                    text = stringResource(id = R.string.history_ai_insights_desc),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -448,7 +355,7 @@ fun AIInsightsCard(
                     modifier = Modifier.wrapContentWidth()
                 ) {
                     Text(
-                        text = "View Analysis",
+                        text = stringResource(id = R.string.action_view_analysis),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )

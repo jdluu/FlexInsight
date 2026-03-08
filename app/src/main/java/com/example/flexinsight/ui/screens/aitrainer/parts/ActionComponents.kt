@@ -40,7 +40,10 @@ fun QuickActionChips() {
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(quickActions.size) { index ->
+        items(
+            count = quickActions.size,
+            key = { index -> quickActions[index].first }
+        ) { index ->
             val (text, icon) = quickActions[index]
             Surface(
                 modifier = Modifier

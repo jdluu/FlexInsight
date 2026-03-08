@@ -18,6 +18,8 @@ import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.*
 import com.example.flexinsight.ui.components.EmptyStateIllustration
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,7 +54,7 @@ fun WorkoutListSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "${selectedDayName}'s Plan",
+                text = stringResource(id = R.string.planner_list_day_plan, selectedDayName),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
@@ -63,7 +65,7 @@ fun WorkoutListSection(
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Text(
-                        text = "${selectedDayWorkouts.size} Session${if (selectedDayWorkouts.size == 1) "" else "s"}",
+                        text = if (selectedDayWorkouts.size == 1) stringResource(id = R.string.planner_list_session_singular, selectedDayWorkouts.size) else stringResource(id = R.string.planner_list_session_plural, selectedDayWorkouts.size),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Normal,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -76,8 +78,8 @@ fun WorkoutListSection(
         if (selectedDayWorkouts.isEmpty()) {
             EmptyStateIllustration(
                 icon = Icons.Default.EventAvailable,
-                title = "No workouts planned",
-                description = "Tap the + button to add a workout or use AI to generate an optimized plan",
+                title = stringResource(id = R.string.planner_list_empty_title),
+                description = stringResource(id = R.string.planner_list_empty_desc),
                 action = {
                     Button(
                         onClick = { /* This would trigger generating plan */ },
@@ -85,7 +87,7 @@ fun WorkoutListSection(
                     ) {
                         Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("AI Generate Plan")
+                        Text(stringResource(id = R.string.action_ai_generate_plan))
                     }
                 }
             )
@@ -105,7 +107,7 @@ fun WorkoutListSection(
                 WorkoutItem(
                     title = workout.name,
                     duration = formatDuration(workout.duration),
-                    intensity = workout.intensity ?: "Medium Intensity",
+                    intensity = workout.intensity ?: stringResource(id = R.string.planner_list_medium_intensity),
                     isCompleted = workout.isCompleted,
                     icon = icon,
                     iconColor = iconColor,
@@ -134,7 +136,7 @@ fun WorkoutListSection(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Long press to reschedule",
+                    text = stringResource(id = R.string.planner_list_long_press_reschedule),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary

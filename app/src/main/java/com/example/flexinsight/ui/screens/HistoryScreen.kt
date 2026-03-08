@@ -52,7 +52,13 @@ fun HistoryScreen(
                 .background(MaterialTheme.colorScheme.background)
         ) {
             HistoryHeader(onFilterClick = {})
-            WorkoutHistoryListSkeleton()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
+                WorkoutHistoryListSkeleton()
+            }
         }
         return
     }
@@ -70,7 +76,7 @@ fun HistoryScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = uiState.error?.message ?: "Unknown error",
+                    text = uiState.error?.message ?: stringResource(id = R.string.error_unknown_fallback),
                     color = MaterialTheme.colorScheme.error,
                     fontSize = 16.sp
                 )
@@ -78,7 +84,7 @@ fun HistoryScreen(
                     onClick = { viewModel.refresh() },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Retry", color = MaterialTheme.colorScheme.onPrimary)
+                    Text(stringResource(id = R.string.action_retry), color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
         }
@@ -116,7 +122,7 @@ fun HistoryScreen(
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
-                                    text = "AI Progress Summary",
+                                    text = stringResource(id = R.string.history_ai_summary_title),
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
@@ -178,10 +184,13 @@ fun HistoryScreen(
             1 -> { // Exercises Tab
                 if (uiState.exercises.isEmpty()) {
                     item {
-                        EmptyStateMessage(message = "No exercises found in history.")
+                        EmptyStateMessage(message = stringResource(id = R.string.history_empty_exercises))
                     }
                 } else {
-                    items(uiState.exercises) { exercise ->
+                    items(
+                        items = uiState.exercises,
+                        key = { exercise -> exercise.id }
+                    ) { exercise ->
                         ExerciseHistoryItem(exercise)
                     }
                 }
@@ -196,7 +205,7 @@ fun HistoryScreen(
                         )
                     } else {
                         EmptyStateMessage(
-                            message = "Not enough data to generate comparison yet.",
+                            message = stringResource(id = R.string.history_empty_comparison),
                             isPlaceholder = true
                         )
                     }

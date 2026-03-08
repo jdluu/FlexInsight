@@ -9,6 +9,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 import com.example.flexinsight.data.model.VolumeTrend
 import com.example.flexinsight.ui.theme.Primary
 import com.example.flexinsight.ui.utils.UnitConverter
@@ -30,7 +33,7 @@ fun ComparisonView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Period Comparison",
+                text = stringResource(id = R.string.history_comparison_period_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -39,7 +42,7 @@ fun ComparisonView(
                 shape = MaterialTheme.shapes.small
             ) {
                 Text(
-                    text = "${data.currentPeriodLabel} vs ${data.previousPeriodLabel}",
+                    text = stringResource(id = R.string.history_comparison_period_label, data.currentPeriodLabel, data.previousPeriodLabel),
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -49,7 +52,7 @@ fun ComparisonView(
 
         // Comparison Cards
         ComparisonCard(
-            title = "Total Volume",
+            title = stringResource(id = R.string.history_comparison_total_volume),
             currentValue = formatVolume(data.totalVolumeCurrent, useMetric),
             previousValue = formatVolume(data.totalVolumePrevious, useMetric),
             unit = UnitConverter.getWeightUnit(useMetric),
@@ -57,7 +60,7 @@ fun ComparisonView(
         )
 
         ComparisonCard(
-            title = "Workouts",
+            title = stringResource(id = R.string.history_comparison_workouts),
             currentValue = data.totalWorkoutsCurrent.toString(),
             previousValue = data.totalWorkoutsPrevious.toString(),
             unit = "",
@@ -65,7 +68,7 @@ fun ComparisonView(
         )
 
         ComparisonCard(
-            title = "Avg Duration",
+            title = stringResource(id = R.string.history_comparison_avg_duration),
             currentValue = "${data.avgDurationCurrent / 60}m",
             previousValue = "${data.avgDurationPrevious / 60}m",
             unit = "",
@@ -109,7 +112,7 @@ private fun ComparisonCard(
                             )
                         }
                     }
-                    Text("Current", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(id = R.string.history_comparison_current), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
                 // Previous
@@ -119,7 +122,7 @@ private fun ComparisonCard(
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text("Previous", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                    Text(stringResource(id = R.string.history_comparison_previous), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                 }
             }
         }

@@ -1,5 +1,11 @@
 package com.example.flexinsight.ui.screens.workoutdetail.parts
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -57,14 +64,16 @@ fun ExercisesSection(
             val sets = exerciseWithSets.sets
 
             // Convert sets to SetData format
-            val setsData = sets.map { set ->
-                SetData(
-                    number = set.number,
-                    weight = UnitConverter.formatWeight(set.weight, useMetric),
-                    reps = set.reps?.toString() ?: "-",
-                    rpe = if (set.rpe != null) String.format("%.1f", set.rpe) else "-",
-                    isPR = set.isPersonalRecord
-                )
+            val setsData = remember(sets, useMetric) {
+                sets.map { set ->
+                    SetData(
+                        number = set.number,
+                        weight = UnitConverter.formatWeight(set.weight, useMetric),
+                        reps = set.reps?.toString() ?: "-",
+                        rpe = if (set.rpe != null) String.format("%.1f", set.rpe) else "-",
+                        isPR = set.isPersonalRecord
+                    )
+                }
             }
 
             // Find best set (highest weight * reps)
@@ -81,7 +90,7 @@ fun ExercisesSection(
                 number = index + 1,
                 exerciseName = exercise.name,
                 sets = sets.size,
-                equipment = "Exercise", // TODO: Get equipment from exercise template if available
+                equipment = exercise.name.split(" ").firstOrNull() ?: "Exercise", // Using parsed name convention to group equipment/type
                 isExpanded = index == 0, // Expand first exercise by default
                 setsData = setsData,
                 bestSet = bestSetText,
@@ -268,76 +277,89 @@ fun ExpandableExerciseCard(
 
 @Composable
 fun SetRow(set: SetData) {
+    val infiniteTransition = rememberInfiniteTransition(label = "PRPulse")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "Scale"
+    )
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        color = if (set.isPR) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.03f),
-        border = if (set.isPR) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)) else null
+        shape = RoundedCornerShape(12.dp),
+        color = if (set.isPR) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface,
+        border = if (set.isPR) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)) else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f))
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = set.number.toString(),
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                modifier = Modifier.width(32.dp)
+            )
+            Text(
+                text = set.weight,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = set.reps,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (set.isPR) Modifier.border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
-                        else Modifier
-                    )
+                modifier = Modifier.width(62.dp),
+                contentAlignment = Alignment.CenterEnd
             ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = set.number.toString(),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.width(40.dp)
-                )
-                Text(
-                    text = set.weight,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = set.reps,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center
-                )
                 if (set.isPR) {
-                    Row(
-                        modifier = Modifier.width(40.dp),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
+                    Surface(
+                        modifier = Modifier.graphicsLayer(scaleX = scale, scaleY = scale),
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.primary,
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.EmojiEvents,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Text(
-                            text = "PR",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        Row(
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.EmojiEvents,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(10.dp)
+                            )
+                            Text(
+                                text = "PR",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
+                            )
+                        }
                     }
                 } else {
                     Text(
                         text = set.rpe,
-                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.width(40.dp),
                         textAlign = TextAlign.End
                     )
                 }

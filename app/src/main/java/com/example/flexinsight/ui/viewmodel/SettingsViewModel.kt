@@ -24,6 +24,7 @@ data class SettingsUiState(
     val loadingState: LoadingState = LoadingState.Idle,
     val error: UiError? = null,
     val apiKey: String? = null,
+    val apiKeyError: String? = null,
     val profileInfo: ProfileInfo? = null,
     val weeklyGoal: Int = 5,
     val theme: String = "System",
@@ -31,7 +32,8 @@ data class SettingsUiState(
     val syncState: LoadingState = LoadingState.Idle,
     val syncError: UiError? = null,
     val networkState: NetworkState = NetworkState.Unknown,
-    val forceAiEnable: Boolean = false
+    val forceAiEnable: Boolean = false,
+    val notificationsEnabled: Boolean = true
 ) {
     // Backward compatibility helpers
     val isLoading: Boolean
@@ -88,6 +90,7 @@ class SettingsViewModel @Inject constructor(
                 val profileInfo = try {
                     repository.getProfileInfo()
                 } catch (e: Exception) {
+                    android.util.Log.e("SettingsViewModel", "Failed to load profile info", e)
                     null
                 }
 
@@ -95,30 +98,42 @@ class SettingsViewModel @Inject constructor(
                 val weeklyGoal = try {
                     userPreferencesManager.getWeeklyGoal()
                 } catch (e: Exception) {
+                    android.util.Log.e("SettingsViewModel", "Failed to load weekly goal", e)
                     5
                 }
 
                 val theme = try {
                     userPreferencesManager.getTheme()
                 } catch (e: Exception) {
+                    android.util.Log.e("SettingsViewModel", "Failed to load theme preference", e)
                     "System"
                 }
 
                 val units = try {
                     userPreferencesManager.getUnits()
                 } catch (e: Exception) {
+                    android.util.Log.e("SettingsViewModel", "Failed to load units preference", e)
                     "Imperial"
                 }
                 
                 val forceAi = try {
                     userPreferencesManager.getForceAiEnable()
                 } catch (e: Exception) {
+                    android.util.Log.e("SettingsViewModel", "Failed to load force AI preference", e)
                     false
+                }
+                
+                val notifications = try {
+                    userPreferencesManager.getNotificationsEnabled()
+                } catch (e: Exception) {
+                    android.util.Log.e("SettingsViewModel", "Failed to load notifications preference", e)
+                    true
                 }
 
                 val displayName = try {
                     userPreferencesManager.getDisplayName()
                 } catch (e: Exception) {
+                    android.util.Log.e("SettingsViewModel", "Failed to load display name", e)
                     null
                 }
 
@@ -136,6 +151,7 @@ class SettingsViewModel @Inject constructor(
                     theme = theme,
                     units = units,
                     forceAiEnable = forceAi,
+                    notificationsEnabled = notifications,
                     error = null
                 )
             } catch (e: Exception) {
@@ -207,6 +223,15 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun updateNotificationsEnabled(enabled: Boolean) {
+        safeLaunch(onError = { apiError ->
+            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+        }) {
+            userPreferencesManager.setNotificationsEnabled(enabled)
+            _uiState.value = _uiState.value.copy(notificationsEnabled = enabled)
+        }
+    }
+
 
 
     fun clearCache() {
@@ -241,16 +266,25 @@ class SettingsViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(error = null)
     }
 
-    fun saveApiKey(key: String) {
-        viewModelScope.launch {
-            try {
-                apiKeyManager.saveApiKey(key)
-                _uiState.value = _uiState.value.copy(apiKey = key)
-                refresh()
-            } catch (e: Exception) {
-                val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+    fun validateAndSaveApiKey(key: String, onSuccess: () -> Unit = {}) {
+        if (apiKeyManager.isValidApiKeyFormat(key)) {
+            viewModelScope.launch {
+                try {
+                    apiKeyManager.saveApiKey(key)
+                    _uiState.value = _uiState.value.copy(apiKey = key, apiKeyError = null)
+                    refresh()
+                    onSuccess()
+                } catch (e: Exception) {
+                    val apiError = ErrorHandler.handleError(e)
+                    _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+                }
             }
+        } else {
+            _uiState.value = _uiState.value.copy(apiKeyError = "API key must be at least 10 characters")
         }
+    }
+
+    fun clearApiKeyError() {
+        _uiState.value = _uiState.value.copy(apiKeyError = null)
     }
 }

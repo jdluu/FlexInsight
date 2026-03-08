@@ -4,7 +4,9 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Color
+import com.example.flexinsight.R
 import com.example.flexinsight.data.model.PlannedWorkout
 import com.example.flexinsight.ui.theme.BackgroundDarkAlt
 import com.example.flexinsight.ui.theme.Primary
@@ -18,19 +20,19 @@ fun PlannerRescheduleDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Reschedule Workout") },
-        text = { Text("Move '${workout.name}' to tomorrow?") },
+        title = { Text(stringResource(id = R.string.planner_reschedule_dialog_title)) },
+        text = { Text(stringResource(id = R.string.planner_reschedule_dialog_desc, workout.name)) },
         containerColor = BackgroundDarkAlt,
         titleContentColor = Color.White,
         textContentColor = TextSecondary,
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Move", color = Primary)
+                Text(stringResource(id = R.string.planner_reschedule_dialog_action), color = Primary)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextSecondary)
+                Text(stringResource(id = R.string.cancel), color = TextSecondary)
             }
         }
     )

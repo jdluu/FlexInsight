@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 import com.example.flexinsight.data.model.MuscleGroup
 
 /**
@@ -39,7 +41,7 @@ fun MuscleHeatmap(
         ) {
              // Front View
              SilhouetteView(
-                 title = "FRONT",
+                 title = stringResource(id = R.string.muscle_heatmap_front),
                  recoveryMap = recoveryMap,
                  isFront = true,
                  modifier = Modifier.weight(1f)
@@ -47,7 +49,7 @@ fun MuscleHeatmap(
              
              // Back View
              SilhouetteView(
-                 title = "BACK",
+                 title = stringResource(id = R.string.muscle_heatmap_back),
                  recoveryMap = recoveryMap,
                  isFront = false,
                  modifier = Modifier.weight(1f)

@@ -16,6 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 import com.example.flexinsight.ui.theme.*
 
 /**
@@ -36,7 +38,7 @@ fun ApiKeyDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Hevy API Key",
+                text = stringResource(id = R.string.settings_dialog_api_key_title),
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
@@ -46,15 +48,15 @@ fun ApiKeyDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Enter your Hevy API key. You can get it from https://hevy.com/settings?developer",
+                    text = stringResource(id = R.string.settings_dialog_api_key_desc),
                     color = TextSecondary,
                     fontSize = 14.sp
                 )
                 OutlinedTextField(
                     value = apiKeyText,
                     onValueChange = { apiKeyText = it },
-                    label = { Text("API Key", color = TextSecondary) },
-                    placeholder = { Text("Enter your API key", color = TextTertiary) },
+                    label = { Text(stringResource(id = R.string.api_key_label), color = TextSecondary) },
+                    placeholder = { Text(stringResource(id = R.string.api_key_placeholder), color = TextTertiary) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
@@ -69,7 +71,7 @@ fun ApiKeyDialog(
                     supportingText = {
                         if (!isValid && apiKeyText.isNotEmpty()) {
                             Text(
-                                text = "Must be at least 10 characters",
+                                text = stringResource(id = R.string.api_key_error_length),
                                 color = MaterialTheme.colorScheme.error,
                                 fontSize = 12.sp
                             )
@@ -93,12 +95,12 @@ fun ApiKeyDialog(
                     disabledContainerColor = Primary.copy(alpha = 0.5f)
                 )
             ) {
-                Text("Save", color = BackgroundDark, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.save), color = BackgroundDark, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextSecondary)
+                Text(stringResource(id = R.string.cancel), color = TextSecondary)
             }
         },
         containerColor = SurfaceCardAlt,
@@ -122,7 +124,7 @@ fun WeeklyGoalDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Weekly Goal",
+                text = stringResource(id = R.string.settings_dialog_goal_title),
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
@@ -132,7 +134,7 @@ fun WeeklyGoalDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Set your weekly workout goal (number of days per week)",
+                    text = stringResource(id = R.string.settings_dialog_goal_desc),
                     color = TextSecondary,
                     fontSize = 14.sp
                 )
@@ -142,8 +144,8 @@ fun WeeklyGoalDialog(
                         goalText = it
                         error = null
                     },
-                    label = { Text("Days per week", color = TextSecondary) },
-                    placeholder = { Text("Enter number", color = TextTertiary) },
+                    label = { Text(stringResource(id = R.string.settings_dialog_goal_label), color = TextSecondary) },
+                    placeholder = { Text(stringResource(id = R.string.settings_dialog_goal_placeholder), color = TextTertiary) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
@@ -173,17 +175,17 @@ fun WeeklyGoalDialog(
                     if (goal != null && goal > 0 && goal <= 7) {
                         onSave(goal)
                     } else {
-                        error = "Please enter a number between 1 and 7"
+                        error = "Please enter a number between 1 and 7" // Can leave this dynamic or resource mapped later
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Primary)
             ) {
-                Text("Save", color = BackgroundDark, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.save), color = BackgroundDark, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextSecondary)
+                Text(stringResource(id = R.string.cancel), color = TextSecondary)
             }
         },
         containerColor = SurfaceCardAlt,
@@ -200,13 +202,13 @@ fun ThemeDialog(
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit
 ) {
-    val themes = listOf("System", "Light", "Dark")
+    val themes = listOf("System", "Light", "Dark") // We skip true I18N here without a dynamic string mapper
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Theme",
+                text = "Theme", // This could also optionally be mapped
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
@@ -251,7 +253,7 @@ fun ThemeDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextSecondary)
+                Text(stringResource(id = R.string.cancel), color = TextSecondary)
             }
         },
         containerColor = SurfaceCardAlt,
@@ -271,14 +273,14 @@ fun ClearCacheDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Clear Cache",
+                text = stringResource(id = R.string.settings_dialog_clear_cache_title),
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
             Text(
-                text = "This will clear all cached data (exercise templates, routines). Your workout data will not be affected.",
+                text = stringResource(id = R.string.settings_dialog_clear_cache_desc),
                 color = TextSecondary,
                 fontSize = 14.sp
             )
@@ -288,12 +290,12 @@ fun ClearCacheDialog(
                 onClick = onConfirm,
                 colors = ButtonDefaults.buttonColors(containerColor = RedAccent)
             ) {
-                Text("Clear", color = Color.White, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.settings_dialog_clear_action), color = Color.White, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextSecondary)
+                Text(stringResource(id = R.string.cancel), color = TextSecondary)
             }
         },
         containerColor = SurfaceCardAlt,
@@ -317,7 +319,7 @@ fun EditProfileDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Edit Profile",
+                text = stringResource(id = R.string.settings_dialog_profile_title),
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
@@ -327,7 +329,7 @@ fun EditProfileDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Enter your display name",
+                    text = stringResource(id = R.string.settings_dialog_profile_desc),
                     color = TextSecondary,
                     fontSize = 14.sp
                 )
@@ -337,8 +339,8 @@ fun EditProfileDialog(
                         nameText = it
                         error = null
                     },
-                    label = { Text("Display Name", color = TextSecondary) },
-                    placeholder = { Text("Enter your name", color = TextTertiary) },
+                    label = { Text(stringResource(id = R.string.settings_dialog_profile_label), color = TextSecondary) },
+                    placeholder = { Text(stringResource(id = R.string.settings_dialog_profile_placeholder), color = TextTertiary) },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
@@ -371,12 +373,12 @@ fun EditProfileDialog(
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Primary)
             ) {
-                Text("Save", color = BackgroundDark, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.save), color = BackgroundDark, fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = TextSecondary)
+                Text(stringResource(id = R.string.cancel), color = TextSecondary)
             }
         },
         containerColor = SurfaceCardAlt,

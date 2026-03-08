@@ -17,7 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.flexinsight.R
+import androidx.compose.ui.res.stringResource
 import com.example.flexinsight.ui.theme.*
 import com.example.flexinsight.ui.viewmodel.SettingsViewModel
 
@@ -80,7 +82,7 @@ fun OnboardingScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
-                    text = "Welcome to FlexInsight",
+                    text = stringResource(id = R.string.onboarding_welcome),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -90,7 +92,7 @@ fun OnboardingScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Transform your Hevy data into actionable insights with elite-level AI coaching.",
+                    text = stringResource(id = R.string.onboarding_subtitle),
                     style = MaterialTheme.typography.bodyLarge,
                     color = TextSecondary,
                     textAlign = TextAlign.Center,
@@ -113,11 +115,11 @@ fun OnboardingScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Key, contentDescription = null, tint = Primary, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("Connect Hevy", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(stringResource(id = R.string.onboarding_connect_hevy), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         }
 
                         Text(
-                            text = "FlexInsight needs your Hevy API key to analyze your workout history securely.",
+                            text = stringResource(id = R.string.onboarding_api_key_desc),
                             style = MaterialTheme.typography.bodySmall,
                             color = TextTertiary
                         )
@@ -125,8 +127,8 @@ fun OnboardingScreen(
                         OutlinedTextField(
                             value = apiKey,
                             onValueChange = { apiKey = it },
-                            label = { Text("Hevy API Key") },
-                            placeholder = { Text("Paste your key here") },
+                            label = { Text(stringResource(id = R.string.onboarding_api_key_label)) },
+                            placeholder = { Text(stringResource(id = R.string.onboarding_api_key_placeholder)) },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             singleLine = true,
@@ -138,13 +140,13 @@ fun OnboardingScreen(
                         )
 
                         Button(
-                            onClick = { viewModel.saveApiKey(apiKey) },
+                            onClick = { viewModel.validateAndSaveApiKey(apiKey) },
                             modifier = Modifier.fillMaxWidth().height(56.dp),
                             enabled = isValid,
                             shape = RoundedCornerShape(16.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Primary)
                         ) {
-                            Text("Get Started", fontWeight = FontWeight.Bold, color = BackgroundDark)
+                            Text(stringResource(id = R.string.onboarding_get_started), fontWeight = FontWeight.Bold, color = BackgroundDark)
                         }
                     }
                 }
@@ -154,7 +156,7 @@ fun OnboardingScreen(
                 TextButton(
                     onClick = { /* Could link to instructions */ }
                 ) {
-                    Text("How do I find my API key?", color = TextSecondary, fontSize = 14.sp)
+                    Text(stringResource(id = R.string.onboarding_find_key_link), color = TextSecondary, fontSize = 14.sp)
                 }
             }
         }

@@ -10,6 +10,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 import com.example.flexinsight.ui.theme.Primary
 import com.example.flexinsight.ui.theme.SurfaceCardAlt
 import com.example.flexinsight.ui.theme.TextSecondary
@@ -24,7 +26,7 @@ fun HistoryFilterDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Filter History",
+                text = stringResource(id = R.string.history_filter_dialog_title),
                 color = Color.White,
                 fontWeight = FontWeight.Bold
             )
@@ -59,7 +61,7 @@ fun HistoryFilterDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close", color = Primary)
+                Text(stringResource(id = R.string.close), color = Primary)
             }
         },
         containerColor = SurfaceCardAlt,

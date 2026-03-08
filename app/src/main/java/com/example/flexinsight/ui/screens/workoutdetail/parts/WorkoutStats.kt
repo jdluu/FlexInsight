@@ -27,6 +27,7 @@ import com.example.flexinsight.ui.utils.UnitConverter
 @Composable
 fun WorkoutStatsCard(
     stats: SingleWorkoutStats?,
+    exercisesWithSets: List<com.example.flexinsight.ui.viewmodel.ExerciseWithSets>,
     totalReps: Int,
     useMetric: Boolean = false
 ) {
@@ -51,7 +52,9 @@ fun WorkoutStatsCard(
     val setsText = (stats?.totalSets ?: 0).toString()
     val repsText = totalReps.toString()
 
-    val hasPR = false // TODO: Check if any sets are PRs
+    val hasPR = exercisesWithSets.any { exercise -> 
+        exercise.sets.any { set -> set.isPersonalRecord } 
+    }
 
     Card(
         modifier = Modifier

@@ -30,7 +30,8 @@ data class ChatMessage(
     val sender: String,
     val text: String,
     val isRead: Boolean = false,
-    val hasChart: Boolean = false
+    val hasChart: Boolean = false,
+    val id: String = java.util.UUID.randomUUID().toString()
 )
 
 @Composable
@@ -90,27 +91,35 @@ fun ChatBubble(message: ChatMessage) {
         ) {
             Surface(
                 shape = RoundedCornerShape(
-                    topStart = 16.dp,
-                    topEnd = 16.dp,
-                    bottomEnd = if (isUser) 0.dp else 16.dp,
-                    bottomStart = if (isUser) 16.dp else 0.dp
+                    topStart = 20.dp,
+                    topEnd = 20.dp,
+                    bottomEnd = if (isUser) 4.dp else 20.dp,
+                    bottomStart = if (isUser) 20.dp else 4.dp
                 ),
-                color = if (isUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                color = if (isUser) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                tonalElevation = if (isUser) 0.dp else 2.dp,
+                shadowElevation = if (isUser) 4.dp else 0.dp,
+                border = if (isUser) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         text = message.text,
-                        fontSize = 14.sp,
-                        color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 20.sp
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 22.sp
                     )
 
                     if (message.hasChart) {
-                        HeartRateChart()
+                        Surface(
+                            modifier = Modifier.fillMaxWidth().height(120.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                        ) {
+                            HeartRateChart()
+                        }
                     }
                 }
             }

@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.flexinsight.ui.common.UiError
 import com.example.flexinsight.ui.theme.*
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 
 /**
  * Composable for displaying error messages with different styles based on error type
@@ -66,10 +68,10 @@ fun ErrorBanner(
             ) {
                 Text(
                     text = when (error) {
-                        is UiError.Network -> "Network Error"
-                        is UiError.Auth -> "Authentication Error"
-                        is UiError.Server -> "Server Error"
-                        is UiError.Unknown -> "Error"
+                        is UiError.Network -> stringResource(id = R.string.error_network)
+                        is UiError.Auth -> stringResource(id = R.string.error_auth)
+                        is UiError.Server -> stringResource(id = R.string.error_server)
+                        is UiError.Unknown -> stringResource(id = R.string.error_unknown)
                     },
                     color = textColor,
                     fontSize = 14.sp,

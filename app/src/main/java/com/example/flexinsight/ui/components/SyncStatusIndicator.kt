@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.flexinsight.data.sync.SyncState
 import com.example.flexinsight.ui.theme.*
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -35,7 +37,7 @@ fun SyncStatusIndicator(
                     strokeWidth = 2.dp
                 )
                 Text(
-                    text = "Syncing...",
+                    text = stringResource(id = R.string.sync_status_syncing),
                     color = TextSecondary,
                     fontSize = 12.sp
                 )
@@ -48,7 +50,7 @@ fun SyncStatusIndicator(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "✓ Synced",
+                    text = stringResource(id = R.string.sync_status_synced),
                     color = TextSecondary,
                     fontSize = 12.sp
                 )
@@ -69,7 +71,7 @@ fun SyncStatusIndicator(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "Sync failed",
+                    text = stringResource(id = R.string.sync_status_failed),
                     color = RedAccent,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
@@ -82,14 +84,15 @@ fun SyncStatusIndicator(
     }
 }
 
+@Composable
 private fun formatTimeAgo(timestamp: Long): String? {
     val now = System.currentTimeMillis()
     val diff = now - timestamp
 
     return when {
-        diff < 60_000 -> "Just now"
-        diff < 3600_000 -> "${diff / 60_000}m ago"
-        diff < 86400_000 -> "${diff / 3600_000}h ago"
+        diff < 60_000 -> stringResource(id = R.string.sync_status_just_now)
+        diff < 3600_000 -> stringResource(id = R.string.sync_status_mins_ago, diff / 60_000)
+        diff < 86400_000 -> stringResource(id = R.string.sync_status_hours_ago, diff / 3600_000)
         else -> {
             val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
             dateFormat.format(Date(timestamp))

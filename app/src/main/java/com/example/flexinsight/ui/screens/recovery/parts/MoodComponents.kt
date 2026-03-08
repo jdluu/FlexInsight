@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,7 +35,7 @@ fun MoodLogSection(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "Mood Log",
+            text = stringResource(id = R.string.recovery_mood_log_title),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -56,7 +58,7 @@ fun MoodLogSection(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "How do you feel today?",
+                            text = stringResource(id = R.string.recovery_mood_log_question),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.onSurface
@@ -87,14 +89,14 @@ fun MoodLogSection(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "Drained",
+                            text = stringResource(id = R.string.recovery_mood_drained),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             letterSpacing = 1.sp
                         )
                         Text(
-                            text = "Unstoppable",
+                            text = stringResource(id = R.string.recovery_mood_unstoppable),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -122,7 +124,7 @@ fun MoodLogSection(
                             value = notesText,
                             onValueChange = onNotesChange,
                             modifier = Modifier.weight(1f),
-                            placeholder = { Text("Add notes on soreness, pain, or injury...", color = TextSecondary) },
+                            placeholder = { Text(stringResource(id = R.string.recovery_mood_notes_placeholder), color = TextSecondary) },
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent,
@@ -149,7 +151,7 @@ fun MoodLogSection(
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        text = "\"You often report lower mood ratings the day after heavy leg sessions. Consider active recovery today.\"",
+                        text = stringResource(id = R.string.recovery_mood_ai_insight),
                         fontSize = 12.sp,
                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

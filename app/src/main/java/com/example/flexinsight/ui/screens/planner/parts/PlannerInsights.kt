@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.example.flexinsight.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,7 +66,7 @@ fun AIInsightsSection(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "AI Insights",
+                        text = stringResource(id = R.string.ai_insights_title),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -105,7 +107,7 @@ fun RecommendedWorkoutCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Text(
-                    text = "Recommended Next",
+                    text = stringResource(id = R.string.planner_insights_recommended_next),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -116,7 +118,7 @@ fun RecommendedWorkoutCard(
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                 ) {
                     Text(
-                        text = "HIGH CONFIDENCE",
+                        text = stringResource(id = R.string.planner_insights_high_confidence),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
@@ -126,18 +128,18 @@ fun RecommendedWorkoutCard(
             }
             val recommendation = when {
                 muscleGroupProgress.isEmpty() -> {
-                    "Active Recovery" to "Keep tracking your workouts to get personalized recommendations."
+                    stringResource(id = R.string.planner_insights_active_recovery_title) to stringResource(id = R.string.planner_insights_active_recovery_desc)
                 }
                 muscleGroupProgress.any { it.intensity == "HI" } -> {
-                    "Active Recovery Yoga" to "Based on your high intensity load, a lighter session will optimize recovery."
+                    stringResource(id = R.string.planner_insights_recovery_yoga_title) to stringResource(id = R.string.planner_insights_recovery_yoga_desc)
                 }
                 else -> {
                     val lowest = muscleGroupProgress.minByOrNull { it.volume }
                     if (lowest != null) {
                         val focusArea = lowest.muscleGroup
-                        "Focus on $focusArea" to "Your $focusArea volume is lower. Consider adding more exercises targeting this area."
+                        stringResource(id = R.string.planner_insights_focus_area_title, focusArea) to stringResource(id = R.string.planner_insights_focus_area_desc, focusArea)
                     } else {
-                        "Balanced Training" to "Your volume distribution looks good. Continue with your current routine."
+                        stringResource(id = R.string.planner_insights_balanced_title) to stringResource(id = R.string.planner_insights_balanced_desc)
                     }
                 }
             }
@@ -168,11 +170,11 @@ fun RecommendedWorkoutCard(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Generate Optimized Plan", color = MaterialTheme.colorScheme.onPrimary)
+                Text(stringResource(id = R.string.action_generate_optimized_plan), color = MaterialTheme.colorScheme.onPrimary)
             }
 
             Text(
-                text = "AI will create a personalized workout plan based on your training history and recovery needs",
+                text = stringResource(id = R.string.planner_insights_generate_plan_desc),
                 fontSize = 10.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 lineHeight = 14.sp,
@@ -191,7 +193,7 @@ fun VolumeBalanceChart(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = "Volume Balance",
+            text = stringResource(id = R.string.planner_insights_volume_balance),
             fontSize = 12.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -207,10 +209,10 @@ fun VolumeBalanceChart(
             val maxValue = maxOf(balance.push, balance.pull, balance.legs, balance.cardio)
             val isLegsHighlighted = balance.legs == maxValue
 
-            VolumeBar("Push", balance.push, Color(0xFF60A5FA), modifier = Modifier.weight(1f))
-            VolumeBar("Pull", balance.pull, Color(0xFF9333EA), modifier = Modifier.weight(1f))
-            VolumeBar("Legs", balance.legs, MaterialTheme.colorScheme.primary, isHighlighted = isLegsHighlighted, modifier = Modifier.weight(1f))
-            VolumeBar("Cardio", balance.cardio, MaterialTheme.colorScheme.tertiary, modifier = Modifier.weight(1f))
+            VolumeBar(stringResource(id = R.string.muscle_group_push), balance.push, Color(0xFF60A5FA), modifier = Modifier.weight(1f))
+            VolumeBar(stringResource(id = R.string.muscle_group_pull), balance.pull, Color(0xFF9333EA), modifier = Modifier.weight(1f))
+            VolumeBar(stringResource(id = R.string.muscle_group_legs), balance.legs, MaterialTheme.colorScheme.primary, isHighlighted = isLegsHighlighted, modifier = Modifier.weight(1f))
+            VolumeBar(stringResource(id = R.string.muscle_group_cardio), balance.cardio, MaterialTheme.colorScheme.tertiary, modifier = Modifier.weight(1f))
         }
     }
 }
