@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 
+import com.example.flexinsight.data.model.CreateRoutineRequest
+
 /**
  * Repository for routine-related operations.
  * Handles fetching and caching routines from API.
@@ -284,6 +286,47 @@ class RoutineRepositoryImpl(
             cacheManager.put(CacheKeys.ROUTINE_FOLDERS, allFolders)
             Result.success(allFolders)
 
+        } catch (e: Exception) {
+            val error = ErrorHandler.handleError(e)
+            Result.error(error)
+        }
+    }
+
+    /**
+     * Creates a new routine on the user's Hevy account via POST /v1/routines.
+     * Invalidates the routines cache on success to trigger a re-sync.
+     */
+    override suspend fun createRoutine(request: CreateRoutineRequest): Result<String> {
+        val apiServiceResult = getApiService()
+        if (apiServiceResult is Result.Error) {
+            return Result.error(apiServiceResult.error)
+        }
+
+        if (!networkMonitor.hasNetworkConnection()) {
+            return Result.error(ApiError.NetworkError.NoConnection)
+        }
+
+        val service = (apiServiceResult as Result.Success).data
+
+        return try {
+            val response = service.createRoutine(request)
+
+            if (response.isSuccessful) {
+                val body = response.body() ?: return Result.error(
+                    ApiError.Unknown("Empty response body")
+                )
+                AppLogger.d("Created routine: ${body.id} - ${body.title}")
+                cacheManager.invalidate(CacheKeys.ROUTINES)
+                Result.success(body.id)
+            } else {
+                val error = ErrorHandler.handleHttpException(
+                    retrofit2.HttpException(response)
+                )
+                if (error is ApiError.AuthError) {
+                    invalidateApiService()
+                }
+                Result.error(error)
+            }
         } catch (e: Exception) {
             val error = ErrorHandler.handleError(e)
             Result.error(error)

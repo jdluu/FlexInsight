@@ -27,7 +27,7 @@ object DatabaseModule {
             FlexDatabase::class.java,
             FlexDatabase.DATABASE_NAME
         )
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
     }
 

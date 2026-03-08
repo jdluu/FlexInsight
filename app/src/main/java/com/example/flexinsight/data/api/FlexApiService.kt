@@ -1,5 +1,7 @@
 package com.example.flexinsight.data.api
 
+import com.example.flexinsight.data.model.CreateRoutineRequest
+import com.example.flexinsight.data.model.CreateRoutineResponse
 import com.example.flexinsight.data.model.ExerciseHistoryResponse
 import com.example.flexinsight.data.model.ExerciseTemplateResponse
 import com.example.flexinsight.data.model.PaginatedExerciseTemplatesResponse
@@ -8,7 +10,9 @@ import com.example.flexinsight.data.model.PaginatedWorkoutResponse
 import com.example.flexinsight.data.model.RoutineResponse
 import com.example.flexinsight.data.model.WorkoutResponse
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -90,6 +94,17 @@ interface FlexApiService {
         @Query("page") page: Int = 1,
         @Query("pageSize") pageSize: Int = 50
     ): Response<PaginatedRoutineResponse>
+
+    /**
+     * Create a new routine (workout template) on the user's Hevy account.
+     * API key is added automatically by the interceptor.
+     * @param request The routine creation request body.
+     * @return The created routine's ID, title, and exercise count.
+     */
+    @POST("v1/routines")
+    suspend fun createRoutine(
+        @Body request: CreateRoutineRequest
+    ): Response<CreateRoutineResponse>
 
     /**
      * Get a single routine by ID
