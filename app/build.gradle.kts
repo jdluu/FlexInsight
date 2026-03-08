@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.ui.text.google.fonts)
     
     // Networking
     implementation(libs.retrofit)
@@ -95,6 +96,6 @@ dependencies {
 
     // ML Kit Prompt API (Gemini Nano)
     implementation("com.google.mlkit:genai-prompt:1.0.0-alpha1")
-    implementation("com.google.guava:guava:32.0.1-jre")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.7.3")
+    implementation("com.google.guava:guava:33.4.0-android")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.10.0")
 }
