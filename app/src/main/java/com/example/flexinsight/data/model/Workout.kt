@@ -1,5 +1,6 @@
 package com.example.flexinsight.data.model
 
+import androidx.compose.runtime.Stable
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -13,6 +14,7 @@ import java.util.Date
     tableName = "workouts",
     indices = [Index(value = ["startTime"]), Index(value = ["lastSynced"])]
 )
+@Stable
 data class Workout(
     @PrimaryKey
     val id: String,

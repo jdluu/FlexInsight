@@ -1,5 +1,6 @@
 package com.example.flexinsight.data.model
 
+import androidx.compose.runtime.Stable
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -30,6 +31,7 @@ data class RoutineExerciseResponse(
 /**
  * Routine - Local representation
  */
+@Stable
 data class Routine(
     val id: String,
     val name: String,

@@ -1,5 +1,6 @@
 package com.example.flexinsight.data.model
 
+import androidx.compose.runtime.Stable
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -21,6 +22,7 @@ import com.google.gson.annotations.SerializedName
     ],
     indices = [Index(value = ["exerciseId"])]
 )
+@Stable
 data class Set(
     @PrimaryKey
     val id: String,

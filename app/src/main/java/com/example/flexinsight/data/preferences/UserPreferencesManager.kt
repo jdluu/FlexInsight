@@ -132,5 +132,24 @@ class UserPreferencesManager(private val context: Context) {
             preferences[FORCE_AI_ENABLE] = enabled
         }
     }
+
+    /**
+     * Get notifications enable preference
+     */
+    private val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
+
+    val notificationsEnabledFlow: Flow<Boolean> = context.userPreferencesDataStore.data.map { preferences ->
+        preferences[NOTIFICATIONS_ENABLED] ?: true
+    }
+
+    suspend fun getNotificationsEnabled(): Boolean {
+        return notificationsEnabledFlow.first()
+    }
+
+    suspend fun setNotificationsEnabled(enabled: Boolean) {
+        context.userPreferencesDataStore.edit { preferences ->
+            preferences[NOTIFICATIONS_ENABLED] = enabled
+        }
+    }
 }
 

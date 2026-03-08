@@ -6,6 +6,7 @@ import com.example.flexinsight.data.local.FlexDatabase
 import com.example.flexinsight.data.model.*
 import com.example.flexinsight.data.preferences.ApiKeyManager
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 
 /**
  * Main repository that delegates to specialized repositories.
@@ -233,6 +234,31 @@ class FlexRepositoryImpl(
      * Sync with cloud database (structure ready, implementation TBD)
      */
     override suspend fun syncWithCloud() {
-        // TODO: Implement cloud sync when database service is chosen
+        val hasApiKey = apiKeyManager.hasApiKey()
+        
+        if (!hasApiKey) {
+            android.util.Log.w("FlexRepository", "Cloud Sync Aborted: No valid API key provided. Skipping.")
+            return
+        }
+
+        try {
+            android.util.Log.i("FlexRepository", "Initiating Mock Cloud Sync...")
+            
+            // 1. Fetch Local Payload (Mock serialization phase)
+            val workoutsFlow = workoutRepository.getWorkouts()
+            val localWorkoutsCount = workoutsFlow.first().size
+            
+            val routinesFlow = routineRepository.getRoutines()
+            val localRoutinesCount = routinesFlow.first().size
+
+            // 2. Simulate Network Upload Delay (1.5 seconds)
+            android.util.Log.d("FlexRepository", "Serializing and uploading $localWorkoutsCount workouts and $localRoutinesCount routines...")
+            kotlinx.coroutines.delay(1500)
+            
+            // 3. Complete
+            android.util.Log.i("FlexRepository", "Mock Cloud Sync Completed successfully.")
+        } catch (e: Exception) {
+            android.util.Log.e("FlexRepository", "Mock Cloud Sync Failed: ${e.message}", e)
+        }
     }
 }

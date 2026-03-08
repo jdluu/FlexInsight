@@ -9,6 +9,10 @@ interface WorkoutDao {
     @Query("SELECT * FROM workouts ORDER BY startTime DESC")
     fun getAllWorkoutsFlow(): Flow<List<Workout>>
 
+    @Transaction
+    @Query("SELECT * FROM workouts ORDER BY startTime DESC")
+    fun getAllWorkoutsWithDetailsFlow(): Flow<List<com.example.flexinsight.data.model.WorkoutWithDetails>>
+
     @Query("SELECT * FROM workouts ORDER BY startTime DESC LIMIT :limit")
     fun getRecentWorkoutsFlow(limit: Int): Flow<List<Workout>>
 

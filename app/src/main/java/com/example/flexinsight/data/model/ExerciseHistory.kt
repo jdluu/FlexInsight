@@ -1,10 +1,12 @@
 package com.example.flexinsight.data.model
 
+import androidx.compose.runtime.Stable
 import com.google.gson.annotations.SerializedName
 
 /**
  * Exercise history entry from Hevy API
  */
+@Stable
 data class ExerciseHistoryEntry(
     @SerializedName("id")
     val id: String,

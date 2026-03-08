@@ -40,6 +40,7 @@ class BuildAiContextUseCase @Inject constructor(
         val recentWorkouts: List<Workout> = try {
             workoutRepository.getRecentWorkouts(limit = 7).first()
         } catch (e: Exception) {
+            android.util.Log.e("BuildAiContextUseCase", "Failed to fetch recent workouts", e)
             emptyList()
         }
         
@@ -76,7 +77,8 @@ class BuildAiContextUseCase @Inject constructor(
         val consistencyData: List<com.example.flexinsight.data.model.DayInfo> = try {
              statsRepository.getConsistencyData(14)
         } catch (e: Exception) {
-             emptyList<com.example.flexinsight.data.model.DayInfo>()
+             android.util.Log.e("BuildAiContextUseCase", "Failed to get consistency data", e)
+             emptyList()
         }
         val sessionsLast14Days = consistencyData.count { it.hasWorkout }
         sb.append("Training Consistency: $sessionsLast14Days workouts in the last 14 days.\n")
@@ -85,6 +87,7 @@ class BuildAiContextUseCase @Inject constructor(
         val prs = try {
             statsRepository.getPRsWithDetails(limit = 20)
         } catch (e: Exception) {
+            android.util.Log.e("BuildAiContextUseCase", "Failed to fetch PRs", e)
             emptyList()
         }
 
@@ -100,6 +103,7 @@ class BuildAiContextUseCase @Inject constructor(
         val fatigueData = try {
             statsRepository.getMuscleGroupProgress(weeks = 1)
         } catch (e: Exception) {
+            android.util.Log.e("BuildAiContextUseCase", "Failed to fetch fatigue data", e)
             emptyList()
         }
         val highFatigueMuscles = fatigueData.filter { it.intensity == "HI" }.map { it.muscleGroup }
@@ -109,8 +113,14 @@ class BuildAiContextUseCase @Inject constructor(
         }
 
         // 6. Advanced Context: Routines & Planned
-        val routines = try { routineRepository.getRoutines().first() } catch (e: Exception) { emptyList() }
-        val plannedToday = try { statsRepository.getPlannedWorkoutsForDay(System.currentTimeMillis()) } catch (e: Exception) { emptyList() }
+        val routines = try { routineRepository.getRoutines().first() } catch (e: Exception) { 
+            android.util.Log.e("BuildAiContextUseCase", "Failed to fetch routines", e)
+            emptyList() 
+        }
+        val plannedToday = try { statsRepository.getPlannedWorkoutsForDay(System.currentTimeMillis()) } catch (e: Exception) { 
+            android.util.Log.e("BuildAiContextUseCase", "Failed to fetch planned workouts", e)
+            emptyList() 
+        }
         
         if (routines.isNotEmpty()) {
             sb.append("\nYour Saved Routines:\n")

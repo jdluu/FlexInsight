@@ -21,21 +21,21 @@ class SyncService(
             try {
                 repository.syncAllData()
             } catch (e: Exception) {
-                // Handle error silently
+                android.util.Log.e("SyncService", "Sync with API failed", e)
             }
         }
     }
 
     /**
-     * Sync with cloud database (structure ready, implementation TBD)
-     * This will be implemented when a cloud database service is chosen
+     * Sync with remote generic cloud database architecture. 
+     * Currently utilizes the Mock Infrastructure definition in FlexRepositoryImpl
      */
     fun syncWithCloud() {
         scope.launch {
             try {
                 repository.syncWithCloud()
             } catch (e: Exception) {
-                // Handle error silently
+                android.util.Log.e("SyncService", "Sync with cloud failed", e)
             }
         }
     }

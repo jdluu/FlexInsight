@@ -1,5 +1,6 @@
 package com.example.flexinsight.data.model
 
+import androidx.compose.runtime.Stable
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -31,6 +32,7 @@ data class PaginatedRoutineFolderResponse(
 /**
  * Domain model for Routine Folder
  */
+@Stable
 data class RoutineFolder(
     val id: Int,
     val title: String,

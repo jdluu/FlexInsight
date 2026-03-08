@@ -19,9 +19,9 @@ class GetWorkoutStatsUseCase @Inject constructor(
     private val getWeeklyProgressUseCase: GetWeeklyProgressUseCase
 ) {
     suspend operator fun invoke(): WorkoutStats {
-        val workouts = workoutDao.getAllWorkoutsFlow().first()
+        val workoutsWithDetails = workoutDao.getAllWorkoutsWithDetailsFlow().first()
 
-        if (workouts.isEmpty()) {
+        if (workoutsWithDetails.isEmpty()) {
             return WorkoutStats(
                 totalWorkouts = 0,
                 totalVolume = 0.0,
@@ -36,15 +36,10 @@ class GetWorkoutStatsUseCase @Inject constructor(
             )
         }
 
-        // Optimize: Get all exercises and sets in batch
-        val workoutIds = workouts.map { it.id }
-        val allExercises = workoutIds.flatMap { workoutId ->
-            exerciseDao.getExercisesByWorkoutId(workoutId)
-        }
-        val exerciseIds = allExercises.map { it.id }
-        val allSets = exerciseIds.flatMap { exerciseId ->
-            setDao.getSetsByExerciseId(exerciseId)
-        }
+        // Extract flat lists for legacy StatsCalculator compatibility
+        val workouts = workoutsWithDetails.map { it.workout }
+        val allExercises = workoutsWithDetails.flatMap { wd -> wd.exercises.map { it.exercise } }
+        val allSets = workoutsWithDetails.flatMap { wd -> wd.exercises.flatMap { it.sets } }
 
         // Calculate stats using StatsCalculator
         val totalWorkouts = workouts.size

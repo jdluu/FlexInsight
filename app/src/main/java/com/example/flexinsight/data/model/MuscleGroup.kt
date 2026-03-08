@@ -1,8 +1,11 @@
 package com.example.flexinsight.data.model
 
+import androidx.compose.runtime.Stable
+
 /**
  * Core muscle groups for categorization and heatmap visualization.
  */
+@Stable
 enum class MuscleGroup(val displayName: String) {
     CHEST("Chest"),
     BACK("Back"),
