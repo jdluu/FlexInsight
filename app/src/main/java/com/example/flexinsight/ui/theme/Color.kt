@@ -2,33 +2,33 @@ package com.example.flexinsight.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Primary Colors
-val Primary = Color(0xFF13EC5B)
-val PrimaryDark = Color(0xFF0EA841)
-val PrimaryLight = Color(0xFF3FEF7A)
+// Primary Colors (Electric Blue)
+val Primary = Color(0xFF2E5BFF)
+val PrimaryDark = Color(0xFF0043CE)
+val PrimaryLight = Color(0xFF78A9FF)
 
 // Background Colors
-val BackgroundDark = Color(0xFF050505)
-val BackgroundDarkAlt = Color(0xFF102216)
-val BackgroundLight = Color(0xFFF6F8F6)
+val BackgroundDark = Color(0xFF030712)
+val BackgroundDarkAlt = Color(0xFF0F172A)
+val BackgroundLight = Color(0xFFF8FAFC)
 
 // Surface Colors
-val SurfaceDark = Color(0xFF161616)
-val SurfaceCard = Color(0xFF1C1C1C)
-val SurfaceCardAlt = Color(0xFF1A2C20)
-val SurfaceCardAltLight = Color(0xFFEBF2EB)
-val SurfaceHighlight = Color(0xFF23482F)
-val SurfaceVariant = Color(0xFF2B3830)
+val SurfaceDark = Color(0xFF0F172A)
+val SurfaceCard = Color(0xFF1E293B)
+val SurfaceCardAlt = Color(0xFF334155)
+val SurfaceCardAltLight = Color(0xFFF1F5F9)
+val SurfaceHighlight = Color(0xFF384459)
+val SurfaceVariant = Color(0xFF1E293B)
 
 // Text Colors
-val TextSecondary = Color(0xFF92C9A4)
-val TextTertiary = Color(0xFFA1A1AA)
+val TextSecondary = Color(0xFF94A3B8)
+val TextTertiary = Color(0xFF64748B)
 
-// Accent Colors
-val OrangeAccent = Color(0xFFFF6B35)
+// Accent Colors (Neon Amber)
+val OrangeAccent = Color(0xFFFFA100)
 val RedAccent = Color(0xFFEF4444)
 val BlueAccent = Color(0xFF3B82F6)
-val PurpleAccent = Color(0xFF9333EA)
+val PurpleAccent = Color(0xFF8B5CF6)
 
 // Legacy colors for compatibility (can be removed later)
 val Purple80 = Color(0xFFD0BCFF)
