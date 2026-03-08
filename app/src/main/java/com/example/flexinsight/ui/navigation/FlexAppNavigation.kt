@@ -3,18 +3,18 @@ package com.example.flexinsight.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.flexinsight.ui.common.LocalSnackbarHostState
 import com.example.flexinsight.ui.screens.*
+import com.example.flexinsight.ui.screens.history.*
 import com.example.flexinsight.ui.viewmodel.*
 import kotlinx.coroutines.launch
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.flexinsight.ui.screens.OnboardingScreen
 
 import androidx.compose.runtime.LaunchedEffect
@@ -79,16 +79,26 @@ fun FlexAppNavigation(
                     navController.navigate(Screen.WorkoutDetail.createRoute(workoutId))
                 },
                 onNavigateToAnalysis = {
-                    scope.launch { snackbarHostState.showSnackbar("Detail analysis coming soon") }
+                    navController.navigate(Screen.HistoryAnalysis.route)
                 },
                 onNavigateToPRList = {
                     navController.navigate(Screen.PRList.route)
                 }
             )
         }
+        composable(Screen.HistoryAnalysis.route) {
+            val viewModel = hiltViewModel<HistoryViewModel>()
+            HistoryAnalysisScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
         composable(Screen.AITrainer.route) {
             val viewModel = hiltViewModel<AITrainerViewModel>()
-            AITrainerScreen(viewModel = viewModel)
+            AITrainerScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(Screen.Planner.route) {
             val viewModel = hiltViewModel<PlannerViewModel>()
@@ -99,13 +109,9 @@ fun FlexAppNavigation(
             RecoveryScreen(viewModel = viewModel)
         }
         composable(Screen.Settings.route) {
-            // Note: SettingsViewModel appears unused in original call but might be needed, kept it just in case or removed if strict cleanup.
-            // Original code: val viewModel = hiltViewModel<SettingsViewModel>(); SettingsScreen()
-            // It seems SettingsScreen doesn't take viewModel argument in original file view?
-            // Let's check original MainActivity line 276: SettingsScreen() - no args.
-            // But line 275 instantiates it. I will keep instantiation to ensure ViewModel lifecycle if it does init logic.
-            hiltViewModel<SettingsViewModel>()
-            SettingsScreen()
+            SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(Screen.PRList.route) {
             val viewModel = hiltViewModel<PRListViewModel>()

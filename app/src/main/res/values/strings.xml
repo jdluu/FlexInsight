@@ -30,4 +30,207 @@
     <string name="ai_coach_reflection">Coach Reflection</string>
     <string name="recovery_recommendation">Recovery Recommendation</string>
     <string name="ai_unsupported">AI features are not supported on this device</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome">Welcome to FlexInsight</string>
+    <string name="onboarding_subtitle">Transform your Hevy data into actionable insights with elite-level AI coaching.</string>
+    <string name="onboarding_connect_hevy">Connect Hevy</string>
+    <string name="onboarding_api_key_desc">FlexInsight needs your Hevy API key to analyze your workout history securely.</string>
+    <string name="onboarding_api_key_label">Hevy API Key</string>
+    <string name="onboarding_api_key_placeholder">Paste your key here</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_find_key_link">How do I find my API key?</string>
+
+    <!-- History Analysis -->
+    <string name="history_analysis_title">Deep Analysis</string>
+    <string name="history_analysis_back_desc">Back</string>
+    <string name="history_analysis_fatigue_title">Muscle Fatigue &amp; Recovery</string>
+    <string name="history_analysis_no_data">Not enough data to map recovery yet.</string>
+
+    <!-- Workout Detail -->
+    <string name="error_unknown_fallback">Unknown error</string>
+    <string name="action_retry">Retry</string>
+    <string name="workout_not_found">Workout not found</string>
+    <string name="workout_default_title">Workout</string>
+    <string name="workout_coach_analyzing">Coach is analyzing...</string>
+    <string name="workout_coach_assessment">Coach Assessment</string>
+
+    <!-- Recovery -->
+    <string name="recovery_smart_analysis_running">Smart Analysis running...</string>
+    <string name="recovery_ai_insight">AI Insight</string>
+
+    <!-- Global Actions -->
+    <string name="action_close">Close</string>
+    <string name="action_back">Back</string>
+
+    <!-- Planner -->
+    <string name="planner_snackbar_moved_tomorrow">Moved to tomorrow</string>
+    <string name="planner_toast_generating_title">Generating Workout Plan</string>
+    <string name="planner_toast_analyzing">Analyzing your stats...</string>
+    <string name="planner_dialog_ai_title">AI Suggested Workout</string>
+
+    <!-- PR List -->
+    <string name="pr_list_title">Personal Records</string>
+    <string name="pr_list_empty_state">No Personal Records found yet. Keep training!</string>
+
+    <!-- History -->
+    <string name="history_ai_summary_title">AI Progress Summary</string>
+    <string name="history_empty_exercises">No exercises found in history.</string>
+    <string name="history_empty_comparison">Not enough data to generate comparison yet.</string>
+
+    <!-- Settings Dialogs -->
+    <string name="settings_dialog_api_key_title">Hevy API Key</string>
+    <string name="settings_dialog_api_key_desc">Enter your Hevy API key. You can get it from https://hevy.com/settings?developer</string>
+    <string name="settings_dialog_goal_title">Weekly Goal</string>
+    <string name="settings_dialog_goal_desc">Set your weekly workout goal (number of days per week)</string>
+    <string name="settings_dialog_goal_label">Days per week</string>
+    <string name="settings_dialog_goal_placeholder">Enter number</string>
+    <string name="settings_dialog_goal_error">Please enter a number between 1 and 7</string>
+    <string name="settings_dialog_clear_cache_title">Clear Cache</string>
+    <string name="settings_dialog_clear_cache_desc">This will clear all cached data (exercise templates, routines). Your workout data will not be affected.</string>
+    <string name="settings_dialog_clear_action">Clear</string>
+    <string name="settings_dialog_profile_title">Edit Profile</string>
+    <string name="settings_dialog_profile_desc">Enter your display name</string>
+    <string name="settings_dialog_profile_label">Display Name</string>
+    <string name="settings_dialog_profile_placeholder">Enter your name</string>
+    <string name="settings_dialog_profile_error">Name cannot be empty</string>
+
+    <!-- Dialogs -->
+    <string name="planner_reschedule_dialog_title">Reschedule Workout</string>
+    <string name="planner_reschedule_dialog_desc">Move \'%1$s\' to tomorrow?</string>
+    <string name="planner_reschedule_dialog_action">Move</string>
+    <string name="history_filter_dialog_title">Filter History</string>
+    <string name="close">Close</string>
+
+    <!-- History Stats & Comparison -->
+    <string name="history_comparison_period_title">Period Comparison</string>
+    <string name="history_comparison_period_label">%1$s vs %2$s</string>
+    <string name="history_comparison_total_volume">Total Volume</string>
+    <string name="history_comparison_workouts">Workouts</string>
+    <string name="history_comparison_avg_duration">Avg Duration</string>
+    <string name="history_comparison_current">Current</string>
+    <string name="history_comparison_previous">Previous</string>
+
+    <string name="history_avg_vol_label">Avg Vol (%1$s)</string>
+    <string name="history_best_week">Best Week</string>
+    <string name="history_across_workouts">Across %1$d workouts</string>
+    <string name="history_no_workouts_yet">No workouts yet</string>
+    <string name="history_consistency_title">Consistency (Last 3 Months)</string>
+    
+    <string name="day_mon">Mon</string>
+    <string name="day_thu">Thu</string>
+    <string name="day_sun">Sun</string>
+    
+    <string name="ai_insights_title">AI Insights</string>
+    <string name="history_ai_insights_header">AI INSIGHTS</string>
+    <string name="history_ai_insights_desc">Complete 10+ workouts to unlock AI-powered insights about your training patterns, muscle balance, and recovery recommendations.</string>
+    <string name="action_view_analysis">View Analysis</string>
+
+    <!-- Planner Additional Info -->
+    <string name="planner_list_day_plan">%1$s\'s Plan</string>
+    <string name="planner_list_session_singular">%1$d Session</string>
+    <string name="planner_list_session_plural">%1$d Sessions</string>
+    <string name="planner_list_empty_title">No workouts planned</string>
+    <string name="planner_list_empty_desc">Tap the + button to add a workout or use AI to generate an optimized plan</string>
+    <string name="action_ai_generate_plan">AI Generate Plan</string>
+    <string name="planner_list_medium_intensity">Medium Intensity</string>
+    <string name="planner_list_long_press_reschedule">Long press to reschedule</string>
+    
+    <string name="dashboard_greeting_morning">Good morning</string>
+    <string name="dashboard_greeting_afternoon">Good afternoon</string>
+    <string name="dashboard_greeting_evening">Good evening</string>
+    <string name="dashboard_welcome_guest">Guest</string>
+    <string name="dashboard_last_session">LAST SESSION ANALYSIS</string>
+    <string name="dashboard_quick_insight">QUICK INSIGHT</string>
+    <string name="dashboard_view_details">Tap for full breakdown</string>
+    <string name="dashboard_no_workouts_title">No Workouts Yet</string>
+    <string name="dashboard_no_workouts_desc">Start your fitness journey by completing your first workout in Hevy.</string>
+
+    <!-- Planner Insights -->
+    <string name="planner_insights_recommended_next">Recommended Next</string>
+    <string name="planner_insights_high_confidence">HIGH CONFIDENCE</string>
+    <string name="planner_insights_active_recovery_title">Active Recovery</string>
+    <string name="planner_insights_active_recovery_desc">Keep tracking your workouts to get personalized recommendations.</string>
+    <string name="planner_insights_recovery_yoga_title">Active Recovery Yoga</string>
+    <string name="planner_insights_recovery_yoga_desc">Based on your high intensity load, a lighter session will optimize recovery.</string>
+    <string name="planner_insights_focus_area_title">Focus on %1$s</string>
+    <string name="planner_insights_focus_area_desc">Your %1$s volume is lower. Consider adding more exercises targeting this area.</string>
+    <string name="planner_insights_balanced_title">Balanced Training</string>
+    <string name="planner_insights_balanced_desc">Your volume distribution looks good. Continue with your current routine.</string>
+    <string name="action_generate_optimized_plan">Generate Optimized Plan</string>
+    <string name="planner_insights_generate_plan_desc">AI will create a personalized workout plan based on your training history and recovery needs</string>
+    <string name="planner_insights_volume_balance">Volume Balance</string>
+    <string name="muscle_group_push">Push</string>
+    <string name="muscle_group_pull">Pull</string>
+    <string name="muscle_group_legs">Legs</string>
+    <string name="muscle_group_cardio">Cardio</string>
+
+    <!-- Mood Components -->
+    <string name="recovery_mood_log_title">Mood Log</string>
+    <string name="recovery_mood_log_question">How do you feel today?</string>
+    <string name="recovery_mood_drained">Drained</string>
+    <string name="recovery_mood_unstoppable">Unstoppable</string>
+    <string name="recovery_mood_notes_placeholder">Add notes on soreness, pain, or injury...</string>
+    <string name="recovery_mood_ai_insight">\"You often report lower mood ratings the day after heavy leg sessions. Consider active recovery today.\"</string>
+
+    <!-- Components -->
+    <string name="muscle_heatmap_front">FRONT</string>
+    <string name="muscle_heatmap_back">BACK</string>
+    
+    <string name="sync_status_syncing">Syncing...</string>
+    <string name="sync_status_synced">✓ Synced</string>
+    <string name="sync_status_failed">Sync failed</string>
+    <string name="sync_status_just_now">Just now</string>
+    <string name="sync_status_mins_ago">%1$dm ago</string>
+    <string name="sync_status_hours_ago">%1$dh ago</string>
+    
+    <string name="network_status_no_connection">No internet connection</string>
+    
+    <string name="error_network">Network Error</string>
+    <string name="error_auth">Authentication Error</string>
+    <string name="error_server">Server Error</string>
+    
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_history">History</string>
+    <string name="nav_ai_trainer">AI Trainer</string>
+    <string name="nav_planner">Planner</string>
+    <string name="nav_profile">Profile</string>
+
+    <!-- Settings Sections -->
+    <string name="settings_section_integrations">Integrations</string>
+    <string name="settings_section_preferences">Preferences</string>
+    <string name="settings_section_data_privacy">Data &amp; Privacy</string>
+    <string name="settings_section_help_feedback">Help &amp; Feedback</string>
+    <string name="settings_section_developer">Developer Options</string>
+    <string name="settings_section_about">About</string>
+
+    <!-- Settings Items -->
+    <string name="settings_item_profile">Profile</string>
+    <string name="settings_item_health_connect">Health Connect</string>
+    <string name="settings_item_health_connect_desc">Sync workouts with Google Health</string>
+    <string name="settings_item_theme">Theme</string>
+    <string name="settings_item_units">Use Metric System</string>
+    <string name="settings_item_weekly_goal">Weekly Goal</string>
+    <string name="settings_item_weekly_goal_value">%1$d Days</string>
+    <string name="settings_item_notifications">Notifications</string>
+    <string name="settings_item_export_data">Export Data</string>
+    <string name="settings_item_clear_cache">Clear Cache</string>
+    <string name="settings_item_contact_support">Contact Support</string>
+    <string name="settings_item_documentation">Documentation</string>
+    <string name="settings_item_force_ai">Force Enable AI</string>
+    <string name="settings_item_version">Version</string>
+
+    <!-- Settings Feedback -->
+    <string name="settings_sync_success">Sync completed successfully</string>
+    <string name="settings_sync_failed">Sync failed: %1$s</string>
+    <string name="settings_export_subject">FlexInsight Data Export</string>
+    <string name="settings_export_failed">Failed to launch exporter</string>
+    <string name="settings_support_email">support@example.com</string>
+    <string name="settings_support_subject">FlexInsight Feedback</string>
+    <string name="settings_support_no_app">No email app found</string>
+    <string name="settings_browser_no_app">No browser found</string>
+    <string name="content_desc_back">Back</string>
+    <string name="content_desc_more">More options</string>
+    <string name="content_desc_share">Share workout</string>
+    <string name="workout_detail_title">Workout Detail</string>
 </resources>
