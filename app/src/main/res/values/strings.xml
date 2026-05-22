@@ -135,6 +135,12 @@
     <string name="action_ai_generate_plan">AI Generate Plan</string>
     <string name="planner_list_medium_intensity">Medium Intensity</string>
     <string name="planner_list_long_press_reschedule">Long press to reschedule</string>
+    <string name="planner_list_view_only_hint">View-only: edit workouts in the Hevy app, or enable Hevy edits in Settings.</string>
+    <string name="planner_save_to_hevy">Save to Hevy</string>
+    <string name="planner_save_success_matched">Saved to Hevy with %1$d matched exercise(s).</string>
+    <string name="planner_save_success_unmatched">Could not match: %1$s</string>
+    <string name="planner_save_success_placeholder">Saved with a placeholder exercise — edit the routine in Hevy to add exercises.</string>
+    <string name="planner_save_success_matched_and_unmatched">Saved %1$d exercise(s). Unmatched: %2$s</string>
     
     <string name="dashboard_greeting_morning">Good morning</string>
     <string name="dashboard_greeting_afternoon">Good afternoon</string>
@@ -183,6 +189,8 @@
     <string name="sync_status_just_now">Just now</string>
     <string name="sync_status_mins_ago">%1$dm ago</string>
     <string name="sync_status_hours_ago">%1$dh ago</string>
+    <string name="sync_snackbar_new_workouts">Hevy: %1$d new workout(s) synced</string>
+    <string name="sync_snackbar_deleted_workouts">Hevy: %1$d workout(s) removed from your library</string>
     
     <string name="network_status_no_connection">No internet connection</string>
     
@@ -213,11 +221,14 @@
     <string name="settings_item_weekly_goal">Weekly Goal</string>
     <string name="settings_item_weekly_goal_value">%1$d Days</string>
     <string name="settings_item_notifications">Notifications</string>
+    <string name="settings_item_view_only">View-only mode (recommended)</string>
+    <string name="settings_item_view_only_desc">When on, FlexInsight won\'t change workouts in Hevy. Edit in the Hevy app instead.</string>
     <string name="settings_item_export_data">Export Data</string>
     <string name="settings_item_clear_cache">Clear Cache</string>
     <string name="settings_item_contact_support">Contact Support</string>
     <string name="settings_item_documentation">Documentation</string>
-    <string name="settings_item_force_ai">Force Enable AI</string>
+    <string name="settings_item_force_ai">Debug AI UI stubs</string>
+    <string name="settings_item_force_ai_subtitle">Emulator/debug only. Does not run real Gemini Nano — use a supported phone to test on-device AI.</string>
     <string name="settings_item_version">Version</string>
 
     <!-- Settings Feedback -->
@@ -233,4 +244,63 @@
     <string name="content_desc_more">More options</string>
     <string name="content_desc_share">Share workout</string>
     <string name="workout_detail_title">Workout Detail</string>
+    <string name="ai_trainer_syncing_hevy">Syncing Hevy workouts…</string>
+    <string name="ai_trainer_hevy_connected">Hevy: %1$d workouts loaded</string>
+    <string name="ai_trainer_hevy_no_data">Hevy: connect API key or sync data</string>
+    <string name="ai_trainer_refresh_hevy">Refresh Hevy data</string>
+    <string name="ai_trainer_offline_badge">On-device AI</string>
+    <string name="ai_trainer_live_history">Using live Hevy exercise history</string>
+
+    <string name="dashboard_training_load_title">Training load</string>
+    <string name="dashboard_last_synced">Last synced %1$s</string>
+    <string name="dashboard_tap_sync">Sync now</string>
+
+    <string name="history_routine_diff_title">Routine: %1$s</string>
+    <string name="history_routine_improvements">Improvements</string>
+    <string name="history_routine_regressions">Regressions</string>
+
+    <string name="workout_explain_button">Explain this workout</string>
+    <string name="workout_explain_title">AI workout summary</string>
+
+    <string name="onboarding_sync_title">Sync your workouts</string>
+    <string name="onboarding_sync_desc">Pull your Hevy history so dashboards and AI coaching use real data.</string>
+    <string name="onboarding_sync_now">Sync now</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_health_desc">Optional: connect sleep, steps, and heart rate for recovery-aware coaching.</string>
+    <string name="onboarding_enable_health">Enable Health Connect</string>
+    <string name="onboarding_skip">Skip for now</string>
+    <string name="onboarding_ai_title">On-device AI coach</string>
+    <string name="onboarding_ai_desc">FlexInsight uses Gemini Nano on supported devices — fully private, no cloud for chat.</string>
+    <string name="onboarding_check_ai">Check AI status</string>
+    <string name="onboarding_finish">Finish setup</string>
+
+    <string name="settings_health_connected">Connected</string>
+    <string name="settings_health_unavailable">Not available on this device</string>
+    <string name="settings_health_permissions_denied">Health Connect was not enabled — required permissions were not granted.</string>
+    <string name="settings_health_view_permissions">What does Health Connect access?</string>
+
+    <string name="health_permissions_dialog_title_request">Health Connect permissions</string>
+    <string name="health_permissions_dialog_title_info">Health Connect data access</string>
+    <string name="health_permissions_dialog_intro">FlexInsight only requests Health Connect access if you turn it on. Each permission below is optional until you enable the integration. Data is read on your device for recovery scores and AI coaching — we do not upload Health Connect data to our servers.</string>
+    <string name="health_permissions_dialog_footer">You can revoke access anytime in the Health Connect app. Write access is only used when you enable “Write workouts to Health Connect” and view-only mode is off.</string>
+    <string name="health_permissions_dialog_allow">Continue to Health Connect</string>
+
+    <string name="health_perm_read_sleep_title">Read sleep</string>
+    <string name="health_perm_read_sleep_why">Used for Recovery score, training load, deload hints, and AI coaching (e.g. sleep duration last night).</string>
+    <string name="health_perm_read_hr_title">Read heart rate</string>
+    <string name="health_perm_read_hr_why">Used to estimate resting heart rate for recovery context — not for medical diagnosis.</string>
+    <string name="health_perm_read_steps_title">Read steps</string>
+    <string name="health_perm_read_steps_why">Used to factor daily walking activity into training load (e.g. leg day after a high-step day).</string>
+    <string name="health_perm_read_calories_title">Read active calories</string>
+    <string name="health_perm_read_calories_why">Used to understand non-gym calorie burn alongside Hevy workout volume.</string>
+    <string name="health_perm_read_exercise_title">Read exercise sessions</string>
+    <string name="health_perm_read_exercise_why">Used to count cardio or other workouts logged outside Hevy (runs, rides, etc.) for weekly load.</string>
+    <string name="health_perm_write_exercise_title">Write exercise sessions</string>
+    <string name="health_perm_write_exercise_why">Optional. Copies completed Hevy strength workouts into your Health Connect timeline so they appear in Google Fit / Samsung Health. Off unless you enable write in Settings.</string>
+    <string name="settings_health_write">Write workouts to Health Connect</string>
+    <string name="settings_health_write_desc">Export completed strength sessions (disabled in view-only mode)</string>
+    <string name="settings_item_export_coach_report">Export weekly coach report</string>
+
+    <string name="widget_name">FlexInsight</string>
+    <string name="widget_description">Streak, recovery, and next workout</string>
 </resources>
