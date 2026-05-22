@@ -1,0 +1,169 @@
+package com.jdluu.flexinsight.ui.screens.planner.parts
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.jdluu.flexinsight.data.model.DayInfo
+import com.jdluu.flexinsight.ui.theme.BackgroundDarkAlt
+import com.jdluu.flexinsight.ui.theme.Primary
+import com.jdluu.flexinsight.ui.theme.TextSecondary
+import androidx.compose.foundation.border
+
+/**
+ * UI model for detailed day display including selection state
+ */
+data class PlannerDayUiModel(
+    val name: String,
+    val date: Int,
+    val hasWorkout: Boolean = false,
+    val isSelected: Boolean = false,
+    val isCompleted: Boolean = false,
+    val isToday: Boolean = false
+)
+
+@Composable
+fun WeekCalendar(
+    weekCalendarData: List<DayInfo> = emptyList(),
+    selectedDayIndex: Int = 0,
+    onDaySelected: (Int) -> Unit = {}
+) {
+    val today = System.currentTimeMillis()
+
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(
+            count = weekCalendarData.size,
+            key = { index -> index }
+        ) { index ->
+            val dayData = weekCalendarData[index]
+            // Check if this day is today (same day, ignoring time)
+            val dayStart = dayData.timestamp
+            val dayEnd = dayStart + 24 * 60 * 60 * 1000
+            val isToday = today >= dayStart && today < dayEnd
+
+            val dayUiModel = PlannerDayUiModel(
+                name = dayData.name,
+                date = dayData.date,
+                hasWorkout = dayData.hasWorkout,
+                isSelected = index == selectedDayIndex,
+                isCompleted = dayData.isCompleted,
+                isToday = isToday
+            )
+            DayCard(
+                day = dayUiModel,
+                onClick = { onDaySelected(index) }
+            )
+        }
+    }
+}
+
+@Composable
+fun DayCard(day: PlannerDayUiModel, onClick: () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .width(68.dp)
+            .height(if (day.isToday) 100.dp else 90.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(24.dp),
+        color = if (day.isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
+        border = if (day.isToday && !day.isSelected)
+                    BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                 else
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            if (day.isSelected) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                                    Color.Transparent
+                                ),
+                                radius = 100f
+                            )
+                        )
+                )
+            }
+            Column(
+                modifier = Modifier.padding(vertical = 12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // Today indicator
+                if (day.isToday) {
+                    Text(
+                        text = "Today",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (day.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                        letterSpacing = 0.5.sp
+                    )
+                }
+
+                Text(
+                    text = day.name,
+                    fontSize = 12.sp,
+                    fontWeight = if (day.isSelected) FontWeight.Bold else FontWeight.Medium,
+                    color = if (day.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
+                    letterSpacing = if (day.isSelected) 1.sp else 0.sp
+                )
+                Text(
+                    text = day.date.toString(),
+                    fontSize = if (day.isSelected) 20.sp else 18.sp,
+                    fontWeight = if (day.isSelected) FontWeight.Black else FontWeight.Bold,
+                    color = if (day.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                if (day.isCompleted) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.size(12.dp)
+                    )
+                } else if (day.hasWorkout) {
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(if (day.isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary)
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                    )
+                }
+            }
+        }
+    }
+}

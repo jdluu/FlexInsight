@@ -1,0 +1,9 @@
+package com.jdluu.flexinsight.ui.screens.planner.parts
+
+/**
+ * Format duration in minutes as "X min"
+ */
+fun formatDuration(minutes: Long?): String {
+    if (minutes == null || minutes <= 0) return "0 min"
+    return "${minutes} min"
+}
