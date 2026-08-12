@@ -80,11 +80,7 @@ fun AITrainerScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-<<<<<<< HEAD:app/src/main/java/com/jdluu/flexinsight/ui/screens/AITrainerScreen.kt
-                DateDivider(todayLabel)
-=======
                 DateDivider(currentFormattedTime)
->>>>>>> 5a0e339 (feat(app): upgrade dependencies, streamline recovery architecture, and optimize state collection):app/src/main/java/com/example/flexinsight/ui/screens/AITrainerScreen.kt
             }
 
             items(
