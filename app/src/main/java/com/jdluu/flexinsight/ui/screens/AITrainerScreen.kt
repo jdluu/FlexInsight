@@ -34,9 +34,6 @@ fun AITrainerScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
-    val todayLabel = remember {
-        SimpleDateFormat("EEEE, MMM d", Locale.getDefault()).format(Date())
-    }
 
     val lastMessageLength = uiState.messages.lastOrNull()?.text?.length ?: 0
 
