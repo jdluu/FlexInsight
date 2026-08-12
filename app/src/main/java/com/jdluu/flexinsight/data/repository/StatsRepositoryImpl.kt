@@ -372,17 +372,19 @@ class StatsRepositoryImpl @Inject constructor(
         val now = LocalDate.now()
         val startDate = now.minusDays((days - 1).toLong())
         val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-        val resultDays = mutableListOf<DayInfo>()
+        val resultDays = ArrayList<DayInfo>(days)
 
         val allWorkouts = workoutDao.getAllWorkoutsFlow().first()
+        val workoutsByDate = allWorkouts.groupBy {
+            Instant.ofEpochMilli(it.startTime).atZone(ZoneId.systemDefault()).toLocalDate()
+        }
 
         for (i in 0 until days) {
             val date = startDate.plusDays(i.toLong())
             val dayStart = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            val dayEnd = date.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-
-            val workouts = allWorkouts.filter { it.startTime in dayStart..dayEnd }
+            val workouts = workoutsByDate[date] ?: emptyList()
             val dayOfWeek = date.dayOfWeek.value
+
             resultDays.add(
                 DayInfo(
                     name = dayNames[dayOfWeek - 1],

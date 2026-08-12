@@ -21,6 +21,8 @@ import com.jdluu.flexinsight.ui.viewmodel.HistoryViewModel
 import com.jdluu.flexinsight.ui.screens.history.parts.*
 import com.jdluu.flexinsight.ui.screens.history.parts.formatDateShort
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
@@ -28,7 +30,7 @@ fun HistoryScreen(
     onNavigateToAnalysis: () -> Unit = {},
     onNavigateToPRList: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val useMetric = uiState.units == "Metric"
     var showFilterDialog by remember { mutableStateOf(false) }
 

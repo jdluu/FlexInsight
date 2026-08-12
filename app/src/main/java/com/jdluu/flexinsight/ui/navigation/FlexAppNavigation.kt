@@ -20,6 +20,8 @@ import com.jdluu.flexinsight.ui.screens.OnboardingScreen
 import androidx.compose.runtime.LaunchedEffect
 import com.jdluu.flexinsight.ui.common.LoadingState
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 @Composable
 fun FlexAppNavigation(
     navController: NavHostController,
@@ -30,7 +32,7 @@ fun FlexAppNavigation(
     
     // Check for API key and redirect to Onboarding if missing
     val settingsViewModel = hiltViewModel<SettingsViewModel>()
-    val settingsUiState by settingsViewModel.uiState.collectAsState()
+    val settingsUiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
     
     LaunchedEffect(settingsUiState.apiKey, settingsUiState.loadingState) {
         if (settingsUiState.loadingState is LoadingState.Success && settingsUiState.apiKey.isNullOrBlank()) {
@@ -55,7 +57,7 @@ fun FlexAppNavigation(
                     navController.navigate(Screen.WorkoutDetail.createRoute(workoutId))
                 },
                 onNavigateToRecovery = {
-                    navController.navigate(Screen.Recovery.route)
+                    navController.navigate(Screen.AITrainer.route)
                 },
                 onNavigateToHistory = {
                     navController.navigate(Screen.History.route)
@@ -104,10 +106,6 @@ fun FlexAppNavigation(
         composable(Screen.Planner.route) {
             val viewModel = hiltViewModel<PlannerViewModel>()
             PlannerScreen(viewModel = viewModel)
-        }
-        composable(Screen.Recovery.route) {
-            val viewModel = hiltViewModel<RecoveryViewModel>()
-            RecoveryScreen(viewModel = viewModel)
         }
         composable(Screen.Settings.route) {
             SettingsScreen(

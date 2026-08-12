@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,13 +16,14 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jdluu.flexinsight.ui.theme.*
 import com.jdluu.flexinsight.ui.screens.aitrainer.parts.*
 import com.jdluu.flexinsight.ui.viewmodel.AITrainerViewModel
 import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun AITrainerScreen(
@@ -29,18 +31,26 @@ fun AITrainerScreen(
     onNavigateBack: () -> Unit,
     onNavigateToSettings: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
     val todayLabel = remember {
         SimpleDateFormat("EEEE, MMM d", Locale.getDefault()).format(Date())
     }
 
-    LaunchedEffect(uiState.messages.size) {
+    val lastMessageLength = uiState.messages.lastOrNull()?.text?.length ?: 0
+
+    LaunchedEffect(uiState.messages.size, lastMessageLength) {
         if (uiState.messages.isNotEmpty()) {
-            delay(100)
+            delay(50)
             listState.animateScrollToItem(uiState.messages.size - 1)
         }
+    }
+
+    val currentFormattedTime = remember {
+        val now = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("EEEE, h:mm a")
+        now.format(formatter)
     }
 
     Column(
@@ -70,7 +80,11 @@ fun AITrainerScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
+<<<<<<< HEAD:app/src/main/java/com/jdluu/flexinsight/ui/screens/AITrainerScreen.kt
                 DateDivider(todayLabel)
+=======
+                DateDivider(currentFormattedTime)
+>>>>>>> 5a0e339 (feat(app): upgrade dependencies, streamline recovery architecture, and optimize state collection):app/src/main/java/com/example/flexinsight/ui/screens/AITrainerScreen.kt
             }
 
             items(
@@ -89,17 +103,16 @@ fun AITrainerScreen(
             }
         }
 
-
-
-        // Suggested chips row
+        // Scrollable suggested chips row
         val suggestions = listOf("How's my recovery?", "Analyze my last session", "Next workout ideas")
-        Row(
+        LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(vertical = 8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            for (suggestion in suggestions) {
+            items(suggestions) { suggestion ->
                 Surface(
                     onClick = { viewModel.sendMessage(suggestion) },
                     shape = RoundedCornerShape(12.dp),

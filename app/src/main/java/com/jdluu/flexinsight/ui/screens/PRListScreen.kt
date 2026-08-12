@@ -24,6 +24,8 @@ import com.jdluu.flexinsight.ui.viewmodel.PRListViewModel
 import androidx.compose.ui.res.stringResource
 import com.jdluu.flexinsight.R
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PRListScreen(
@@ -31,7 +33,7 @@ fun PRListScreen(
     onNavigateBack: () -> Unit,
     onNavigateToWorkoutDetail: (String) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val useMetric = uiState.units == "Metric"
 
     Scaffold(

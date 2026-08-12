@@ -8,6 +8,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -48,7 +49,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val themePreference by userPreferencesManager.themeFlow.collectAsState(initial = "System")
+            val themePreference by userPreferencesManager.themeFlow.collectAsStateWithLifecycle(initialValue = "System")
 
             val darkTheme = when (themePreference) {
                 "Dark" -> true
@@ -81,7 +82,6 @@ fun MainScreen(
         Screen.Dashboard.route,
         Screen.History.route,
         Screen.Planner.route,
-        Screen.Recovery.route,
         Screen.Settings.route
     )
 

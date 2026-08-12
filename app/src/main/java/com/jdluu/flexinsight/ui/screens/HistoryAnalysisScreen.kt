@@ -15,13 +15,15 @@ import com.jdluu.flexinsight.R
 import com.jdluu.flexinsight.ui.components.MuscleHeatmap
 import com.jdluu.flexinsight.ui.viewmodel.HistoryViewModel
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryAnalysisScreen(
     viewModel: HistoryViewModel,
     onNavigateBack: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {

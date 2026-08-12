@@ -24,12 +24,14 @@ import java.util.Date
 import java.util.Locale
 import com.jdluu.flexinsight.ui.screens.workoutdetail.parts.*
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 @Composable
 fun WorkoutDetailScreen(
     viewModel: WorkoutDetailViewModel,
     onNavigateBack: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val useMetric = uiState.units == "Metric"
 
     if (uiState.isLoading) {

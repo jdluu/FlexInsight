@@ -5,11 +5,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-
-// Using system font as Lexend would require adding font files
-// For now, using system font with similar weights
 import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.compose.ui.text.googlefonts.Font
+import androidx.compose.ui.text.googlefonts.Font as GoogleFontCallable
 import com.jdluu.flexinsight.R
 
 // Font definitions
@@ -23,16 +20,16 @@ val OutfitFont = GoogleFont("Outfit")
 val InterFont = GoogleFont("Inter")
 
 val OutfitFamily = FontFamily(
-    Font(googleFont = OutfitFont, fontProvider = provider),
-    Font(googleFont = OutfitFont, fontProvider = provider, weight = FontWeight.Bold),
-    Font(googleFont = OutfitFont, fontProvider = provider, weight = FontWeight.SemiBold),
-    Font(googleFont = OutfitFont, fontProvider = provider, weight = FontWeight.Medium)
+    GoogleFontCallable(googleFont = OutfitFont, fontProvider = provider),
+    GoogleFontCallable(googleFont = OutfitFont, fontProvider = provider, weight = FontWeight.Bold),
+    GoogleFontCallable(googleFont = OutfitFont, fontProvider = provider, weight = FontWeight.SemiBold),
+    GoogleFontCallable(googleFont = OutfitFont, fontProvider = provider, weight = FontWeight.Medium)
 )
 
 val InterFamily = FontFamily(
-    Font(googleFont = InterFont, fontProvider = provider),
-    Font(googleFont = InterFont, fontProvider = provider, weight = FontWeight.Medium),
-    Font(googleFont = InterFont, fontProvider = provider, weight = FontWeight.Normal)
+    GoogleFontCallable(googleFont = InterFont, fontProvider = provider),
+    GoogleFontCallable(googleFont = InterFont, fontProvider = provider, weight = FontWeight.Medium),
+    GoogleFontCallable(googleFont = InterFont, fontProvider = provider, weight = FontWeight.Normal)
 )
 
 val Typography = Typography(

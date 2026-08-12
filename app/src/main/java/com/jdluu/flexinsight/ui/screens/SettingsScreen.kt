@@ -32,6 +32,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.health.connect.client.PermissionController
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun SettingsScreen(
@@ -39,7 +41,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = com.jdluu.flexinsight.ui.common.LocalSnackbarHostState.current

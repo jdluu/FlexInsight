@@ -24,11 +24,13 @@ import java.util.Calendar
 
 import com.jdluu.flexinsight.ui.components.PlannerSkeleton
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 @Composable
 fun PlannerScreen(
     viewModel: PlannerViewModel = viewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val snackbarHostState = com.jdluu.flexinsight.ui.common.LocalSnackbarHostState.current
 

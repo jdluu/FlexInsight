@@ -33,6 +33,7 @@ import com.jdluu.flexinsight.data.model.ProfileInfo
 import com.jdluu.flexinsight.ui.viewmodel.DashboardViewModel
 import kotlinx.coroutines.flow.flowOf
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun DashboardScreen(
@@ -44,7 +45,7 @@ fun DashboardScreen(
     onNavigateToPlanner: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing = uiState.loadingState == LoadingState.Loading
     val useMetric = uiState.units == "Metric"
     val listState = rememberLazyListState()
