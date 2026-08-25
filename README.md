@@ -1,5 +1,7 @@
 # FlexInsight
 
+[![Get it on Obtainium](https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fadd%2Fhttps%3A%2F%2Fgithub.com%2Fjdluu%2FFlexInsight)
+
 Android companion app for [Hevy](https://www.hevyapp.com/) that adds analytics, workout planning, recovery tracking, and on-device AI coaching powered by Gemini Nano.
 
 ## Features
