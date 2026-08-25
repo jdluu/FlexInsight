@@ -1,6 +1,5 @@
 # FlexInsight
 
-[![Get it on Obtainium](https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fadd%2Fhttps%3A%2F%2Fgithub.com%2Fjdluu%2FFlexInsight)
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
 ![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
@@ -18,6 +17,18 @@ Android companion app for [Hevy](https://www.hevyapp.com/) that adds analytics, 
 - **AI Trainer** — on-device coaching via ML Kit GenAI (Gemini Nano), grounded in your Hevy data
 - **Health Connect** — optional sleep, heart rate, steps, and exercise data for richer recovery and coaching
 - **Background sync** — incremental sync with Hevy via WorkManager
+
+## Installation
+
+### Obtainium
+
+[![Get it on Obtainium](https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fadd%2Fhttps%3A%2F%2Fgithub.com%2Fjdluu%2FFlexInsight)
+
+Tap the badge to add FlexInsight to [Obtainium](https://github.com/ImranR98/Obtainium), which installs it straight from this repository's releases and keeps it up to date automatically.
+
+### Manual APK
+
+Download the latest APK from the [Releases page](https://github.com/jdluu/FlexInsight/releases) and install it on your device.
 
 ## Requirements
 
