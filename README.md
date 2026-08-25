@@ -1,6 +1,11 @@
 # FlexInsight
 
 [![Get it on Obtainium](https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png)](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fadd%2Fhttps%3A%2F%2Fgithub.com%2Fjdluu%2FFlexInsight)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)
+![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)
+![Gemini Nano](https://img.shields.io/badge/Gemini%20Nano-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)
+![Room](https://img.shields.io/badge/Room-FF6F00?style=for-the-badge&logo=sqlite&logoColor=white)
 
 Android companion app for [Hevy](https://www.hevyapp.com/) that adds analytics, workout planning, recovery tracking, and on-device AI coaching powered by Gemini Nano.
 
