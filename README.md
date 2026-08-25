@@ -89,54 +89,16 @@ microphone, or SMS permissions are used.
 
 ## Building from source
 
-### Architecture
-
-```
-UI (Compose) → ViewModels → Use Cases → Repositories → Room / Hevy API
-                                              ↓
-                                    WorkManager (periodic sync)
-```
-
-- **DI**: Hilt
-- **Local storage**: Room
-- **Networking**: Retrofit 3 + OkHttp
-- **API key**: Encrypted SharedPreferences (migrates from legacy DataStore automatically)
-
-### Commands
-
-- **Package ID:** `com.jdluu.flexinsight`
-- **Room migrations:** SQL in `FlexDatabaseMigrations.kt`; checked-in schemas in `app/schemas/`.
-  Migration correctness is covered by `FlexDatabaseMigrationTest` (instrumented).
+Requirements: JDK 17+ and the Android SDK.
 
 ```bash
-./gradlew test                    # unit tests (parser, matcher, sync, stats, SyncPreferencesManager via Robolectric)
-./gradlew connectedDebugAndroidTest   # Room migration test (requires device/emulator)
-./gradlew assembleDebug           # debug APK
-./gradlew assembleRelease         # release APK (R8 minification enabled)
+./gradlew assembleDebug        # build debug APK
+./gradlew testDebugUnitTest    # run unit tests
+./gradlew lintDebug            # run lint checks
 ```
-
-HTTP request/response bodies are logged only in **debug** builds.
-
-### Hevy API
 
 See [docs/HevyAPI.md](docs/HevyAPI.md) for endpoint documentation used by this project.
 
 ## License
 
-This project is licensed under the **[MIT License](LICENSE)**.
-
-```
-Copyright (c) 2025 jdluu
-SPDX-License-Identifier: MIT
-```
-
-You may use, modify, and distribute this software under the terms in [LICENSE](LICENSE).
-The full license text must be included in copies or substantial portions of the Software.
-
-**Disclaimer:** The software is provided "as is", without warranty of any kind. See [LICENSE](LICENSE)
-for details.
-
-Workout data is accessed only via the user's own Hevy API key; users must comply with
-[Hevy's terms](https://www.hevyapp.com/) and API usage policies. **Gemini Nano** / **ML Kit GenAI**
-are Google services; availability varies by device and region. **Health Connect** is provided by
-Google on supported Android devices; permission grants are managed through the Health Connect app.
+[MIT](LICENSE)
