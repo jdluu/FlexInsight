@@ -57,7 +57,7 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideWorkoutRepository(
+    fun provideWorkoutMutationRepository(
         workoutDao: WorkoutDao,
         exerciseDao: ExerciseDao,
         setDao: SetDao,
@@ -67,8 +67,8 @@ object RepositoryModule {
         cacheManager: CacheManager,
         syncManager: SyncManager,
         syncPreferencesManager: com.jdluu.flexinsight.data.preferences.SyncPreferencesManager
-    ): WorkoutRepository {
-        return WorkoutRepositoryImpl(
+    ): WorkoutMutationRepository {
+        return WorkoutMutationRepositoryImpl(
             workoutDao = workoutDao,
             exerciseDao = exerciseDao,
             setDao = setDao,
@@ -78,6 +78,40 @@ object RepositoryModule {
             cacheManager = cacheManager,
             syncManager = syncManager,
             syncPreferencesManager = syncPreferencesManager
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkoutQueryRepository(
+        workoutDao: WorkoutDao,
+        exerciseDao: ExerciseDao,
+        setDao: SetDao,
+        apiKeyManager: ApiKeyManager,
+        networkMonitor: NetworkMonitor,
+        apiClient: FlexApiClient,
+        mutationRepository: WorkoutMutationRepository
+    ): WorkoutQueryRepository {
+        return WorkoutQueryRepositoryImpl(
+            workoutDao = workoutDao,
+            exerciseDao = exerciseDao,
+            setDao = setDao,
+            apiKeyManager = apiKeyManager,
+            networkMonitor = networkMonitor,
+            apiClient = apiClient,
+            mutationRepository = mutationRepository
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkoutRepository(
+        queryRepository: WorkoutQueryRepository,
+        mutationRepository: WorkoutMutationRepository
+    ): WorkoutRepository {
+        return WorkoutRepositoryImpl(
+            queryRepository = queryRepository,
+            mutationRepository = mutationRepository
         )
     }
 
@@ -101,23 +135,39 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideStatsRepository(
+    fun provideStatsMutationRepository(cacheManager: CacheManager): StatsMutationRepository {
+        return StatsMutationRepositoryImpl(cacheManager = cacheManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideStatsQueryRepository(
         workoutDao: WorkoutDao,
         exerciseDao: ExerciseDao,
         setDao: SetDao,
         exerciseRepository: ExerciseRepository,
-        cacheManager: CacheManager,
         dispatcherProvider: DispatcherProvider,
         cacheStrategy: CacheStrategy
-    ): StatsRepository {
-        return StatsRepositoryImpl(
+    ): StatsQueryRepository {
+        return StatsQueryRepositoryImpl(
             workoutDao = workoutDao,
             exerciseDao = exerciseDao,
             setDao = setDao,
             exerciseRepository = exerciseRepository,
-            cacheManager = cacheManager,
             dispatcherProvider = dispatcherProvider,
             cacheStrategy = cacheStrategy
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideStatsRepository(
+        queryRepository: StatsQueryRepository,
+        mutationRepository: StatsMutationRepository
+    ): StatsRepository {
+        return StatsRepositoryImpl(
+            queryRepository = queryRepository,
+            mutationRepository = mutationRepository
         )
     }
 

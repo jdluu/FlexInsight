@@ -51,27 +51,7 @@ data class ExerciseResponse(
     val restSeconds: Int?,
     @SerializedName("sets")
     val sets: List<SetResponse>?
-) {
-    fun toExercise(workoutId: String): Exercise {
-        // Generate ID from workout ID and index, or use a hash if index is null
-        val exerciseId = if (index != null) {
-            "${workoutId}_exercise_$index"
-        } else {
-            "${workoutId}_exercise_${title.hashCode()}"
-        }
-
-        return Exercise(
-            id = exerciseId,
-            workoutId = workoutId,
-            exerciseTemplateId = exerciseTemplateId,
-            name = title, // API uses "title", we store as "name"
-            notes = notes,
-            restDuration = restSeconds, // API uses "rest_seconds", we store as "restDuration"
-            lastSynced = System.currentTimeMillis(),
-            needsSync = false
-        )
-    }
-}
+)
 
 /**
  * Exercise template from Hevy API
@@ -92,15 +72,7 @@ data class ExerciseTemplateResponse(
     val title: String,
     @SerializedName("muscle_group")
     val muscleGroup: String?
-) {
-    fun toExerciseTemplate(): ExerciseTemplate {
-        return ExerciseTemplate(
-            id = id,
-            name = title,  // Map title to name for internal model
-            muscleGroup = muscleGroup
-        )
-    }
-}
+)
 
 /**
  * Paginated response wrapper for exercise templates

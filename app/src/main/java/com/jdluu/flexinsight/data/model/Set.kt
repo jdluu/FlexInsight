@@ -62,26 +62,5 @@ data class SetResponse(
     val customMetric: Double?,
     @SerializedName("personal_record")
     val personalRecord: Boolean? = false
-) {
-    fun toSet(exerciseId: String): Set {
-        // Generate ID from exercise ID and index
-        val setId = "${exerciseId}_set_$index"
-
-        return Set(
-            id = setId,
-            exerciseId = exerciseId,
-            number = index + 1, // Convert 0-based index to 1-based number
-            weight = weightKg, // API uses "weight_kg", we store as "weight"
-            reps = reps,
-            rpe = rpe,
-            distance = distanceMeters, // API uses "distance_meters", we store as "distance"
-            duration = durationSeconds, // API uses "duration_seconds", we store as "duration"
-            restDuration = null, // Not provided in API response
-            notes = type, // Store set type as notes for now
-            isPersonalRecord = personalRecord ?: false,
-            lastSynced = System.currentTimeMillis(),
-            needsSync = false
-        )
-    }
-}
+)
 

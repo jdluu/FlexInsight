@@ -19,14 +19,7 @@ data class RoutineExerciseResponse(
     val templateId: String,
     @SerializedName("title")
     val title: String?
-) {
-    fun toRoutineExercise(exerciseName: String? = null): RoutineExercise {
-        return RoutineExercise(
-            templateId = templateId,
-            name = title ?: exerciseName // Prefer API title, fallback to mapping
-        )
-    }
-}
+)
 
 /**
  * Routine - Local representation
@@ -51,21 +44,7 @@ data class RoutineResponse(
     val exerciseCount: Int,
     @SerializedName("exercises")
     val exercises: List<RoutineExerciseResponse>?
-) {
-    fun toRoutine(exerciseTemplateMapping: Map<String, String> = emptyMap()): Routine {
-        val routineExercises = exercises?.map { exerciseResponse ->
-            val exerciseName = exerciseTemplateMapping[exerciseResponse.templateId]
-            exerciseResponse.toRoutineExercise(exerciseName)
-        }
-
-        return Routine(
-            id = id,
-            name = name,
-            exerciseCount = exerciseCount,
-            exercises = routineExercises
-        )
-    }
-}
+)
 
 /**
  * Paginated response wrapper for routines

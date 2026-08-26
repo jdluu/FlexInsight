@@ -10,6 +10,7 @@ import com.jdluu.flexinsight.data.cache.CacheKeys
 import com.jdluu.flexinsight.data.cache.CacheManager
 import com.jdluu.flexinsight.data.cache.CacheTTL
 import com.jdluu.flexinsight.data.local.dao.ExerciseDao
+import com.jdluu.flexinsight.data.mapper.ExerciseMapper
 import com.jdluu.flexinsight.data.model.Exercise
 import com.jdluu.flexinsight.data.model.ExerciseTemplate
 import com.jdluu.flexinsight.data.model.ExerciseTemplateResponse
@@ -165,7 +166,7 @@ class ExerciseRepositoryImpl(
             }
             is Result.Success -> {
                 val mapping = templatesResult.data.mapNotNull { templateResponse ->
-                    val template = templateResponse.toExerciseTemplate()
+                    val template = ExerciseMapper.toExerciseTemplate(templateResponse)
                     template.muscleGroup?.let { template.id to it }
                 }.toMap()
                 cacheManager.put(CacheKeys.EXERCISE_TEMPLATES, mapping)
