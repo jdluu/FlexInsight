@@ -1,6 +1,7 @@
 package com.jdluu.flexinsight.domain.usecase
 
 import com.jdluu.flexinsight.data.repository.WorkoutRepository
+import com.jdluu.flexinsight.domain.calc.PersonalRecordCalculator
 import com.jdluu.flexinsight.domain.model.RoutineComparison
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -33,8 +34,8 @@ class CompareRoutineSessionsUseCase @Inject constructor(
             } ?: return@forEach
             val recentSets = workoutRepository.getSetsByExerciseId(rex.id)
             val prevSets = workoutRepository.getSetsByExerciseId(prev.id)
-            val recentBest = recentSets.maxOfOrNull { (it.weight ?: 0.0) * (it.reps ?: 0) } ?: 0.0
-            val prevBest = prevSets.maxOfOrNull { (it.weight ?: 0.0) * (it.reps ?: 0) } ?: 0.0
+            val recentBest = PersonalRecordCalculator.bestSetVolume(recentSets)
+            val prevBest = PersonalRecordCalculator.bestSetVolume(prevSets)
             when {
                 recentBest > prevBest * 1.02 -> improvements.add("${rex.name}: volume up")
                 recentBest < prevBest * 0.98 -> regressions.add("${rex.name}: volume down")

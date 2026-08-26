@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jdluu.flexinsight.data.model.MuscleGroupProgress
 import com.jdluu.flexinsight.data.model.WeeklyProgress
+import com.jdluu.flexinsight.domain.calc.StreakCalculator
+import com.jdluu.flexinsight.domain.calc.VolumeCalculator
 import com.jdluu.flexinsight.ui.theme.OrangeAccent
 import com.jdluu.flexinsight.ui.theme.Primary
 import com.jdluu.flexinsight.ui.theme.SurfaceCard
@@ -78,7 +80,7 @@ fun StreakIndicator(streak: Int = 0) {
                             .background(MaterialTheme.colorScheme.outlineVariant)
                     ) {
                         // Progress bar based on streak (max 7 days for visual)
-                        val progress = (streak.coerceAtMost(7) / 7f).coerceIn(0f, 1f)
+                        val progress = StreakCalculator.barProgress(streak)
                         Box(
                             modifier = Modifier
                                 .fillMaxHeight()
@@ -155,7 +157,7 @@ fun WeeklyProgressSection(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.Bottom
                         ) {
-                            val totalVolume = progress.sumOf { it.totalVolume }
+                            val totalVolume = VolumeCalculator.sumWeeklyVolume(progress)
                             Text(
                                 text = formatVolume(totalVolume),
                                 fontSize = 32.sp,
@@ -218,14 +220,10 @@ fun WeeklyProgressSection(
                             modifier = Modifier.padding(vertical = 8.dp)
                         )
                     } else {
-                        val totalVolume = progress.sumOf { it.totalVolume }
+                        val totalVolume = VolumeCalculator.sumWeeklyVolume(progress)
                         muscleGroupProgress.forEach { muscleGroup ->
                             // Calculate percentage of total volume
-                            val percentage = if (totalVolume > 0) {
-                                ((muscleGroup.volume / totalVolume) * 100).toInt()
-                            } else {
-                                0
-                            }
+                            val percentage = VolumeCalculator.sharePercent(muscleGroup.volume, totalVolume)
                             val icon = when (muscleGroup.muscleGroup.lowercase()) {
                                 "chest" -> Icons.Default.AccessibilityNew
                                 "back" -> Icons.Default.GridView

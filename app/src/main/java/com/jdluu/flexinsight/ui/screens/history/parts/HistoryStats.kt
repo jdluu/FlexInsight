@@ -24,6 +24,7 @@ import com.jdluu.flexinsight.data.model.MuscleGroupProgress
 import com.jdluu.flexinsight.data.model.VolumeTrend
 import com.jdluu.flexinsight.data.model.WeeklyVolumeData
 import com.jdluu.flexinsight.data.model.WorkoutStats
+import com.jdluu.flexinsight.domain.calc.VolumeCalculator
 import com.jdluu.flexinsight.ui.theme.Primary
 import com.jdluu.flexinsight.ui.theme.SurfaceCardAlt
 import com.jdluu.flexinsight.ui.theme.TextSecondary
@@ -37,11 +38,7 @@ fun StatsGrid(
     useMetric: Boolean = false
 ) {
     val avgVolumeConverted = UnitConverter.convertVolume(avgVolume.toDouble(), useMetric)
-    val avgVolumeFormatted = if (avgVolumeConverted >= 1000) {
-        "${(avgVolumeConverted / 1000).toInt()}k"
-    } else {
-        avgVolumeConverted.toInt().toString()
-    }
+    val avgVolumeFormatted = VolumeCalculator.compactThousandsLabel(avgVolumeConverted)
     val unitLabel = UnitConverter.getWeightUnit(useMetric)
 
     Row(
