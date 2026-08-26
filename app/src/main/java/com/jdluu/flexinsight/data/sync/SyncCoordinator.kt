@@ -7,13 +7,18 @@ import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/** Notified when a full Hevy sync finishes, to run post-sync follow-ups. */
+interface SyncCompleteListener {
+    suspend fun onSyncComplete()
+}
+
 @Singleton
 class SyncCoordinator @Inject constructor(
     private val workoutRepository: WorkoutRepository,
     private val syncPreferencesManager: SyncPreferencesManager,
     private val healthConnectRepository: HealthConnectRepository
-) {
-    suspend fun onSyncComplete() {
+) : SyncCompleteListener {
+    override suspend fun onSyncComplete() {
         val count = workoutRepository.getWorkoutCount().first()
         syncPreferencesManager.recordSyncSuccess(count)
         val recent = workoutRepository.getRecentWorkouts(limit = 5).first()

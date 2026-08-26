@@ -23,13 +23,21 @@ private val Context.legacyApiKeyDataStore: DataStore<Preferences> by preferences
 )
 
 /**
+ * Read-only view of Hevy API key availability, for callers that only need to
+ * check connectivity status (e.g. AI Trainer pre-chat sync).
+ */
+interface ApiKeyStatusSource {
+    suspend fun hasApiKey(): Boolean
+}
+
+/**
  * Stores the Hevy API key in encrypted shared preferences.
  * Migrates keys from the legacy DataStore on first access.
  */
 @Singleton
 class ApiKeyManager @Inject constructor(
     private val context: Context
-) {
+) : ApiKeyStatusSource {
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
@@ -75,8 +83,7 @@ class ApiKeyManager @Inject constructor(
         _apiKeyFlow.value = null
     }
 
-    suspend fun hasApiKey(): Boolean = !getApiKey().isNullOrBlank()
-
+    override suspend fun hasApiKey(): Boolean = !getApiKey().isNullOrBlank()
     fun isValidApiKeyFormat(apiKey: String): Boolean {
         return apiKey.isNotBlank() && apiKey.length >= 10
     }
