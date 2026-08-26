@@ -39,7 +39,7 @@ fun FlexBottomNavigation(
         NavItem("settings", stringResource(id = R.string.nav_profile), Icons.Default.Person)
     )
 
-        Box(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.navigationBars)

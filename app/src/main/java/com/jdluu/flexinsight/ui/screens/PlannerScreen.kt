@@ -8,7 +8,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
@@ -73,8 +72,8 @@ fun PlannerScreen(
         return
     }
 
-    val context = LocalContext.current
     var showRescheduleDialog by remember { mutableStateOf<PlannedWorkout?>(null) }
+    val movedTomorrowMessage = stringResource(R.string.planner_snackbar_moved_tomorrow)
 
     showRescheduleDialog?.let { workout ->
         PlannerRescheduleDialog(
@@ -85,8 +84,7 @@ fun PlannerScreen(
                 workout.id?.let { id ->
                     viewModel.rescheduleWorkout(id, calendar.timeInMillis)
                 }
-                val snackbarMsg = context.getString(R.string.planner_snackbar_moved_tomorrow)
-                scope.launch { snackbarHostState.showSnackbar(snackbarMsg) }
+                scope.launch { snackbarHostState.showSnackbar(movedTomorrowMessage) }
                 showRescheduleDialog = null
             },
             onDismiss = { showRescheduleDialog = null }
@@ -158,26 +156,33 @@ fun PlannerScreen(
         )
     }
 
+    val saveSuccessMessage: String? = when (val status = uiState.saveToHevyStatus) {
+        is SaveToHevyStatus.Success -> when {
+            status.usedPlaceholder ->
+                stringResource(R.string.planner_save_success_placeholder)
+            status.unmatchedNames.isEmpty() ->
+                stringResource(R.string.planner_save_success_matched, status.matchedCount)
+            status.matchedCount == 0 ->
+                stringResource(
+                    R.string.planner_save_success_unmatched,
+                    status.unmatchedNames.joinToString(", ")
+                )
+            else ->
+                stringResource(
+                    R.string.planner_save_success_matched_and_unmatched,
+                    status.matchedCount,
+                    status.unmatchedNames.joinToString(", ")
+                )
+        }
+        else -> null
+    }
+
     LaunchedEffect(uiState.saveToHevyStatus) {
         when (val status = uiState.saveToHevyStatus) {
             is SaveToHevyStatus.Success -> {
-                val message = when {
-                    status.usedPlaceholder -> context.getString(R.string.planner_save_success_placeholder)
-                    status.unmatchedNames.isEmpty() -> context.getString(
-                        R.string.planner_save_success_matched,
-                        status.matchedCount
-                    )
-                    status.matchedCount == 0 -> context.getString(
-                        R.string.planner_save_success_unmatched,
-                        status.unmatchedNames.joinToString(", ")
-                    )
-                    else -> context.getString(
-                        R.string.planner_save_success_matched_and_unmatched,
-                        status.matchedCount,
-                        status.unmatchedNames.joinToString(", ")
-                    )
+                saveSuccessMessage?.let { message ->
+                    snackbarHostState.showSnackbar(message)
                 }
-                snackbarHostState.showSnackbar(message)
                 viewModel.clearSaveStatus()
             }
             is SaveToHevyStatus.Error -> {

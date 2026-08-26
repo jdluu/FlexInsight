@@ -54,6 +54,22 @@ fun SettingsScreen(
     var showHealthPermissionsExplain by remember { mutableStateOf(false) }
     var showHealthPermissionsInfo by remember { mutableStateOf(false) }
 
+    val healthPermissionsDeniedMessage = stringResource(R.string.settings_health_permissions_denied)
+    val syncSuccessMessage = stringResource(R.string.settings_sync_success)
+    val syncStateFeedback: String? = when (val state = uiState.syncState) {
+        is LoadingState.Success -> syncSuccessMessage
+        is LoadingState.Error -> stringResource(R.string.settings_sync_failed, state.error.message ?: "")
+        else -> null
+    }
+    val exportSubject = stringResource(R.string.settings_export_subject)
+    val exportReportTitle = stringResource(R.string.settings_item_export_coach_report)
+    val exportFailedMessage = stringResource(R.string.settings_export_failed)
+    val contactSupportTitle = stringResource(R.string.settings_item_contact_support)
+    val supportEmail = stringResource(R.string.settings_support_email)
+    val supportSubject = stringResource(R.string.settings_support_subject)
+    val supportNoAppMessage = stringResource(R.string.settings_support_no_app)
+    val browserNoAppMessage = stringResource(R.string.settings_browser_no_app)
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = PermissionController.createRequestPermissionResultContract()
     ) { granted ->
@@ -61,24 +77,14 @@ fun SettingsScreen(
         viewModel.setHealthConnectEnabled(allGranted)
         if (!allGranted) {
             scope.launch {
-                snackbarHostState.showSnackbar(context.getString(R.string.settings_health_permissions_denied))
+                snackbarHostState.showSnackbar(healthPermissionsDeniedMessage)
             }
         }
     }
 
     // Sync Status Feedback
     LaunchedEffect(uiState.syncState) {
-        when (val state = uiState.syncState) {
-            is LoadingState.Success -> {
-                snackbarHostState.showSnackbar(context.getString(R.string.settings_sync_success))
-            }
-            is LoadingState.Error -> {
-                snackbarHostState.showSnackbar(
-                    context.getString(R.string.settings_sync_failed, state.error.message ?: "")
-                )
-            }
-            else -> {}
-        }
+        syncStateFeedback?.let { snackbarHostState.showSnackbar(it) }
     }
 
     Scaffold(
@@ -241,7 +247,7 @@ fun SettingsScreen(
                 item {
                     SectionTitle(stringResource(id = R.string.settings_section_data_privacy))
                     PreferenceItem(
-                        title = stringResource(id = R.string.settings_item_export_coach_report),
+                        title = exportReportTitle,
                         icon = Icons.Default.Download,
                         value = null,
                         onClick = {
@@ -249,18 +255,18 @@ fun SettingsScreen(
                                 val report = viewModel.exportCoachReport()
                                 val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
                                     type = "text/plain"
-                                    putExtra(android.content.Intent.EXTRA_SUBJECT, context.getString(R.string.settings_export_subject))
+                                    putExtra(android.content.Intent.EXTRA_SUBJECT, exportSubject)
                                     putExtra(android.content.Intent.EXTRA_TEXT, report)
                                 }
                                 try {
                                     context.startActivity(
                                         android.content.Intent.createChooser(
                                             intent,
-                                            context.getString(R.string.settings_item_export_coach_report)
+                                            exportReportTitle
                                         )
                                     )
                                 } catch (e: Exception) {
-                                    snackbarHostState.showSnackbar(context.getString(R.string.settings_export_failed))
+                                    snackbarHostState.showSnackbar(exportFailedMessage)
                                 }
                             }
                         }
@@ -276,19 +282,19 @@ fun SettingsScreen(
                 item {
                     SectionTitle(stringResource(id = R.string.settings_section_help_feedback))
                     PreferenceItem(
-                        title = stringResource(id = R.string.settings_item_contact_support),
+                        title = contactSupportTitle,
                         icon = Icons.Default.Email,
                         value = null,
                         onClick = {
                             val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
                                 data = android.net.Uri.parse("mailto:")
-                                putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf(context.getString(R.string.settings_support_email)))
-                                putExtra(android.content.Intent.EXTRA_SUBJECT, context.getString(R.string.settings_support_subject))
+                                putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf(supportEmail))
+                                putExtra(android.content.Intent.EXTRA_SUBJECT, supportSubject)
                             }
                             try {
-                                context.startActivity(android.content.Intent.createChooser(intent, context.getString(R.string.settings_item_contact_support)))
+                                context.startActivity(android.content.Intent.createChooser(intent, contactSupportTitle))
                             } catch (e: Exception) {
-                                scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.settings_support_no_app)) }
+                                scope.launch { snackbarHostState.showSnackbar(supportNoAppMessage) }
                             }
                         }
                     )
@@ -301,7 +307,7 @@ fun SettingsScreen(
                             try {
                                 context.startActivity(intent)
                             } catch (e: Exception) {
-                                scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.settings_browser_no_app)) }
+                                scope.launch { snackbarHostState.showSnackbar(browserNoAppMessage) }
                             }
                         }
                     )

@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,7 +26,6 @@ import com.jdluu.flexinsight.ui.navigation.FlexAppNavigation
 import com.jdluu.flexinsight.ui.navigation.Screen
 import com.jdluu.flexinsight.ui.theme.FlexInsightTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -86,38 +84,31 @@ fun MainScreen(
     )
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.coroutineScope {
-            launch {
-                syncPreferencesManager.pendingNewWorkoutsFlow.collect { pending ->
-                    if (pending > 0) {
-                        snackbarHostState.showSnackbar(
-                            message = context.getString(
-                                R.string.sync_snackbar_new_workouts,
-                                pending
-                            ),
-                            actionLabel = context.getString(R.string.done)
-                        )
-                        syncPreferencesManager.clearPendingNewWorkouts()
-                    }
-                }
-            }
-            launch {
-                syncPreferencesManager.pendingDeletedWorkoutsFlow.collect { deleted ->
-                    if (deleted > 0) {
-                        snackbarHostState.showSnackbar(
-                            message = context.getString(
-                                R.string.sync_snackbar_deleted_workouts,
-                                deleted
-                            ),
-                            actionLabel = context.getString(R.string.done)
-                        )
-                        syncPreferencesManager.clearPendingDeletedWorkouts()
-                    }
-                }
-            }
+    val pendingNewWorkouts: Int? by syncPreferencesManager.pendingNewWorkoutsFlow
+        .collectAsStateWithLifecycle(initialValue = null)
+    val pendingDeletedWorkouts: Int? by syncPreferencesManager.pendingDeletedWorkoutsFlow
+        .collectAsStateWithLifecycle(initialValue = null)
+
+    val doneLabel = stringResource(R.string.done)
+    val newWorkoutsMessage = pendingNewWorkouts?.takeIf { it > 0 }?.let {
+        stringResource(R.string.sync_snackbar_new_workouts, it)
+    }
+    val deletedWorkoutsMessage = pendingDeletedWorkouts?.takeIf { it > 0 }?.let {
+        stringResource(R.string.sync_snackbar_deleted_workouts, it)
+    }
+
+    LaunchedEffect(newWorkoutsMessage) {
+        newWorkoutsMessage?.let { message ->
+            snackbarHostState.showSnackbar(message = message, actionLabel = doneLabel)
+            syncPreferencesManager.clearPendingNewWorkouts()
+        }
+    }
+
+    LaunchedEffect(deletedWorkoutsMessage) {
+        deletedWorkoutsMessage?.let { message ->
+            snackbarHostState.showSnackbar(message = message, actionLabel = doneLabel)
+            syncPreferencesManager.clearPendingDeletedWorkouts()
         }
     }
 
