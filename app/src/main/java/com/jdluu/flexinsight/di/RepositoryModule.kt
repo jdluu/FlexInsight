@@ -173,7 +173,7 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideFlexRepository(
+    fun provideFlexRepositoryImpl(
         apiKeyManager: ApiKeyManager,
         networkMonitor: NetworkMonitor,
         cacheManager: CacheManager,
@@ -181,7 +181,7 @@ object RepositoryModule {
         workoutRepository: WorkoutRepository,
         routineRepository: RoutineRepository,
         statsRepository: StatsRepository
-    ): FlexRepository {
+    ): FlexRepositoryImpl {
         return FlexRepositoryImpl(
             apiKeyManager = apiKeyManager,
             networkMonitor = networkMonitor,
@@ -191,6 +191,18 @@ object RepositoryModule {
             routineRepository = routineRepository,
             statsRepository = statsRepository
         )
+    }
+
+    @Provides
+    @Singleton
+    fun provideFlexRepository(impl: FlexRepositoryImpl): FlexRepository {
+        return impl
+    }
+
+    @Provides
+    @Singleton
+    fun provideHevySyncSource(impl: FlexRepositoryImpl): com.jdluu.flexinsight.data.sync.HevySyncSource {
+        return impl
     }
 
     @Provides
