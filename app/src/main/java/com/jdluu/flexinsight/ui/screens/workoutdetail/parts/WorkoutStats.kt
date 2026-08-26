@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jdluu.flexinsight.data.model.SingleWorkoutStats
+import com.jdluu.flexinsight.domain.calc.DurationCalculator
+import com.jdluu.flexinsight.domain.calc.PersonalRecordCalculator
 import com.jdluu.flexinsight.ui.theme.Primary
 import com.jdluu.flexinsight.ui.theme.SurfaceCard
 import com.jdluu.flexinsight.ui.theme.TextSecondary
@@ -31,17 +33,7 @@ fun WorkoutStatsCard(
     totalReps: Int,
     useMetric: Boolean = false
 ) {
-    val durationText = if (stats?.durationMinutes != null && stats.durationMinutes > 0) {
-        val hours = stats.durationMinutes / 60
-        val minutes = stats.durationMinutes % 60
-        if (hours > 0) {
-            "${hours}h ${minutes}m"
-        } else {
-            "${minutes}m"
-        }
-    } else {
-        "0m"
-    }
+    val durationText = stats?.durationMinutes?.let(DurationCalculator::durationLabel) ?: "0m"
 
     val volumeText = if (stats?.totalVolume != null && stats.totalVolume > 0) {
         UnitConverter.formatVolumeWithCommas(stats.totalVolume, useMetric)
@@ -52,9 +44,7 @@ fun WorkoutStatsCard(
     val setsText = (stats?.totalSets ?: 0).toString()
     val repsText = totalReps.toString()
 
-    val hasPR = exercisesWithSets.any { exercise -> 
-        exercise.sets.any { set -> set.isPersonalRecord } 
-    }
+    val hasPR = PersonalRecordCalculator.hasPersonalRecord(exercisesWithSets.flatMap { it.sets })
 
     Card(
         modifier = Modifier

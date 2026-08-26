@@ -17,6 +17,7 @@ import com.jdluu.flexinsight.data.preferences.SyncPreferencesManager
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
 import com.jdluu.flexinsight.data.sync.SyncCoordinator
 import com.jdluu.flexinsight.widget.WidgetUpdater
+import com.jdluu.flexinsight.domain.calc.RecoveryScoreCalculator
 import com.jdluu.flexinsight.domain.model.DeloadAlert
 import com.jdluu.flexinsight.domain.model.TrainingLoadScore
 import com.jdluu.flexinsight.domain.usecase.CalculateTrainingLoadUseCase
@@ -213,8 +214,7 @@ class DashboardViewModel @Inject constructor(
                         
                         widgetUpdater.updateFromDashboard(
                             streak = stats.currentStreak,
-                            recoveryScore = (muscleRecovery.values.average() * 100).toInt()
-                                .coerceIn(0, 100),
+                            recoveryScore = RecoveryScoreCalculator.overallRecoveryScore(muscleRecovery),
                             nextWorkoutLabel = runCatching {
                                 repository.getPlannedWorkoutsForDay(System.currentTimeMillis())
                                     .firstOrNull()?.name

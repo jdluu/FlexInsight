@@ -15,7 +15,11 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.time.LocalDate
 import java.time.LocalTime
-import com.jdluu.flexinsight.domain.util.StatsCalculator
+import com.jdluu.flexinsight.domain.calc.DurationCalculator
+import com.jdluu.flexinsight.domain.calc.RecoveryScoreCalculator
+import com.jdluu.flexinsight.domain.calc.StreakCalculator
+import com.jdluu.flexinsight.domain.calc.TrainingLoadCalculator
+import com.jdluu.flexinsight.domain.calc.VolumeCalculator
 import com.jdluu.flexinsight.core.dispatchers.DispatcherProvider
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -54,13 +58,9 @@ class StatsRepositoryImpl @Inject constructor(
         }
 
         val totalSets = allSets.size
-        val totalVolume = allSets.sumOf { set ->
-            (set.weight ?: 0.0) * (set.reps ?: 0)
-        }
+        val totalVolume = VolumeCalculator.totalSetVolume(allSets)
 
-        val durationMinutes = workout.endTime?.let { endTime ->
-            (endTime - workout.startTime) / (1000 * 60)
-        } ?: 0L
+        val durationMinutes = DurationCalculator.workoutDurationMinutes(workout)
 
         SingleWorkoutStats(
             durationMinutes = durationMinutes,
@@ -127,8 +127,8 @@ class StatsRepositoryImpl @Inject constructor(
             totalVolumePrevious = previousVolume,
             totalWorkoutsCurrent = currentWorkouts.size,
             totalWorkoutsPrevious = previousWorkouts.size,
-            avgDurationCurrent = averageDurationMinutes(currentWorkouts),
-            avgDurationPrevious = averageDurationMinutes(previousWorkouts)
+            avgDurationCurrent = DurationCalculator.averageDurationMinutes(currentWorkouts),
+            avgDurationPrevious = DurationCalculator.averageDurationMinutes(previousWorkouts)
         )
     }
 
@@ -148,7 +148,7 @@ class StatsRepositoryImpl @Inject constructor(
             val currentVolume = calculateTotalVolumeForWorkouts(currentWorkouts)
             val previousVolume = calculateTotalVolumeForWorkouts(previousWorkouts)
 
-            val percentageChange = StatsCalculator.calculateVolumeChange(currentVolume, previousVolume)
+            val percentageChange = VolumeCalculator.changePercent(currentVolume, previousVolume)
 
             VolumeTrend(
                 currentVolume = currentVolume,
@@ -182,7 +182,7 @@ class StatsRepositoryImpl @Inject constructor(
 
             val workouts = workoutDao.getWorkoutsByDateRangeFlow(startDate, endDate).first()
 
-            StatsCalculator.calculateDurationTrend(workouts, startDate, endDate)
+            DurationCalculator.durationTrend(workouts, startDate, endDate)
         }
     }
 
@@ -197,7 +197,7 @@ class StatsRepositoryImpl @Inject constructor(
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(weekStart, weekEnd).first()
         val completed = workouts.size
 
-        val status = StatsCalculator.calculateGoalStatus(completed, target)
+        val status = TrainingLoadCalculator.goalStatus(completed, target)
 
         WeeklyGoalProgress(
             completed = completed,
@@ -243,8 +243,8 @@ class StatsRepositoryImpl @Inject constructor(
      * Get planned workouts for a specific day
      */
     override suspend fun getPlannedWorkoutsForDay(timestamp: Long): List<PlannedWorkout> = withContext(dispatcherProvider.default) {
-        val dayStart = StatsCalculator.getStartOfDay(timestamp)
-        val dayEnd = StatsCalculator.getEndOfDay(timestamp)
+        val dayStart = DurationCalculator.startOfDay(timestamp)
+        val dayEnd = DurationCalculator.endOfDay(timestamp)
 
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(dayStart, dayEnd).first()
         val workoutIds = workouts.map { it.id }
@@ -262,14 +262,13 @@ class StatsRepositoryImpl @Inject constructor(
         workouts.map { workout ->
             val exercises = exercisesByWorkout[workout.id] ?: emptyList()
             val totalVolume = exercises.sumOf { exercise ->
-                val sets = setsByExercise[exercise.id] ?: emptyList()
-                sets.sumOf { set -> (set.weight ?: 0.0) * (set.reps ?: 0) }
+                VolumeCalculator.totalSetVolume(setsByExercise[exercise.id] ?: emptyList())
             }
             PlannedWorkout(
                 id = workout.id,
                 name = workout.name ?: "Workout",
-                duration = workout.endTime?.let { (it - workout.startTime) / (1000 * 60) },
-                intensity = StatsCalculator.calculateAbsoluteIntensity(totalVolume),
+                duration = workout.endTime?.let { DurationCalculator.workoutDurationMinutes(workout) },
+                intensity = VolumeCalculator.absoluteIntensity(totalVolume),
                 isCompleted = workout.endTime != null,
                 routineId = workout.routineId,
                 exerciseCount = exercises.size
@@ -282,7 +281,7 @@ class StatsRepositoryImpl @Inject constructor(
      */
     override suspend fun getVolumeBalance(weeks: Int): VolumeBalance = withContext(dispatcherProvider.default) {
         val muscleGroupProgress = getMuscleGroupProgress(weeks)
-        StatsCalculator.calculateVolumeBalance(muscleGroupProgress)
+        VolumeCalculator.volumeBalance(muscleGroupProgress)
     }
 
     /**
@@ -307,9 +306,7 @@ class StatsRepositoryImpl @Inject constructor(
      */
     override suspend fun calculateAccountAgeDays(): Int {
         val memberSince = getMemberSinceDate() ?: return 0
-        val now = System.currentTimeMillis()
-        val daysDiff = (now - memberSince) / (1000 * 60 * 60 * 24)
-        return daysDiff.toInt().coerceAtLeast(0)
+        return DurationCalculator.accountAgeDays(memberSince, System.currentTimeMillis())
     }
 
     /**
@@ -362,7 +359,7 @@ class StatsRepositoryImpl @Inject constructor(
             setDao.getSetsByExerciseId(exerciseId)
         }
 
-        return StatsCalculator.calculateTotalVolume(workouts, allExercises, allSets)
+        return VolumeCalculator.totalVolume(workouts, allExercises, allSets)
     }
 
     /**
@@ -423,13 +420,13 @@ class StatsRepositoryImpl @Inject constructor(
         val allExercises = workoutsWithDetails.flatMap { wd -> wd.exercises.map { it.exercise } }
         val allSets = workoutsWithDetails.flatMap { wd -> wd.exercises.flatMap { it.sets } }
         val totalWorkouts = workouts.size
-        val totalVolume = StatsCalculator.calculateTotalVolume(workouts, allExercises, allSets)
+        val totalVolume = VolumeCalculator.totalVolume(workouts, allExercises, allSets)
         val averageVolume = if (totalWorkouts > 0) totalVolume / totalWorkouts else 0.0
         val totalSets = allSets.size
-        val totalDuration = StatsCalculator.calculateTotalDuration(workouts)
+        val totalDuration = DurationCalculator.totalDuration(workouts)
         val averageDuration = if (totalWorkouts > 0) totalDuration / totalWorkouts else 0L
-        val currentStreak = StatsCalculator.calculateStreak(workouts)
-        val longestStreak = StatsCalculator.calculateLongestStreak(workouts)
+        val currentStreak = StreakCalculator.currentStreak(workouts)
+        val longestStreak = StreakCalculator.longestStreak(workouts)
         val weeklyProgress = computeWeeklyProgress(4)
         val bestWeek = weeklyProgress.maxByOrNull { it.totalVolume }
         return WorkoutStats(
@@ -461,7 +458,7 @@ class StatsRepositoryImpl @Inject constructor(
                 .get(weekFields.weekOfWeekBasedYear())
         }.map { (_, weekWorkouts) ->
             val weekStart = weekWorkouts.minOfOrNull { it.startTime } ?: 0L
-            val totalVolume = StatsCalculator.calculateTotalVolume(weekWorkouts, allExercises, allSets)
+            val totalVolume = VolumeCalculator.totalVolume(weekWorkouts, allExercises, allSets)
             WeeklyProgress(
                 weekStartDate = weekStart,
                 totalVolume = totalVolume,
@@ -505,7 +502,7 @@ class StatsRepositoryImpl @Inject constructor(
         allExercises.forEach { exercise ->
             val muscleGroup = exerciseRepository.getMuscleGroupForExercise(exercise) ?: return@forEach
             val sets = allSets[exercise.id] ?: emptyList()
-            val exerciseVolume = sets.sumOf { (it.weight ?: 0.0) * (it.reps ?: 0) }
+            val exerciseVolume = VolumeCalculator.totalSetVolume(sets)
             val current = muscleGroupData[muscleGroup] ?: (0.0 to 0)
             muscleGroupData[muscleGroup] = (current.first + exerciseVolume) to (current.second + sets.size)
         }
@@ -517,14 +514,13 @@ class StatsRepositoryImpl @Inject constructor(
                 muscleGroup = muscleGroup,
                 volume = volume,
                 sets = sets,
-                intensity = StatsCalculator.calculateRelativeIntensity(volume, averageVolume)
+                intensity = VolumeCalculator.relativeIntensity(volume, averageVolume)
             )
         }.sortedByDescending { it.volume }
     }
 
     private suspend fun computeMuscleRecovery(): Map<MuscleGroup, Float> = withContext(dispatcherProvider.io) {
         val now = System.currentTimeMillis()
-        val recoveryTimeMs = 72 * 60 * 60 * 1000L
         val sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000L)
         val workouts = workoutDao.getWorkoutsSinceFlow(sevenDaysAgo).first().filter { !it.isDeleted }
         val lastTrainedMap = mutableMapOf<MuscleGroup, Long>()
@@ -538,18 +534,6 @@ class StatsRepositoryImpl @Inject constructor(
                     }
                 }
         }
-        MuscleGroup.values().associateWith { group ->
-            val lastTrained = lastTrainedMap[group] ?: 0L
-            if (lastTrained == 0L) 1.0f
-            else ((now - lastTrained).toFloat() / recoveryTimeMs).coerceIn(0f, 1f)
-        }
-    }
-
-    private fun averageDurationMinutes(workouts: List<Workout>): Long {
-        if (workouts.isEmpty()) return 0L
-        val durations = workouts.mapNotNull { w ->
-            w.endTime?.let { (it - w.startTime) / (1000 * 60) }
-        }
-        return if (durations.isEmpty()) 0L else durations.average().toLong()
+        RecoveryScoreCalculator.muscleRecoveryStatus(now, lastTrainedMap)
     }
 }
