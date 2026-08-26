@@ -1,6 +1,7 @@
 package com.jdluu.flexinsight.domain.usecase
 
 import com.jdluu.flexinsight.data.ai.HevyAiDataAccessor
+import com.jdluu.flexinsight.domain.ai.AiContextProvider
 import javax.inject.Inject
 
 /**
@@ -9,9 +10,9 @@ import javax.inject.Inject
  * @param userQuery When set, triggers live Hevy API exercise-history lookups for relevant lifts.
  */
 class BuildAiContextUseCase @Inject constructor(
-    private val hevyAiDataAccessor: HevyAiDataAccessor
+    private val aiContextProvider: AiContextProvider
 ) {
     suspend operator fun invoke(userQuery: String? = null): HevyAiDataAccessor.ContextSnapshot {
-        return hevyAiDataAccessor.buildContext(userQuery)
+        return aiContextProvider.buildContext(userQuery)
     }
 }

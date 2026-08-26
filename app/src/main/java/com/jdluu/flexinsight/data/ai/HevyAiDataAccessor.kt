@@ -11,6 +11,7 @@ import com.jdluu.flexinsight.data.repository.FlexRepository
 import com.jdluu.flexinsight.data.repository.RoutineRepository
 import com.jdluu.flexinsight.data.repository.StatsRepository
 import com.jdluu.flexinsight.data.repository.WorkoutRepository
+import com.jdluu.flexinsight.domain.ai.AiContextProvider
 import kotlinx.coroutines.flow.first
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -35,7 +36,7 @@ class HevyAiDataAccessor @Inject constructor(
     private val userPreferencesManager: UserPreferencesManager,
     private val apiKeyManager: ApiKeyManager,
     private val healthConnectRepository: HealthConnectRepository
-) {
+) : AiContextProvider {
 
     data class ContextSnapshot(
         val text: String,
@@ -46,7 +47,7 @@ class HevyAiDataAccessor @Inject constructor(
         val usesLiveExerciseHistory: Boolean = false
     )
 
-    suspend fun buildContext(userQuery: String? = null): ContextSnapshot {
+    override suspend fun buildContext(userQuery: String?): ContextSnapshot {
         val hasApiKey = apiKeyManager.hasApiKey()
         val workoutCount = try {
             flexRepository.getWorkoutCount().first()
