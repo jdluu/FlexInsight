@@ -3,7 +3,6 @@ package com.jdluu.flexinsight.data.repository
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.ErrorHandler
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.model.toRoutineFolder
 import com.jdluu.flexinsight.core.logger.AppLogger
 import com.jdluu.flexinsight.core.network.NetworkMonitor
 import com.jdluu.flexinsight.data.api.FlexApiClient
@@ -11,6 +10,7 @@ import com.jdluu.flexinsight.data.api.FlexApiService
 import com.jdluu.flexinsight.data.cache.CacheKeys
 import com.jdluu.flexinsight.data.cache.CacheManager
 import com.jdluu.flexinsight.data.cache.CacheTTL
+import com.jdluu.flexinsight.data.mapper.RoutineMapper
 import com.jdluu.flexinsight.data.model.Routine
 import com.jdluu.flexinsight.data.model.RoutineResponse
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
@@ -109,7 +109,7 @@ class RoutineRepositoryImpl(
                                 if (detailResponse.isSuccessful) {
                                     val fullRoutineResponse = detailResponse.body()
                                     if (fullRoutineResponse != null) {
-                                        val routine = fullRoutineResponse.toRoutine(exerciseTemplateMapping)
+                                        val routine = RoutineMapper.toRoutine(fullRoutineResponse, exerciseTemplateMapping)
                                         allRoutines.add(routine)
                                     }
                                 } else {
@@ -199,7 +199,7 @@ class RoutineRepositoryImpl(
                         emptyMap()
                     }
 
-                    val routine = routineResponse.toRoutine(exerciseTemplateMapping)
+                    val routine = RoutineMapper.toRoutine(routineResponse, exerciseTemplateMapping)
                     Result.success(routine)
                 } else {
                     val error = ErrorHandler.handleHttpException(
@@ -253,7 +253,7 @@ class RoutineRepositoryImpl(
 
                     val foldersList = paginatedResponse.folders
                     if (foldersList.isNotEmpty()) {
-                        allFolders.addAll(foldersList.map { it.toRoutineFolder() })
+                        allFolders.addAll(foldersList.map { RoutineMapper.toRoutineFolder(it) })
                     }
 
                     // Check if there are more pages - though folders response might not strictly follow pageCount logic,

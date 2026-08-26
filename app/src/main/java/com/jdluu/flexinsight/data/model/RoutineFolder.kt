@@ -38,11 +38,3 @@ data class RoutineFolder(
     val title: String,
     val index: Int
 )
-
-fun RoutineFolderResponse.toRoutineFolder(): RoutineFolder {
-    return RoutineFolder(
-        id = id,
-        title = title,
-        index = index
-    )
-}
