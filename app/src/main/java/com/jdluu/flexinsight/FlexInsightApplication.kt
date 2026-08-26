@@ -10,11 +10,13 @@ import javax.inject.Inject
 @HiltAndroidApp
 class FlexInsightApplication : Application(), Configuration.Provider {
 
-    @Inject
-    lateinit var syncManager: SyncManager
-
+    // workerFactory must be injected before syncManager: SyncManager's constructor
+    // initializes WorkManager on demand, which reads workManagerConfiguration.
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
+
+    @Inject
+    lateinit var syncManager: SyncManager
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder()
