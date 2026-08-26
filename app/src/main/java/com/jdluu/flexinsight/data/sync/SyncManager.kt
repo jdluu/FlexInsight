@@ -8,6 +8,11 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/** Trigger for user-initiated immediate syncs (e.g. pull to refresh, AI Trainer pre-chat). */
+interface ManualSyncScheduler {
+    fun syncNow()
+}
+
 /**
  * Manages background synchronization tasks using WorkManager.
  * Centralizes sync scheduling for the entire application.
@@ -15,7 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class SyncManager @Inject constructor(
     @param:ApplicationContext private val context: Context
-) {
+) : ManualSyncScheduler {
     private val workManager = WorkManager.getInstance(context)
 
     companion object {
@@ -28,7 +33,7 @@ class SyncManager @Inject constructor(
      * Enqueues an immediate one-time sync task.
      * This is useful when the user completes a workout or manually pulls to refresh.
      */
-    fun syncNow() {
+    override fun syncNow() {
         AppLogger.d("Requesting immediate background sync", tag = TAG)
         
         val constraints = Constraints.Builder()

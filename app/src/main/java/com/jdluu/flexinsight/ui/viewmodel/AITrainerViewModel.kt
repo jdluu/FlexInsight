@@ -6,10 +6,10 @@ import com.jdluu.flexinsight.core.errors.Result
 import com.jdluu.flexinsight.data.ai.AiFeatureStatus
 import com.jdluu.flexinsight.data.ai.FlexAIClient
 import com.jdluu.flexinsight.data.ai.HevyAiDataAccessor
-import com.jdluu.flexinsight.data.preferences.ApiKeyManager
+import com.jdluu.flexinsight.data.preferences.ApiKeyStatusSource
 import com.jdluu.flexinsight.data.repository.FlexRepository
-import com.jdluu.flexinsight.data.sync.SyncCoordinator
-import com.jdluu.flexinsight.data.sync.SyncManager
+import com.jdluu.flexinsight.data.sync.ManualSyncScheduler
+import com.jdluu.flexinsight.data.sync.SyncCompleteListener
 import com.jdluu.flexinsight.domain.usecase.BuildAiContextUseCase
 import com.jdluu.flexinsight.ui.screens.aitrainer.parts.ChatMessage
 import kotlinx.coroutines.async
@@ -39,9 +39,9 @@ class AITrainerViewModel @Inject constructor(
     private val aiClient: FlexAIClient,
     private val buildAiContextUseCase: BuildAiContextUseCase,
     private val flexRepository: FlexRepository,
-    private val apiKeyManager: ApiKeyManager,
-    private val syncManager: SyncManager,
-    private val syncCoordinator: SyncCoordinator
+    private val apiKeyManager: ApiKeyStatusSource,
+    private val syncManager: ManualSyncScheduler,
+    private val syncCoordinator: SyncCompleteListener
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AITrainerUiState())
