@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
+    id("jacoco")
 }
 
 android {
@@ -131,4 +132,85 @@ dependencies {
     // Home screen widget (Glance)
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
+}
+
+// JaCoCo coverage for JVM unit tests. UI composables/theme and generated
+// code are excluded; the gate protects domain/data logic from regressions.
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn(tasks.named("testDebugUnitTest"))
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+    val classDirs = fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/debug")) {
+        exclude(
+            "**/ui/**",
+            "**/di/**",
+            "**/databinding/**",
+            "**/*Binding*",
+            "**/R$*",
+            "**/R.class",
+            "**/*_HiltModules*",
+            "**/Hilt_*",
+            "**/*_Factory*",
+            "**/*_Impl*",
+            "**/*MembersInjector*"
+        )
+    }
+    classDirectories.setFrom(classDirs)
+    sourceDirectories.setFrom(files("src/main/java"))
+    executionData.setFrom(fileTree(layout.buildDirectory) {
+        include("jacoco/testDebugUnitTest.exec")
+    })
+}
+
+tasks.withType<Test>().configureEach {
+    finalizedBy(tasks.named("jacocoTestReport"))
+}
+
+// Coverage gate on refactored logic packages. Fails the build if any drops
+// below its floor, protecting domain/data behavior from regression.
+val coverageFloors = mapOf(
+    "com/jdluu/flexinsight/domain" to 0.95,
+    "com/jdluu/flexinsight/data/mapper" to 0.90
+)
+
+tasks.register("verifyCoverage") {
+    dependsOn(tasks.named("jacocoTestReport"))
+    doLast {
+        val report = layout.buildDirectory.file(
+            "reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
+        ).get().asFile
+        val factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+        factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+        val doc = factory.newDocumentBuilder().parse(report)
+        val packages = doc.getElementsByTagName("package")
+        var failures = 0
+        for (i in 0 until packages.length) {
+            val pkgEl = packages.item(i) as org.w3c.dom.Element
+            val pkgName = pkgEl.getAttribute("name")
+            val floorEntry = coverageFloors.entries.firstOrNull { pkgName.startsWith(it.key) }
+                ?: continue
+            val floor = floorEntry.value
+            // Aggregate the package-level LINE counter (direct child), not per-class ones.
+            var missed = 0.0
+            var covered = 0.0
+            val children = pkgEl.childNodes
+            for (j in 0 until children.length) {
+                val node = children.item(j)
+                if (node is org.w3c.dom.Element && node.tagName == "counter" && node.getAttribute("type") == "LINE") {
+                    missed = node.getAttribute("missed").toDouble()
+                    covered = node.getAttribute("covered").toDouble()
+                }
+            }
+            val ratio = covered / (missed + covered)
+            if (ratio < floor) {
+                failures++
+                println("COVERAGE GATE FAILED: $pkgName " + String.format("%.1f", ratio * 100) + "% < " + floor * 100 + "%")
+            } else {
+                println("Coverage OK: $pkgName " + String.format("%.1f", ratio * 100) + "%")
+            }
+        }
+        if (failures > 0) throw GradleException("$failures package(s) below coverage floor")
+    }
 }
