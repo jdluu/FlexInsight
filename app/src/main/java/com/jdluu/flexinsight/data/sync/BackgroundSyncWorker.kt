@@ -7,7 +7,6 @@ import androidx.work.CoroutineWorker
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import com.jdluu.flexinsight.core.errors.ApiError
-import com.jdluu.flexinsight.data.repository.FlexRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -15,12 +14,12 @@ import dagger.assisted.AssistedInject
 class BackgroundSyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val repository: FlexRepository,
+    private val syncSource: HevySyncSource,
     private val syncCoordinator: SyncCoordinator
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): ListenableWorker.Result {
-        val syncResult = repository.syncAllData()
+        val syncResult = syncSource.syncAll()
         return if (syncResult.isSuccess) {
             syncCoordinator.onSyncComplete()
             Log.d(TAG, "Periodic sync worker success")

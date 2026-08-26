@@ -4,6 +4,7 @@ import com.jdluu.flexinsight.core.errors.Result
 import com.jdluu.flexinsight.data.cache.CacheKeys
 import com.jdluu.flexinsight.data.model.*
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
+import com.jdluu.flexinsight.data.sync.HevySyncSource
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -19,7 +20,7 @@ class FlexRepositoryImpl(
     private val workoutRepository: WorkoutRepository,
     private val routineRepository: RoutineRepository,
     private val statsRepository: StatsRepository
-) : FlexRepository {
+) : FlexRepository, HevySyncSource {
     private val cacheManager = cacheManager
 
     /**
@@ -202,6 +203,8 @@ class FlexRepositoryImpl(
      * Sync all data from API (workouts, routines, exercise templates)
      * Exercise templates are synced FIRST to ensure muscle group data is available
      */
+    override suspend fun syncAll(): Result<Unit> = syncAllData()
+
     override suspend fun syncAllData(): Result<Unit> {
         val errors = mutableListOf<com.jdluu.flexinsight.core.errors.ApiError>()
 
