@@ -11,6 +11,18 @@ workout planning, recovery tracking, and on-device AI coaching powered by
 Gemini Nano. It is an independent, unofficial companion and is **not affiliated
 with, endorsed by, or sponsored by Hevy**.
 
+## Screenshots
+
+**Dashboard** — training load, the last session's volume and duration, and a
+generated insight, all derived from synced Hevy data:
+
+| Dashboard | Planner | Profile |
+| --- | --- | --- |
+| ![Dashboard showing training load and last session analysis](docs/screenshots/dashboard.png) | ![Planner showing weekly goal progress](docs/screenshots/planner.png) | ![Profile showing a connected Hevy API, 305 synced workouts, and Health Connect](docs/screenshots/profile.png) |
+
+**Planner** tracks a weekly workout goal and the day-by-day plan. **Profile**
+reports integration state, including whether the Hevy API key is connected.
+
 ## Features
 
 - **Dashboard** — recent workouts, volume trends, training load, recovery preview, sync status
