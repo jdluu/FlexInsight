@@ -18,7 +18,7 @@ generated insight, all derived from synced Hevy data:
 
 | Dashboard | Planner | Profile |
 | --- | --- | --- |
-| ![Dashboard showing training load and last session analysis](docs/screenshots/dashboard.png) | ![Planner showing weekly goal progress](docs/screenshots/planner.png) | ![Profile showing a connected Hevy API, 305 synced workouts, and Health Connect](docs/screenshots/profile.png) |
+| ![Dashboard showing training load and last session analysis](screenshots/dashboard.png) | ![Planner showing weekly goal progress](screenshots/planner.png) | ![Profile showing a connected Hevy API, 305 synced workouts, and Health Connect](screenshots/profile.png) |
 
 **Planner** tracks a weekly workout goal and the day-by-day plan. **Profile**
 reports integration state, including whether the Hevy API key is connected.
@@ -109,7 +109,10 @@ Requirements: JDK 17+ and the Android SDK.
 ./gradlew lintDebug            # run lint checks
 ```
 
-See [docs/HevyAPI.md](docs/HevyAPI.md) for endpoint documentation used by this project.
+See [DESIGN.md](DESIGN.md) for the visual design system — colors, typography, spacing, and
+component conventions. For the development workflow and architecture overview, see
+[AGENTS.md](AGENTS.md). Endpoint documentation for the Hevy API this app calls lives in
+[docs/HevyAPI.md](docs/HevyAPI.md).
 
 ## License
 
