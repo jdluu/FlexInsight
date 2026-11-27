@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import com.jdluu.flexinsight.ui.utils.safeLaunch
@@ -92,34 +93,40 @@ class PlannerViewModel @Inject constructor(
         }
         viewModelScope.launch {
             userPreferencesManager.viewOnlyModeFlow.collect { viewOnly ->
-                _uiState.value = _uiState.value.copy(viewOnlyMode = viewOnly)
+                _uiState.update { it.copy(viewOnlyMode = viewOnly) }
             }
         }
     }
 
     private fun blockHevyEdit(): Boolean {
         if (!_uiState.value.viewOnlyMode) return false
-        _uiState.value = _uiState.value.copy(
-            editBlockedMessage = "Edits are disabled. Enable Hevy edits in Settings, or update workouts in the Hevy app."
-        )
+        _uiState.update {
+            it.copy(
+                editBlockedMessage = "Edits are disabled. Enable Hevy edits in Settings, or update workouts in the Hevy app."
+            )
+        }
         return true
     }
 
     fun clearEditBlockedMessage() {
-        _uiState.value = _uiState.value.copy(editBlockedMessage = null)
+        _uiState.update { it.copy(editBlockedMessage = null) }
     }
 
     fun loadPlannerData() {
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(
-                loadingState = LoadingState.Error(apiError),
-                error = UiError.fromApiError(apiError)
-            )
+            _uiState.update {
+                it.copy(
+                    loadingState = LoadingState.Error(apiError),
+                    error = UiError.fromApiError(apiError)
+                )
+            }
         }) {
-            _uiState.value = _uiState.value.copy(
-                loadingState = LoadingState.Loading,
-                error = null
-            )
+            _uiState.update {
+                it.copy(
+                    loadingState = LoadingState.Loading,
+                    error = null
+                )
+            }
 
             val weeklyGoalProgress = runCatching { repository.getWeeklyGoalProgress() }
                 .getOrNull()
@@ -154,18 +161,20 @@ class PlannerViewModel @Inject constructor(
                 }.getOrDefault(emptyList())
             }
 
-            _uiState.value = _uiState.value.copy(
-                loadingState = LoadingState.Success,
-                weeklyGoalProgress = weeklyGoalProgress,
-                weekCalendarData = weekCalendarData,
-                selectedDayIndex = selectedDayIndex,
-                selectedDayWorkouts = selectedDayWorkouts,
-                routines = routinesRequest,
-                routineFolders = routineFolders,
-                volumeBalance = volumeBalance,
-                muscleGroupProgress = muscleGroupProgress,
-                error = null
-            )
+            _uiState.update {
+                it.copy(
+                    loadingState = LoadingState.Success,
+                    weeklyGoalProgress = weeklyGoalProgress,
+                    weekCalendarData = weekCalendarData,
+                    selectedDayIndex = selectedDayIndex,
+                    selectedDayWorkouts = selectedDayWorkouts,
+                    routines = routinesRequest,
+                    routineFolders = routineFolders,
+                    volumeBalance = volumeBalance,
+                    muscleGroupProgress = muscleGroupProgress,
+                    error = null
+                )
+            }
         }
     }
 

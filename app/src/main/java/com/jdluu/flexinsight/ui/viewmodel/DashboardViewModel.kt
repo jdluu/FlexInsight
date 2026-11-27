@@ -52,6 +52,8 @@ data class DashboardUiState(
     val muscleRecovery: Map<com.jdluu.flexinsight.data.model.MuscleGroup, Float> = emptyMap(),
     val trainingLoad: TrainingLoadScore? = null,
     val deloadAlert: DeloadAlert? = null,
+    val todayPlannedWorkout: com.jdluu.flexinsight.data.model.PlannedWorkout? = null,
+    val weeklyGoalProgress: com.jdluu.flexinsight.data.model.WeeklyGoalProgress? = null,
     val lastSyncAt: Long? = null,
     val isSyncing: Boolean = false
 ) {
@@ -187,6 +189,20 @@ class DashboardViewModel @Inject constructor(
                             runCatching { detectDeloadUseCase() }.getOrNull()
                         }
 
+                        val todayPlannedDeferred = async {
+                            runCatching {
+                                repository.getPlannedWorkoutsForDay(System.currentTimeMillis())
+                                    .firstOrNull()
+                            }.getOrNull()
+                        }
+
+                        val weeklyGoalDeferred = async {
+                            runCatching {
+                                val goalTarget = userPreferencesManager.getWeeklyGoal()
+                                repository.getWeeklyGoalProgress(goalTarget)
+                            }.getOrNull()
+                        }
+
                         // Await all results
                         val profileInfo = profileInfoDeferred.await()
                         val latestWorkoutStats = latestWorkoutStatsDeferred.await()
@@ -196,6 +212,8 @@ class DashboardViewModel @Inject constructor(
                         val muscleRecovery = muscleRecoveryDeferred.await()
                         val trainingLoad = trainingLoadDeferred.await()
                         val deloadAlert = deloadDeferred.await()
+                        val todayPlannedWorkout = todayPlannedDeferred.await()
+                        val weeklyGoalProgress = weeklyGoalDeferred.await()
 
                         _uiState.value = _uiState.value.copy(
                             loadingState = LoadingState.Success,
@@ -209,16 +227,15 @@ class DashboardViewModel @Inject constructor(
                             muscleRecovery = muscleRecovery,
                             trainingLoad = trainingLoad,
                             deloadAlert = deloadAlert,
+                            todayPlannedWorkout = todayPlannedWorkout,
+                            weeklyGoalProgress = weeklyGoalProgress,
                             error = null
                         )
-                        
+
                         widgetUpdater.updateFromDashboard(
                             streak = stats.currentStreak,
                             recoveryScore = RecoveryScoreCalculator.overallRecoveryScore(muscleRecovery),
-                            nextWorkoutLabel = runCatching {
-                                repository.getPlannedWorkoutsForDay(System.currentTimeMillis())
-                                    .firstOrNull()?.name
-                            }.getOrNull()
+                            nextWorkoutLabel = todayPlannedWorkout?.name
                         )
 
                         generateDailyInsight(profileInfo?.displayName ?: "User", stats.currentStreak)
