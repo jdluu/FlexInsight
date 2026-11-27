@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalLocale
 import com.jdluu.flexinsight.ui.components.PlateSectionHeader
 import com.jdluu.flexinsight.ui.components.PlateStatusPill
 import com.jdluu.flexinsight.ui.components.rememberReducedMotion
@@ -37,7 +38,6 @@ import com.jdluu.flexinsight.ui.theme.MonoMetricMedium
 import com.jdluu.flexinsight.ui.theme.MonoMetricSmall
 import com.jdluu.flexinsight.ui.utils.UnitConverter
 import com.jdluu.flexinsight.ui.viewmodel.ExerciseWithSets
-import java.util.Locale
 
 data class SetData(
     val number: Int,
@@ -60,17 +60,19 @@ fun ExercisesSection(
     ) {
         PlateSectionHeader(title = "Exercises")
 
+        val locale = LocalLocale.current.platformLocale
+
         exercisesWithSets.forEachIndexed { index, exerciseWithSets ->
             val exercise = exerciseWithSets.exercise
             val sets = exerciseWithSets.sets
 
-            val setsData = remember(sets, useMetric) {
+            val setsData = remember(sets, useMetric, locale) {
                 sets.map { set ->
                     SetData(
                         number = set.number,
                         weight = UnitConverter.formatWeight(set.weight, useMetric),
                         reps = set.reps?.toString() ?: "-",
-                        rpe = if (set.rpe != null) String.format(Locale.getDefault(), "%.1f", set.rpe) else "-",
+                        rpe = if (set.rpe != null) String.format(locale, "%.1f", set.rpe) else "-",
                         isPR = set.isPersonalRecord
                     )
                 }
@@ -81,7 +83,7 @@ fun ExercisesSection(
                 val weight = UnitConverter.convertWeight(it.weight, useMetric) ?: 0.0
                 val reps = it.reps ?: 0
                 if (weight > 0 && reps > 0) {
-                    "Best ${String.format(Locale.getDefault(), "%.0f", weight)}×$reps"
+                    "Best ${String.format(locale, "%.0f", weight)}×$reps"
                 } else null
             }
 
