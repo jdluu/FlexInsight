@@ -12,7 +12,7 @@ import com.jdluu.flexinsight.data.model.Workout
 @Database(
     entities = [Workout::class, Exercise::class, Set::class],
     version = 2,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class FlexDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
