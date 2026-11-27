@@ -8,6 +8,7 @@ import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import com.jdluu.flexinsight.data.model.Workout
@@ -177,6 +178,7 @@ class HealthConnectRepository @Inject constructor(
                     startZoneOffset = startOffset,
                     endTime = end,
                     endZoneOffset = endOffset,
+                    metadata = Metadata.manualEntry(clientRecordId = "flexinsight-${workout.id}"),
                     exerciseType = ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING,
                     title = workout.name ?: "FlexInsight Workout",
                     notes = "Synced from Hevy via FlexInsight"
