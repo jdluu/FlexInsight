@@ -1,4 +1,4 @@
-package com.jdluu.flexinsight.data.ai
+package com.jdluu.flexinsight.domain.ai
 
 import com.jdluu.flexinsight.core.errors.Result
 import kotlinx.coroutines.flow.Flow

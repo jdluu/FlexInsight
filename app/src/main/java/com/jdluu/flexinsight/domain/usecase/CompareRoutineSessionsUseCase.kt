@@ -1,8 +1,8 @@
 package com.jdluu.flexinsight.domain.usecase
 
-import com.jdluu.flexinsight.data.repository.WorkoutRepository
 import com.jdluu.flexinsight.domain.calc.PersonalRecordCalculator
 import com.jdluu.flexinsight.domain.model.RoutineComparison
+import com.jdluu.flexinsight.domain.repository.WorkoutRepository
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 

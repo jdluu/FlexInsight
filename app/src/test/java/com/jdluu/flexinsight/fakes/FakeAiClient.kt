@@ -1,8 +1,8 @@
 package com.jdluu.flexinsight.fakes
 
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.ai.AiFeatureStatus
-import com.jdluu.flexinsight.data.ai.FlexAIClient
+import com.jdluu.flexinsight.domain.ai.AiFeatureStatus
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 

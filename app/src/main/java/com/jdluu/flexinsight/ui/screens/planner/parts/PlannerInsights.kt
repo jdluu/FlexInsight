@@ -16,8 +16,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jdluu.flexinsight.R
-import com.jdluu.flexinsight.data.model.MuscleGroupProgress
-import com.jdluu.flexinsight.data.model.VolumeBalance
+import com.jdluu.flexinsight.domain.model.MuscleGroupProgress
+import com.jdluu.flexinsight.domain.model.VolumeBalance
 import com.jdluu.flexinsight.ui.components.PlateCard
 import com.jdluu.flexinsight.ui.components.PlateSectionHeader
 import com.jdluu.flexinsight.ui.components.PlateStatusPill

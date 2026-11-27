@@ -8,7 +8,7 @@ import com.jdluu.flexinsight.TestApplication
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
 import com.jdluu.flexinsight.core.network.NetworkState
-import com.jdluu.flexinsight.data.model.ProfileInfo
+import com.jdluu.flexinsight.domain.model.ProfileInfo
 import com.jdluu.flexinsight.data.preferences.SyncPreferencesManager
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
 import com.jdluu.flexinsight.data.sync.SyncCoordinator
@@ -305,7 +305,7 @@ class SettingsViewModelTest {
 
     private object StaticProvider : AiContextProvider {
         override suspend fun buildContext(userQuery: String?) =
-            com.jdluu.flexinsight.data.ai.HevyAiDataAccessor.ContextSnapshot(
+            com.jdluu.flexinsight.domain.ai.AiContextSnapshot(
                 text = "System Context",
                 hasWorkoutData = true,
                 hasApiKey = true,

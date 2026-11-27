@@ -8,7 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.jdluu.flexinsight.data.model.SingleWorkoutStats
+import com.jdluu.flexinsight.domain.model.SingleWorkoutStats
 import com.jdluu.flexinsight.domain.calc.DurationCalculator
 import com.jdluu.flexinsight.domain.calc.PersonalRecordCalculator
 import com.jdluu.flexinsight.ui.components.PlateCard

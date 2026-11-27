@@ -149,6 +149,8 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     val excludes = listOf(
         "**/ui/**",
         "**/di/**",
+        "**/domain/repository/**",
+        "**/*\$DefaultImpls*",
         "**/databinding/**",
         "**/*Binding*",
         "**/R$*",

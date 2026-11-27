@@ -5,12 +5,12 @@ import androidx.room.RoomDatabase
 import com.jdluu.flexinsight.data.local.dao.ExerciseDao
 import com.jdluu.flexinsight.data.local.dao.SetDao
 import com.jdluu.flexinsight.data.local.dao.WorkoutDao
-import com.jdluu.flexinsight.data.model.Exercise
-import com.jdluu.flexinsight.data.model.Set
-import com.jdluu.flexinsight.data.model.Workout
+import com.jdluu.flexinsight.data.local.entity.ExerciseEntity
+import com.jdluu.flexinsight.data.local.entity.SetEntity
+import com.jdluu.flexinsight.data.local.entity.WorkoutEntity
 
 @Database(
-    entities = [Workout::class, Exercise::class, Set::class],
+    entities = [WorkoutEntity::class, ExerciseEntity::class, SetEntity::class],
     version = 2,
     exportSchema = true
 )
@@ -23,4 +23,3 @@ abstract class FlexDatabase : RoomDatabase() {
         const val DATABASE_NAME = "flex_database"
     }
 }
-

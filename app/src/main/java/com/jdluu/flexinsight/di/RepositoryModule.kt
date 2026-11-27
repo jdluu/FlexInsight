@@ -14,6 +14,15 @@ import com.jdluu.flexinsight.data.local.dao.WorkoutDao
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
 import com.jdluu.flexinsight.data.repository.*
 import com.jdluu.flexinsight.data.sync.SyncManager
+import com.jdluu.flexinsight.domain.repository.ExerciseRepository
+import com.jdluu.flexinsight.domain.repository.FlexRepository
+import com.jdluu.flexinsight.domain.repository.RoutineRepository
+import com.jdluu.flexinsight.domain.repository.StatsMutationRepository
+import com.jdluu.flexinsight.domain.repository.StatsQueryRepository
+import com.jdluu.flexinsight.domain.repository.StatsRepository
+import com.jdluu.flexinsight.domain.repository.WorkoutMutationRepository
+import com.jdluu.flexinsight.domain.repository.WorkoutQueryRepository
+import com.jdluu.flexinsight.domain.repository.WorkoutRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

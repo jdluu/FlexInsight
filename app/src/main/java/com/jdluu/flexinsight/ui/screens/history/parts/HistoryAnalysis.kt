@@ -12,10 +12,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.jdluu.flexinsight.data.model.DailyDurationData
-import com.jdluu.flexinsight.data.model.MuscleGroupProgress
-import com.jdluu.flexinsight.data.model.VolumeBalance
-import com.jdluu.flexinsight.data.model.WorkoutStats
+import com.jdluu.flexinsight.domain.model.DailyDurationData
+import com.jdluu.flexinsight.domain.model.MuscleGroupProgress
+import com.jdluu.flexinsight.domain.model.VolumeBalance
+import com.jdluu.flexinsight.domain.model.WorkoutStats
 import com.jdluu.flexinsight.ui.components.CalibratedPlateBar
 import com.jdluu.flexinsight.ui.components.PlateCard
 import com.jdluu.flexinsight.ui.theme.FlexTheme

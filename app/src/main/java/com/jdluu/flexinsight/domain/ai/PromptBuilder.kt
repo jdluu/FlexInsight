@@ -10,8 +10,8 @@ import javax.inject.Inject
  *
  * Pure domain class: no Android dependencies. All data is supplied via
  * [TrainingContextInput]; fetching, caching, and failure isolation live in
- * the [com.jdluu.flexinsight.data.ai.HevyAiDataAccessor], which delegates
- * formatting here so prompt structure is unit-testable in isolation.
+ * the [AiContextProvider] implementation, which delegates formatting here
+ * so prompt structure is unit-testable in isolation.
  */
 class PromptBuilder @Inject constructor() {
 

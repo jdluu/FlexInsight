@@ -1,28 +1,30 @@
-package com.jdluu.flexinsight.data.repository
+package com.jdluu.flexinsight.domain.repository
 
-import com.jdluu.flexinsight.data.model.DailyDurationData
-import com.jdluu.flexinsight.data.model.DayInfo
-import com.jdluu.flexinsight.data.model.MuscleGroup
-import com.jdluu.flexinsight.data.model.MuscleGroupProgress
-import com.jdluu.flexinsight.data.model.PeriodComparison
-import com.jdluu.flexinsight.data.model.PRDetails
-import com.jdluu.flexinsight.data.model.PlannedWorkout
-import com.jdluu.flexinsight.data.model.ProfileInfo
-import com.jdluu.flexinsight.data.model.Set
-import com.jdluu.flexinsight.data.model.SingleWorkoutStats
-import com.jdluu.flexinsight.data.model.VolumeBalance
-import com.jdluu.flexinsight.data.model.VolumeTrend
-import com.jdluu.flexinsight.data.model.WeeklyGoalProgress
-import com.jdluu.flexinsight.data.model.WeeklyProgress
-import com.jdluu.flexinsight.data.model.WeeklyVolumeData
-import com.jdluu.flexinsight.data.model.Workout
-import com.jdluu.flexinsight.data.model.WorkoutStats
+import com.jdluu.flexinsight.domain.model.DailyDurationData
+import com.jdluu.flexinsight.domain.model.DayInfo
+import com.jdluu.flexinsight.domain.model.MuscleGroup
+import com.jdluu.flexinsight.domain.model.MuscleGroupProgress
+import com.jdluu.flexinsight.domain.model.PRDetails
+import com.jdluu.flexinsight.domain.model.PeriodComparison
+import com.jdluu.flexinsight.domain.model.PlannedWorkout
+import com.jdluu.flexinsight.domain.model.ProfileInfo
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.SingleWorkoutStats
+import com.jdluu.flexinsight.domain.model.VolumeBalance
+import com.jdluu.flexinsight.domain.model.VolumeTrend
+import com.jdluu.flexinsight.domain.model.WeeklyGoalProgress
+import com.jdluu.flexinsight.domain.model.WeeklyProgress
+import com.jdluu.flexinsight.domain.model.WeeklyVolumeData
+import com.jdluu.flexinsight.domain.model.Workout
+import com.jdluu.flexinsight.domain.model.WorkoutStats
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Read/query concerns for statistics: computing and caching derived stats.
+ * Interface for statistics and data analysis.
  */
-interface StatsQueryRepository {
+interface StatsRepository {
+    fun invalidateStatsCache()
+
     suspend fun calculateStats(): WorkoutStats
 
     suspend fun calculateWorkoutStats(workout: Workout): SingleWorkoutStats

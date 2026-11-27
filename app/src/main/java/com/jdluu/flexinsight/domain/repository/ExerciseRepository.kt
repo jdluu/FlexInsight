@@ -1,7 +1,8 @@
-package com.jdluu.flexinsight.data.repository
+package com.jdluu.flexinsight.domain.repository
 
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.model.Exercise
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.ExerciseHistory
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -25,5 +26,5 @@ interface ExerciseRepository {
 
     suspend fun getExerciseById(exerciseId: String): Exercise?
 
-    suspend fun getExerciseHistory(templateId: String): Result<com.jdluu.flexinsight.data.model.ExerciseHistoryResponse>
+    suspend fun getExerciseHistory(templateId: String): Result<ExerciseHistory>
 }

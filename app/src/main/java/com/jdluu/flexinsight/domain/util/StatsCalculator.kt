@@ -1,6 +1,6 @@
 package com.jdluu.flexinsight.domain.util
 
-import com.jdluu.flexinsight.data.model.*
+import com.jdluu.flexinsight.domain.model.*
 import com.jdluu.flexinsight.domain.calc.DurationCalculator
 import com.jdluu.flexinsight.domain.calc.StreakCalculator
 import com.jdluu.flexinsight.domain.calc.TrainingLoadCalculator
@@ -17,7 +17,7 @@ object StatsCalculator {
     fun calculateTotalVolume(
         workouts: List<Workout>,
         allExercises: List<Exercise>,
-        allSets: List<com.jdluu.flexinsight.data.model.Set>
+        allSets: List<com.jdluu.flexinsight.domain.model.Set>
     ): Double = VolumeCalculator.totalVolume(workouts, allExercises, allSets)
 
     /** Calculate total duration in minutes. */

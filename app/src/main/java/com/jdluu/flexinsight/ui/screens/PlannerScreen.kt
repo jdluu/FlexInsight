@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jdluu.flexinsight.R
-import com.jdluu.flexinsight.data.model.PlannedWorkout
+import com.jdluu.flexinsight.domain.model.PlannedWorkout
 import com.jdluu.flexinsight.ui.common.LocalSnackbarHostState
 import com.jdluu.flexinsight.ui.components.ErrorBanner
 import com.jdluu.flexinsight.ui.components.PlannerSkeleton

@@ -10,30 +10,30 @@ import com.jdluu.flexinsight.data.cache.CacheKeys
 import com.jdluu.flexinsight.data.cache.CacheManager
 import com.jdluu.flexinsight.data.cache.CacheTTL
 import com.jdluu.flexinsight.data.local.dao.ExerciseDao
+import com.jdluu.flexinsight.data.mapper.EntityMapper
 import com.jdluu.flexinsight.data.mapper.ExerciseMapper
-import com.jdluu.flexinsight.data.model.Exercise
-import com.jdluu.flexinsight.data.model.ExerciseTemplate
 import com.jdluu.flexinsight.data.model.ExerciseTemplateResponse
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.ExerciseHistory
+import com.jdluu.flexinsight.domain.repository.ExerciseRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * Repository for exercise-related operations.
  * Handles exercise templates and muscle group mapping.
  */
 class ExerciseRepositoryImpl(
-    private val exerciseDao: com.jdluu.flexinsight.data.local.dao.ExerciseDao,
+    private val exerciseDao: ExerciseDao,
     private val apiKeyManager: ApiKeyManager,
-    private val networkMonitor: com.jdluu.flexinsight.core.network.NetworkMonitor,
-    private val apiClient: com.jdluu.flexinsight.data.api.FlexApiClient,
-    private val cacheManager: com.jdluu.flexinsight.data.cache.CacheManager
+    private val networkMonitor: NetworkMonitor,
+    private val apiClient: FlexApiClient,
+    private val cacheManager: CacheManager
 ) : ExerciseRepository {
     private var apiService: FlexApiService? = null
     private var currentApiKey: String? = null
 
-    /**
-     * Gets API service, creating it if needed
-     */
     private suspend fun getApiService(): Result<FlexApiService> {
         val apiKey = apiKeyManager.getApiKey() ?: return Result.error(
             ApiError.AuthError.InvalidApiKey
@@ -48,9 +48,6 @@ class ExerciseRepositoryImpl(
         return Result.success(service)
     }
 
-    /**
-     * Invalidates the API service
-     */
     override fun invalidateApiService() {
         apiService = null
         currentApiKey = null
@@ -125,21 +122,12 @@ class ExerciseRepositoryImpl(
         }
     }
 
-    /**
-     * Fetch and cache exercise templates from API
-     * Returns mapping of templateId -> muscleGroup
-     * Prefers data extracted from workout events, falls back to API cache, then API call
-     */
     override suspend fun getExerciseTemplateMapping(): Result<Map<String, String>> {
-        // 1. First check event-extracted templates (from workout events)
-        // Note: Events data has templateId -> exerciseName, not muscleGroup
-        // But we check it to see if we have template IDs available
         val eventsCached = cacheManager.get<Map<String, String>>(
             CacheKeys.EXERCISE_TEMPLATES_FROM_EVENTS,
             CacheTTL.EXERCISE_TEMPLATES_FROM_EVENTS
         )
 
-        // 2. Check regular API cache (has templateId -> muscleGroup)
         val cached = cacheManager.get<Map<String, String>>(
             CacheKeys.EXERCISE_TEMPLATES,
             CacheTTL.EXERCISE_TEMPLATES
@@ -148,11 +136,7 @@ class ExerciseRepositoryImpl(
             return Result.success(cached)
         }
 
-        // 3. If we have events data but no API cache, and network is available, try API
-        // Otherwise, if no network, return empty map (we can't get muscle groups without API)
         if (!networkMonitor.hasNetworkConnection()) {
-            // If we have events data, return empty map (we have IDs but not muscle groups)
-            // This allows the code to continue without failing
             return if (eventsCached != null) {
                 Result.success(emptyMap())
             } else {
@@ -177,70 +161,51 @@ class ExerciseRepositoryImpl(
         }
     }
 
-    /**
-     * Get muscle group for an exercise by looking up its template ID.
-     * Falls back to name-based mapping if template not found.
-     * API data is preferred but name-matching provides reasonable defaults.
-     */
     override suspend fun getMuscleGroupForExercise(exercise: Exercise): String? {
-        // First try to get from exercise template (most accurate)
         if (exercise.exerciseTemplateId != null) {
             val templateMappingResult = getExerciseTemplateMapping()
             if (templateMappingResult is Result.Success) {
                 templateMappingResult.data[exercise.exerciseTemplateId]?.let { return it }
             }
         }
-
-        // Fall back to name-based mapping when API data unavailable
         return getMuscleGroupFromExerciseName(exercise.name)
     }
 
-    /**
-     * Get muscle group from exercise name (fallback method)
-     * Used when exercise template data isn't available
-     */
     private fun getMuscleGroupFromExerciseName(exerciseName: String): String? {
         val name = exerciseName.lowercase()
 
-        // Chest exercises
         if (name.contains("bench") || name.contains("chest") || name.contains("pec") ||
             name.contains("fly") || (name.contains("press") && (name.contains("incline") || name.contains("decline")))) {
             return "Chest"
         }
 
-        // Back exercises
         if (name.contains("row") || name.contains("pull") || name.contains("lat") ||
             name.contains("deadlift") || name.contains("shrug") || name.contains("rear delt")) {
             return "Back"
         }
 
-        // Legs exercises
         if (name.contains("squat") || name.contains("leg") || name.contains("quad") ||
             name.contains("hamstring") || name.contains("calf") || name.contains("lunge") ||
             name.contains("glute") || name.contains("hip")) {
             return "Legs"
         }
 
-        // Shoulders
         if (name.contains("shoulder") || name.contains("delt") ||
             (name.contains("press") && (name.contains("overhead") || name.contains("military"))) ||
             name.contains("lateral raise") || name.contains("front raise")) {
             return "Shoulders"
         }
 
-        // Arms (biceps/triceps)
         if (name.contains("bicep") || name.contains("tricep") || name.contains("curl") ||
             name.contains("pushdown") || name.contains("dip") || name.contains("preacher")) {
             return "Arms"
         }
 
-        // Core/Abs
         if (name.contains("ab") || name.contains("core") || name.contains("crunch") ||
             name.contains("plank") || name.contains("sit-up") || name.contains("oblique")) {
             return "Core"
         }
 
-        // Cardio
         if (name.contains("run") || name.contains("bike") || name.contains("cardio") ||
             name.contains("walk") || name.contains("elliptical") || name.contains("stair")) {
             return "Cardio"
@@ -249,38 +214,27 @@ class ExerciseRepositoryImpl(
         return null
     }
 
-    /**
-     * Get exercises by workout ID
-     */
     override fun getExercisesByWorkoutId(workoutId: String): Flow<List<Exercise>> {
-        return exerciseDao.getExercisesByWorkoutIdFlow(workoutId)
+        return exerciseDao.getExercisesByWorkoutIdFlow(workoutId).map { list ->
+            list.map(EntityMapper::toDomain)
+        }
     }
 
-    /**
-     * Get all exercises
-     */
     override fun getAllExercises(): Flow<List<Exercise>> {
-        return exerciseDao.getAllExercises()
+        return exerciseDao.getAllExercises().map { list ->
+            list.map(EntityMapper::toDomain)
+        }
     }
 
-    /**
-     * Get exercises by workout ID (suspend)
-     */
     override suspend fun getExercisesByWorkoutIdSuspend(workoutId: String): List<Exercise> {
-        return exerciseDao.getExercisesByWorkoutId(workoutId)
+        return exerciseDao.getExercisesByWorkoutId(workoutId).map(EntityMapper::toDomain)
     }
 
-    /**
-     * Get exercise by ID
-     */
     override suspend fun getExerciseById(exerciseId: String): Exercise? {
-        return exerciseDao.getExerciseById(exerciseId)
+        return exerciseDao.getExerciseById(exerciseId)?.let(EntityMapper::toDomain)
     }
 
-    /**
-     * Get exercise history from API
-     */
-    override suspend fun getExerciseHistory(templateId: String): Result<com.jdluu.flexinsight.data.model.ExerciseHistoryResponse> {
+    override suspend fun getExerciseHistory(templateId: String): Result<ExerciseHistory> {
         val apiServiceResult = getApiService()
         if (apiServiceResult is Result.Error) {
             return Result.error(apiServiceResult.error)
@@ -299,7 +253,7 @@ class ExerciseRepositoryImpl(
                 val historyResponse = response.body() ?: return Result.error(
                     ApiError.Unknown("Empty response body")
                 )
-                Result.success(historyResponse)
+                Result.success(ExerciseMapper.toExerciseHistory(historyResponse))
             } else {
                 val error = ErrorHandler.handleHttpException(retrofit2.HttpException(response))
                 Result.error(error)

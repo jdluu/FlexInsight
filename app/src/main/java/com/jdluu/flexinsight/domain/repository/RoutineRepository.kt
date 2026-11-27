@@ -1,8 +1,9 @@
-package com.jdluu.flexinsight.data.repository
+package com.jdluu.flexinsight.domain.repository
 
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.model.CreateRoutineRequest
-import com.jdluu.flexinsight.data.model.Routine
+import com.jdluu.flexinsight.domain.model.CreateRoutineDraft
+import com.jdluu.flexinsight.domain.model.Routine
+import com.jdluu.flexinsight.domain.model.RoutineFolder
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -17,12 +18,12 @@ interface RoutineRepository {
 
     suspend fun getRoutineById(routineId: String): Result<Routine>
 
-    suspend fun getRoutineFolders(): Result<List<com.jdluu.flexinsight.data.model.RoutineFolder>>
+    suspend fun getRoutineFolders(): Result<List<RoutineFolder>>
 
     /**
      * Creates a new routine on the user's Hevy account.
-     * @param request The routine creation request body.
+     * @param draft The domain routine creation payload.
      * @return The ID of the created routine, or an error.
      */
-    suspend fun createRoutine(request: CreateRoutineRequest): Result<String>
+    suspend fun createRoutine(draft: CreateRoutineDraft): Result<String>
 }

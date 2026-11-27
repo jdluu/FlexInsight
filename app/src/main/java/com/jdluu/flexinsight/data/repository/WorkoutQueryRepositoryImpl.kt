@@ -9,17 +9,19 @@ import com.jdluu.flexinsight.data.api.FlexApiService
 import com.jdluu.flexinsight.data.local.dao.ExerciseDao
 import com.jdluu.flexinsight.data.local.dao.SetDao
 import com.jdluu.flexinsight.data.local.dao.WorkoutDao
+import com.jdluu.flexinsight.data.mapper.EntityMapper
 import com.jdluu.flexinsight.data.mapper.WorkoutMapper
-import com.jdluu.flexinsight.data.model.Exercise
-import com.jdluu.flexinsight.data.model.Set
-import com.jdluu.flexinsight.data.model.Workout
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.Workout
+import com.jdluu.flexinsight.domain.repository.WorkoutMutationRepository
+import com.jdluu.flexinsight.domain.repository.WorkoutQueryRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * Read/query implementation for workouts.
- * Serves local Room data first; falls back to the API only for single-workout fetches
- * that are not cached locally.
  */
 class WorkoutQueryRepositoryImpl(
     private val workoutDao: WorkoutDao,
@@ -33,15 +35,11 @@ class WorkoutQueryRepositoryImpl(
     private var apiService: FlexApiService? = null
     private var currentApiKey: String? = null
 
-    /**
-     * Gets API service, creating it if needed
-     */
     private suspend fun getApiService(): Result<FlexApiService> {
         val apiKey = apiKeyManager.getApiKey() ?: return Result.error(
             ApiError.AuthError.InvalidApiKey
         )
 
-        // Recreate service if API key has changed
         if (apiService == null || currentApiKey != apiKey) {
             apiService = apiClient.createApiService(apiKey)
             currentApiKey = apiKey
@@ -51,39 +49,25 @@ class WorkoutQueryRepositoryImpl(
         return Result.success(service)
     }
 
-    /**
-     * Invalidates the API service (useful when API key is updated)
-     */
     override fun invalidateApiService() {
         apiService = null
         currentApiKey = null
     }
 
-    /**
-     * Get all workouts - returns Flow from Room immediately
-     */
     override fun getWorkouts(): Flow<List<Workout>> {
-        return workoutDao.getAllWorkoutsFlow()
+        return workoutDao.getAllWorkoutsFlow().map { list -> list.map(EntityMapper::toDomain) }
     }
 
-    /**
-     * Get recent workouts
-     */
     override fun getRecentWorkouts(limit: Int): Flow<List<Workout>> {
-        return workoutDao.getRecentWorkoutsFlow(limit)
+        return workoutDao.getRecentWorkoutsFlow(limit).map { list -> list.map(EntityMapper::toDomain) }
     }
 
-    /**
-     * Get workout by ID - checks Room first, then API if not found
-     */
     override suspend fun getWorkoutById(workoutId: String): Result<Workout> {
-        // Check local database first
         val cached = workoutDao.getWorkoutById(workoutId)
         if (cached != null) {
-            return Result.success(cached)
+            return Result.success(EntityMapper.toDomain(cached))
         }
 
-        // Try to fetch from API
         val apiServiceResult = getApiService()
         if (apiServiceResult is Result.Error) {
             return apiServiceResult
@@ -92,7 +76,6 @@ class WorkoutQueryRepositoryImpl(
         val apiService = (apiServiceResult as Result.Success).data
 
         return try {
-            // Check network before API call
             if (!networkMonitor.hasNetworkConnection()) {
                 return Result.error(ApiError.NetworkError.NoConnection)
             }
@@ -104,9 +87,16 @@ class WorkoutQueryRepositoryImpl(
                     ApiError.Unknown("Empty response body")
                 )
                 val workout = WorkoutMapper.toWorkout(workoutResponse)
-
-                // Save to database
-                mutationRepository.saveWorkoutWithExercisesAndSets(workoutResponse)
+                val exercises = mutableListOf<Exercise>()
+                val sets = mutableListOf<Set>()
+                workoutResponse.exercises?.forEach { exerciseResponse ->
+                    val exercise = WorkoutMapper.toExercise(exerciseResponse, workoutResponse.id)
+                    exercises.add(exercise)
+                    exerciseResponse.sets?.forEach { setResponse ->
+                        sets.add(WorkoutMapper.toSet(setResponse, exercise.id))
+                    }
+                }
+                mutationRepository.saveWorkout(workout, exercises, sets)
 
                 Result.success(workout)
             } else {
@@ -121,23 +111,14 @@ class WorkoutQueryRepositoryImpl(
         }
     }
 
-    /**
-     * Get workout by ID as Flow - returns database data immediately
-     */
     override fun getWorkoutByIdFlow(workoutId: String): Flow<Workout?> {
-        return workoutDao.getWorkoutByIdFlow(workoutId)
+        return workoutDao.getWorkoutByIdFlow(workoutId).map { it?.let(EntityMapper::toDomain) }
     }
 
-    /**
-     * Get workout count
-     */
     override fun getWorkoutCount(): Flow<Int> {
         return workoutDao.getWorkoutCountFlow()
     }
 
-    /**
-     * Get remote workout count from API
-     */
     override suspend fun getRemoteWorkoutCount(): Result<Int> {
         val apiServiceResult = getApiService()
         if (apiServiceResult is Result.Error) {
@@ -160,8 +141,8 @@ class WorkoutQueryRepositoryImpl(
                     Result.error(ApiError.Unknown("Empty response body"))
                 }
             } else {
-                 val error = ErrorHandler.handleHttpException(retrofit2.HttpException(response))
-                 Result.error(error)
+                val error = ErrorHandler.handleHttpException(retrofit2.HttpException(response))
+                Result.error(error)
             }
         } catch (e: Exception) {
             val error = ErrorHandler.handleError(e)
@@ -170,23 +151,19 @@ class WorkoutQueryRepositoryImpl(
     }
 
     override suspend fun getExercisesByWorkoutId(workoutId: String): List<Exercise> {
-        return exerciseDao.getExercisesByWorkoutId(workoutId)
+        return exerciseDao.getExercisesByWorkoutId(workoutId).map(EntityMapper::toDomain)
     }
 
     override suspend fun getSetsByExerciseId(exerciseId: String): List<Set> {
-        return setDao.getSetsByExerciseId(exerciseId)
+        return setDao.getSetsByExerciseId(exerciseId).map(EntityMapper::toDomain)
     }
 
-    /**
-     * Get workouts by date range
-     */
     override fun getWorkoutsByDateRange(startTimestamp: Long, endTimestamp: Long): Flow<List<Workout>> {
-        return workoutDao.getWorkoutsByDateRangeFlow(startTimestamp, endTimestamp)
+        return workoutDao.getWorkoutsByDateRangeFlow(startTimestamp, endTimestamp).map { list ->
+            list.map(EntityMapper::toDomain)
+        }
     }
 
-    /**
-     * Get most recent synced timestamp
-     */
     override suspend fun getMostRecentSyncedTimestamp(): Long? {
         return workoutDao.getMostRecentSyncedTimestamp()
     }

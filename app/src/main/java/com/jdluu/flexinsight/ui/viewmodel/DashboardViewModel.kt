@@ -2,16 +2,16 @@ package com.jdluu.flexinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jdluu.flexinsight.data.ai.FlexAIClient
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.ErrorHandler
 import com.jdluu.flexinsight.core.logger.AppLogger
-import com.jdluu.flexinsight.data.model.Workout
-import com.jdluu.flexinsight.data.model.WorkoutStats
-import com.jdluu.flexinsight.data.model.WeeklyProgress
-import com.jdluu.flexinsight.data.model.SingleWorkoutStats
-import com.jdluu.flexinsight.data.model.ProfileInfo
-import com.jdluu.flexinsight.data.repository.FlexRepository
+import com.jdluu.flexinsight.domain.model.Workout
+import com.jdluu.flexinsight.domain.model.WorkoutStats
+import com.jdluu.flexinsight.domain.model.WeeklyProgress
+import com.jdluu.flexinsight.domain.model.SingleWorkoutStats
+import com.jdluu.flexinsight.domain.model.ProfileInfo
+import com.jdluu.flexinsight.domain.repository.FlexRepository
 import com.jdluu.flexinsight.core.network.NetworkMonitor
 import com.jdluu.flexinsight.core.network.NetworkState
 import com.jdluu.flexinsight.data.preferences.SyncPreferencesManager
@@ -45,16 +45,16 @@ data class DashboardUiState(
     val workoutStats: WorkoutStats? = null,
     val weeklyProgress: List<WeeklyProgress> = emptyList(),
     val currentStreak: Int = 0,
-    val muscleGroupProgress: List<com.jdluu.flexinsight.data.model.MuscleGroupProgress> = emptyList(),
+    val muscleGroupProgress: List<com.jdluu.flexinsight.domain.model.MuscleGroupProgress> = emptyList(),
     val networkState: NetworkState = NetworkState.Unknown,
     val units: String = "Imperial",
     val dailyInsight: String? = null,
     val isGeneratingInsight: Boolean = false,
-    val muscleRecovery: Map<com.jdluu.flexinsight.data.model.MuscleGroup, Float> = emptyMap(),
+    val muscleRecovery: Map<com.jdluu.flexinsight.domain.model.MuscleGroup, Float> = emptyMap(),
     val trainingLoad: TrainingLoadScore? = null,
     val deloadAlert: DeloadAlert? = null,
-    val todayPlannedWorkout: com.jdluu.flexinsight.data.model.PlannedWorkout? = null,
-    val weeklyGoalProgress: com.jdluu.flexinsight.data.model.WeeklyGoalProgress? = null,
+    val todayPlannedWorkout: com.jdluu.flexinsight.domain.model.PlannedWorkout? = null,
+    val weeklyGoalProgress: com.jdluu.flexinsight.domain.model.WeeklyGoalProgress? = null,
     val lastSyncAt: Long? = null,
     val isSyncing: Boolean = false
 ) {

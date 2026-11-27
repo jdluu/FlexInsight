@@ -1,15 +1,19 @@
 package com.jdluu.flexinsight.data.mapper
 
-import com.jdluu.flexinsight.data.model.Routine
-import com.jdluu.flexinsight.data.model.RoutineExercise
+import com.jdluu.flexinsight.data.model.CreateRoutineBody
+import com.jdluu.flexinsight.data.model.CreateRoutineExercise
+import com.jdluu.flexinsight.data.model.CreateRoutineRequest
+import com.jdluu.flexinsight.data.model.CreateRoutineSet
 import com.jdluu.flexinsight.data.model.RoutineExerciseResponse
-import com.jdluu.flexinsight.data.model.RoutineFolder
 import com.jdluu.flexinsight.data.model.RoutineFolderResponse
 import com.jdluu.flexinsight.data.model.RoutineResponse
+import com.jdluu.flexinsight.domain.model.CreateRoutineDraft
+import com.jdluu.flexinsight.domain.model.Routine
+import com.jdluu.flexinsight.domain.model.RoutineExercise
+import com.jdluu.flexinsight.domain.model.RoutineFolder
 
 /**
- * Pure mapper for routine-related API responses to domain models.
- * Mapping must stay identical to the previous inline implementations.
+ * Pure mapper for routine-related API responses and requests to/from domain models.
  */
 object RoutineMapper {
 
@@ -36,7 +40,7 @@ object RoutineMapper {
     ): RoutineExercise {
         return RoutineExercise(
             templateId = response.templateId,
-            name = response.title ?: exerciseName // Prefer API title, fallback to mapping
+            name = response.title ?: exerciseName
         )
     }
 
@@ -45,6 +49,27 @@ object RoutineMapper {
             id = response.id,
             title = response.title,
             index = response.index
+        )
+    }
+
+    fun toCreateRoutineRequest(draft: CreateRoutineDraft): CreateRoutineRequest {
+        return CreateRoutineRequest(
+            routine = CreateRoutineBody(
+                title = draft.title,
+                folderId = draft.folderId,
+                exercises = draft.exercises.map { ex ->
+                    CreateRoutineExercise(
+                        exerciseTemplateId = ex.exerciseTemplateId,
+                        sets = ex.sets.map { set ->
+                            CreateRoutineSet(
+                                type = set.type,
+                                weightKg = set.weightKg,
+                                reps = set.reps
+                            )
+                        }
+                    )
+                }
+            )
         )
     }
 }

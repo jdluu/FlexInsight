@@ -1,19 +1,18 @@
 package com.jdluu.flexinsight.domain.ai
 
-import com.jdluu.flexinsight.data.model.CreateRoutineBody
-import com.jdluu.flexinsight.data.model.CreateRoutineExercise
-import com.jdluu.flexinsight.data.model.CreateRoutineRequest
-import com.jdluu.flexinsight.data.model.CreateRoutineSet
+import com.jdluu.flexinsight.domain.model.CreateRoutineDraft
+import com.jdluu.flexinsight.domain.model.CreateRoutineExerciseDraft
+import com.jdluu.flexinsight.domain.model.CreateRoutineSetDraft
 
 data class RoutineParseResult(
-    val request: CreateRoutineRequest,
+    val draft: CreateRoutineDraft,
     val matchedExercises: List<String>,
     val unmatchedExercises: List<String>,
     val usedPlaceholder: Boolean
 )
 
 /**
- * Parses AI-generated workout plan text into a Hevy routine request.
+ * Parses AI-generated workout plan text into a domain routine draft.
  * Falls back to a title-only routine with one placeholder set when parsing fails.
  */
 object AiRoutineParser {
@@ -24,7 +23,7 @@ object AiRoutineParser {
     )
 
     fun parse(planText: String, title: String, templateIdResolver: (String) -> String?): RoutineParseResult {
-        val exercises = mutableListOf<CreateRoutineExercise>()
+        val exercises = mutableListOf<CreateRoutineExerciseDraft>()
         val matched = mutableListOf<String>()
         val unmatched = mutableListOf<String>()
 
@@ -41,10 +40,10 @@ object AiRoutineParser {
 
             matched.add(name)
             exercises.add(
-                CreateRoutineExercise(
+                CreateRoutineExerciseDraft(
                     exerciseTemplateId = templateId,
                     sets = (1..sets).map {
-                        CreateRoutineSet(type = "normal", weightKg = null, reps = reps)
+                        CreateRoutineSetDraft(type = "normal", weightKg = null, reps = reps)
                     }
                 )
             )
@@ -53,9 +52,9 @@ object AiRoutineParser {
         val usedPlaceholder = exercises.isEmpty()
         val bodyExercises = if (usedPlaceholder) {
             listOf(
-                CreateRoutineExercise(
+                CreateRoutineExerciseDraft(
                     exerciseTemplateId = "0",
-                    sets = listOf(CreateRoutineSet(type = "normal", reps = 1))
+                    sets = listOf(CreateRoutineSetDraft(type = "normal", reps = 1))
                 )
             )
         } else {
@@ -63,11 +62,9 @@ object AiRoutineParser {
         }
 
         return RoutineParseResult(
-            request = CreateRoutineRequest(
-                routine = CreateRoutineBody(
-                    title = title,
-                    exercises = bodyExercises
-                )
+            draft = CreateRoutineDraft(
+                title = title,
+                exercises = bodyExercises
             ),
             matchedExercises = matched,
             unmatchedExercises = unmatched.distinct(),

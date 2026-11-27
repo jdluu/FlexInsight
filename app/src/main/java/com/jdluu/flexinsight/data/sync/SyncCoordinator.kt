@@ -1,8 +1,8 @@
 package com.jdluu.flexinsight.data.sync
 
-import com.jdluu.flexinsight.data.health.HealthConnectRepository
 import com.jdluu.flexinsight.data.preferences.SyncPreferencesManager
-import com.jdluu.flexinsight.data.repository.WorkoutRepository
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
+import com.jdluu.flexinsight.domain.repository.WorkoutRepository
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,12 +16,12 @@ interface SyncCompleteListener {
 class SyncCoordinator @Inject constructor(
     private val workoutRepository: WorkoutRepository,
     private val syncPreferencesManager: SyncPreferencesManager,
-    private val healthConnectRepository: HealthConnectRepository
+    private val healthConnectDataSource: HealthConnectDataSource
 ) : SyncCompleteListener {
     override suspend fun onSyncComplete() {
         val count = workoutRepository.getWorkoutCount().first()
         syncPreferencesManager.recordSyncSuccess(count)
         val recent = workoutRepository.getRecentWorkouts(limit = 5).first()
-        healthConnectRepository.writeWorkoutsToHealthConnect(recent)
+        healthConnectDataSource.writeWorkoutsToHealthConnect(recent)
     }
 }

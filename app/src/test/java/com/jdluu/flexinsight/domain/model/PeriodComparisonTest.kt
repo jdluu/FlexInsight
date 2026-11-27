@@ -1,4 +1,4 @@
-package com.jdluu.flexinsight.data.model
+package com.jdluu.flexinsight.domain.model
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

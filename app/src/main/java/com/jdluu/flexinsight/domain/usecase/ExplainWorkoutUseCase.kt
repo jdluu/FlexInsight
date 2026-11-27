@@ -1,9 +1,9 @@
 package com.jdluu.flexinsight.domain.usecase
 
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.ai.FlexAIClient
-import com.jdluu.flexinsight.data.repository.FlexRepository
-import com.jdluu.flexinsight.data.repository.WorkoutRepository
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
+import com.jdluu.flexinsight.domain.repository.FlexRepository
+import com.jdluu.flexinsight.domain.repository.WorkoutRepository
 import javax.inject.Inject
 
 class ExplainWorkoutUseCase @Inject constructor(

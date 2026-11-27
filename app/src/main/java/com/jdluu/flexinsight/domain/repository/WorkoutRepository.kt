@@ -1,9 +1,9 @@
-package com.jdluu.flexinsight.data.repository
+package com.jdluu.flexinsight.domain.repository
 
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.model.Workout
-import com.jdluu.flexinsight.data.model.WorkoutResponse
-import com.jdluu.flexinsight.data.model.Exercise
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.Workout
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -21,15 +21,18 @@ interface WorkoutRepository {
     fun getWorkoutByIdFlow(workoutId: String): Flow<Workout?>
 
     fun getWorkoutCount(): Flow<Int>
+
     suspend fun getExercisesByWorkoutId(workoutId: String): List<Exercise>
-    suspend fun getSetsByExerciseId(exerciseId: String): List<com.jdluu.flexinsight.data.model.Set>
+
+    suspend fun getSetsByExerciseId(exerciseId: String): List<Set>
+
     suspend fun getRemoteWorkoutCount(): Result<Int>
 
     fun getWorkoutsByDateRange(startTimestamp: Long, endTimestamp: Long): Flow<List<Workout>>
 
     suspend fun syncWorkouts(): Result<Unit>
 
-    suspend fun saveWorkoutWithExercisesAndSets(workoutResponse: WorkoutResponse)
+    suspend fun saveWorkout(workout: Workout, exercises: List<Exercise>, sets: List<Set>)
 
     suspend fun getMostRecentSyncedTimestamp(): Long?
 

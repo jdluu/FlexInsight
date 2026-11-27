@@ -1,4 +1,4 @@
-package com.jdluu.flexinsight.data.repository
+package com.jdluu.flexinsight.domain.repository
 
 /**
  * Mutation concerns for statistics: invalidating cached derived stats.

@@ -1,11 +1,11 @@
 package com.jdluu.flexinsight.domain.calc
 
-import com.jdluu.flexinsight.data.model.Exercise
-import com.jdluu.flexinsight.data.model.MuscleGroupProgress
-import com.jdluu.flexinsight.data.model.Set
-import com.jdluu.flexinsight.data.model.VolumeBalance
-import com.jdluu.flexinsight.data.model.WeeklyProgress
-import com.jdluu.flexinsight.data.model.Workout
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.MuscleGroupProgress
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.VolumeBalance
+import com.jdluu.flexinsight.domain.model.WeeklyProgress
+import com.jdluu.flexinsight.domain.model.Workout
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

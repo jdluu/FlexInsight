@@ -9,7 +9,7 @@ import androidx.work.testing.TestListenableWorkerBuilder
 import com.jdluu.flexinsight.TestApplication
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.health.HealthConnectRepository
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
 import com.jdluu.flexinsight.fakes.TestDefaults
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -29,7 +29,7 @@ import org.robolectric.annotation.Config
 class BackgroundSyncWorkerTest {
 
     private lateinit var syncPreferences: RecordingSyncPreferences
-    private lateinit var healthConnectRepository: HealthConnectRepository
+    private lateinit var healthConnectRepository: HealthConnectDataSource
 
     @Before
     fun setUp() {

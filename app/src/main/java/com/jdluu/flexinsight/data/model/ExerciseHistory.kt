@@ -1,13 +1,11 @@
 package com.jdluu.flexinsight.data.model
 
-import androidx.compose.runtime.Stable
 import com.google.gson.annotations.SerializedName
 
 /**
- * Exercise history entry from Hevy API
+ * Exercise history entry DTO from Hevy API
  */
-@Stable
-data class ExerciseHistoryEntry(
+data class ExerciseHistoryEntryDto(
     @SerializedName("id")
     val id: String,
     @SerializedName("workout_id")
@@ -17,7 +15,7 @@ data class ExerciseHistoryEntry(
     @SerializedName("name")
     val name: String,
     @SerializedName("date")
-    val date: String, // ISO 8601 format
+    val date: String,
     @SerializedName("sets")
     val sets: List<SetResponse>?,
     @SerializedName("volume")
@@ -27,12 +25,11 @@ data class ExerciseHistoryEntry(
 )
 
 /**
- * Exercise history response
+ * Exercise history API response
  */
 data class ExerciseHistoryResponse(
     @SerializedName("exercise_id")
     val exerciseId: String,
     @SerializedName("history")
-    val history: List<ExerciseHistoryEntry>
+    val history: List<ExerciseHistoryEntryDto>
 )
-

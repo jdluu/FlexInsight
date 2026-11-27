@@ -4,13 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jdluu.flexinsight.core.errors.Result
 import com.jdluu.flexinsight.core.logger.AppLogger
-import com.jdluu.flexinsight.data.ai.AiFeatureStatus
-import com.jdluu.flexinsight.data.ai.FlexAIClient
-import com.jdluu.flexinsight.data.ai.HevyAiDataAccessor
 import com.jdluu.flexinsight.data.preferences.ApiKeyStatusSource
-import com.jdluu.flexinsight.data.repository.FlexRepository
 import com.jdluu.flexinsight.data.sync.ManualSyncScheduler
 import com.jdluu.flexinsight.data.sync.SyncCompleteListener
+import com.jdluu.flexinsight.domain.ai.AiContextSnapshot
+import com.jdluu.flexinsight.domain.ai.AiFeatureStatus
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
+import com.jdluu.flexinsight.domain.repository.FlexRepository
 import com.jdluu.flexinsight.domain.usecase.BuildAiContextUseCase
 import com.jdluu.flexinsight.ui.screens.aitrainer.parts.ChatMessage
 import kotlinx.coroutines.async
@@ -148,7 +148,7 @@ class AITrainerViewModel @Inject constructor(
     }
 
     /** Rebuild Hevy context; pass [userQuery] to fetch live exercise history for that question. */
-    private suspend fun refreshHevyContext(userQuery: String? = null): HevyAiDataAccessor.ContextSnapshot {
+    private suspend fun refreshHevyContext(userQuery: String? = null): AiContextSnapshot {
         return buildAiContextUseCase(userQuery)
     }
 

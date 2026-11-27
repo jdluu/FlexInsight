@@ -1,6 +1,5 @@
 package com.jdluu.flexinsight.data.model
 
-import androidx.compose.runtime.Stable
 import com.google.gson.annotations.SerializedName
 
 /**
@@ -27,14 +26,4 @@ data class PaginatedRoutineFolderResponse(
     val page: Int,
     @SerializedName("folders")
     val folders: List<RoutineFolderResponse>
-)
-
-/**
- * Domain model for Routine Folder
- */
-@Stable
-data class RoutineFolder(
-    val id: Int,
-    val title: String,
-    val index: Int
 )

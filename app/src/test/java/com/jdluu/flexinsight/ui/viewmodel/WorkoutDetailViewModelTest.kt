@@ -8,10 +8,10 @@ import app.cash.turbine.test
 import com.jdluu.flexinsight.TestApplication
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.ai.HevyAiDataAccessor
-import com.jdluu.flexinsight.data.model.SingleWorkoutStats
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
 import com.jdluu.flexinsight.domain.ai.AiContextProvider
+import com.jdluu.flexinsight.domain.ai.AiContextSnapshot
+import com.jdluu.flexinsight.domain.model.SingleWorkoutStats
 import com.jdluu.flexinsight.domain.usecase.BuildAiContextUseCase
 import com.jdluu.flexinsight.domain.usecase.ExplainWorkoutUseCase
 import com.jdluu.flexinsight.fakes.FakeWorkoutRepository
@@ -246,8 +246,8 @@ class WorkoutDetailViewModelTest {
     }
 
     private object StaticProvider : AiContextProvider {
-        override suspend fun buildContext(userQuery: String?): HevyAiDataAccessor.ContextSnapshot =
-            HevyAiDataAccessor.ContextSnapshot(
+        override suspend fun buildContext(userQuery: String?): AiContextSnapshot =
+            AiContextSnapshot(
                 text = "System Context",
                 hasWorkoutData = true,
                 hasApiKey = true,

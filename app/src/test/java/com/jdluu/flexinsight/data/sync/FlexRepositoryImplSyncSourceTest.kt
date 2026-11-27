@@ -5,11 +5,11 @@ import com.jdluu.flexinsight.core.errors.Result
 import com.jdluu.flexinsight.data.cache.CacheManager
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
 import com.jdluu.flexinsight.core.network.NetworkMonitor
-import com.jdluu.flexinsight.data.repository.ExerciseRepository
+import com.jdluu.flexinsight.domain.repository.ExerciseRepository
 import com.jdluu.flexinsight.data.repository.FlexRepositoryImpl
-import com.jdluu.flexinsight.data.repository.RoutineRepository
-import com.jdluu.flexinsight.data.repository.StatsRepository
-import com.jdluu.flexinsight.data.repository.WorkoutRepository
+import com.jdluu.flexinsight.domain.repository.RoutineRepository
+import com.jdluu.flexinsight.domain.repository.StatsRepository
+import com.jdluu.flexinsight.domain.repository.WorkoutRepository
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.verify

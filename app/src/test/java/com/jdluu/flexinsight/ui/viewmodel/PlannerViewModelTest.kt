@@ -7,10 +7,10 @@ import app.cash.turbine.test
 import com.jdluu.flexinsight.TestApplication
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.model.DayInfo
-import com.jdluu.flexinsight.data.model.PlannedWorkout
-import com.jdluu.flexinsight.data.model.VolumeBalance
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
+import com.jdluu.flexinsight.domain.model.DayInfo
+import com.jdluu.flexinsight.domain.model.PlannedWorkout
+import com.jdluu.flexinsight.domain.model.VolumeBalance
 import com.jdluu.flexinsight.fakes.OneShotFakeAiClient
 import com.jdluu.flexinsight.fakes.ScriptableExerciseRepository
 import com.jdluu.flexinsight.fakes.ScriptableFlexRepository
@@ -319,7 +319,7 @@ class PlannerViewModelTest {
 
         viewModel.pushRoutineToHevy("My Plan")
 
-        assertTrue(routineRepository.createdRequests.isEmpty())
+        assertTrue(routineRepository.createdDrafts.isEmpty())
         assertEquals(SaveToHevyStatus.Idle, viewModel.uiState.value.saveToHevyStatus)
     }
 
@@ -331,7 +331,7 @@ class PlannerViewModelTest {
 
         viewModel.pushRoutineToHevy("My Plan")
 
-        assertTrue(routineRepository.createdRequests.isEmpty())
+        assertTrue(routineRepository.createdDrafts.isEmpty())
         assertNotNull(viewModel.uiState.value.editBlockedMessage)
     }
 
@@ -357,10 +357,10 @@ class PlannerViewModelTest {
             assertFalse(status.usedPlaceholder)
             cancelAndIgnoreRemainingEvents()
         }
-        val request = routineRepository.createdRequests.single()
-        assertEquals("My Plan", request.routine.title)
-        assertEquals("tpl-bench", request.routine.exercises.single().exerciseTemplateId)
-        assertEquals(3, request.routine.exercises.single().sets.size)
+        val draft = routineRepository.createdDrafts.single()
+        assertEquals("My Plan", draft.title)
+        assertEquals("tpl-bench", draft.exercises.single().exerciseTemplateId)
+        assertEquals(3, draft.exercises.single().sets.size)
     }
 
     @Test

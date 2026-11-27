@@ -1,4 +1,4 @@
-package com.jdluu.flexinsight.data.ai
+package com.jdluu.flexinsight.domain.ai
 
 /**
  * High-level readiness of on-device Gemini Nano via ML Kit / AICore.

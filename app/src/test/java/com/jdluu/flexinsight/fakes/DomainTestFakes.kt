@@ -2,33 +2,32 @@ package com.jdluu.flexinsight.fakes
 
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.ai.AiFeatureStatus
-import com.jdluu.flexinsight.data.ai.FlexAIClient
-import com.jdluu.flexinsight.data.model.DayInfo
-import com.jdluu.flexinsight.data.model.Exercise
-import com.jdluu.flexinsight.data.model.MuscleGroup
-import com.jdluu.flexinsight.data.model.MuscleGroupProgress
-import com.jdluu.flexinsight.data.model.PRDetails
-import com.jdluu.flexinsight.data.model.PeriodComparison
-import com.jdluu.flexinsight.data.model.PlannedWorkout
-import com.jdluu.flexinsight.data.model.ProfileInfo
-import com.jdluu.flexinsight.data.model.Routine
-import com.jdluu.flexinsight.data.model.RoutineFolder
-import com.jdluu.flexinsight.data.model.Set
-import com.jdluu.flexinsight.data.model.SingleWorkoutStats
-import com.jdluu.flexinsight.data.model.Workout
-import com.jdluu.flexinsight.data.model.WorkoutResponse
-import com.jdluu.flexinsight.data.model.WorkoutStats
-import com.jdluu.flexinsight.data.model.DailyDurationData
-import com.jdluu.flexinsight.data.model.ExerciseHistoryResponse
-import com.jdluu.flexinsight.data.model.WeeklyGoalProgress
-import com.jdluu.flexinsight.data.model.WeeklyProgress
-import com.jdluu.flexinsight.data.model.WeeklyVolumeData
-import com.jdluu.flexinsight.data.model.VolumeBalance
-import com.jdluu.flexinsight.data.model.VolumeTrend
-import com.jdluu.flexinsight.data.repository.FlexRepository
-import com.jdluu.flexinsight.data.repository.StatsRepository
-import com.jdluu.flexinsight.data.repository.WorkoutRepository
+import com.jdluu.flexinsight.domain.ai.AiFeatureStatus
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
+import com.jdluu.flexinsight.domain.model.DailyDurationData
+import com.jdluu.flexinsight.domain.model.DayInfo
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.ExerciseHistory
+import com.jdluu.flexinsight.domain.model.MuscleGroup
+import com.jdluu.flexinsight.domain.model.MuscleGroupProgress
+import com.jdluu.flexinsight.domain.model.PRDetails
+import com.jdluu.flexinsight.domain.model.PeriodComparison
+import com.jdluu.flexinsight.domain.model.PlannedWorkout
+import com.jdluu.flexinsight.domain.model.ProfileInfo
+import com.jdluu.flexinsight.domain.model.Routine
+import com.jdluu.flexinsight.domain.model.RoutineFolder
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.SingleWorkoutStats
+import com.jdluu.flexinsight.domain.model.VolumeBalance
+import com.jdluu.flexinsight.domain.model.VolumeTrend
+import com.jdluu.flexinsight.domain.model.WeeklyGoalProgress
+import com.jdluu.flexinsight.domain.model.WeeklyProgress
+import com.jdluu.flexinsight.domain.model.WeeklyVolumeData
+import com.jdluu.flexinsight.domain.model.Workout
+import com.jdluu.flexinsight.domain.model.WorkoutStats
+import com.jdluu.flexinsight.domain.repository.FlexRepository
+import com.jdluu.flexinsight.domain.repository.StatsRepository
+import com.jdluu.flexinsight.domain.repository.WorkoutRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -149,7 +148,7 @@ class FakeFlexRepository : FlexRepository {
     override fun getWorkouts(): Flow<List<Workout>> = flowOf(emptyList())
     override fun getRecentWorkouts(limit: Int): Flow<List<Workout>> = flowOf(emptyList())
     override fun getAllExercises(): Flow<List<Exercise>> = flowOf(emptyList())
-    override suspend fun getExerciseHistory(templateId: String): Result<ExerciseHistoryResponse> =
+    override suspend fun getExerciseHistory(templateId: String): Result<ExerciseHistory> =
         Result.Error(ApiError.Unknown("not faked"))
     override fun getWorkoutByIdFlow(workoutId: String): Flow<Workout?> = flowOf(null)
     override fun getWorkoutCount(): Flow<Int> = flowOf(0)
@@ -209,7 +208,7 @@ class FakeWorkoutRepository : WorkoutRepository {
     override fun getWorkoutsByDateRange(startTimestamp: Long, endTimestamp: Long): Flow<List<Workout>> =
         flowOf(emptyList())
     override suspend fun syncWorkouts(): Result<Unit> = Result.Success(Unit)
-    override suspend fun saveWorkoutWithExercisesAndSets(workoutResponse: WorkoutResponse) {}
+    override suspend fun saveWorkout(workout: Workout, exercises: List<Exercise>, sets: List<Set>) {}
     override suspend fun getMostRecentSyncedTimestamp(): Long? = null
     override suspend fun updateWorkoutStatus(workoutId: String, isCompleted: Boolean, endTime: Long?): Result<Unit> =
         Result.Success(Unit)

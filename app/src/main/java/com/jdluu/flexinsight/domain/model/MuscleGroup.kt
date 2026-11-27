@@ -1,11 +1,8 @@
-package com.jdluu.flexinsight.data.model
-
-import androidx.compose.runtime.Stable
+package com.jdluu.flexinsight.domain.model
 
 /**
  * Core muscle groups for categorization and heatmap visualization.
  */
-@Stable
 enum class MuscleGroup(val displayName: String) {
     CHEST("Chest"),
     BACK("Back"),

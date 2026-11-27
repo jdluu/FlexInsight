@@ -7,7 +7,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.jdluu.flexinsight.R
-import com.jdluu.flexinsight.data.model.PlannedWorkout
+import com.jdluu.flexinsight.domain.model.PlannedWorkout
 
 @Composable
 fun PlannerRescheduleDialog(

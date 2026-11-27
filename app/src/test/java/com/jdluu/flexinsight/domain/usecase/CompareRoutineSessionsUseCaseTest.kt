@@ -28,8 +28,8 @@ class CompareRoutineSessionsUseCaseTest {
     private fun seedTwoSessionScenario(
         recentName: String = "Bench Press",
         previousName: String = "Bench Press",
-        recentSets: List<com.jdluu.flexinsight.data.model.Set>,
-        previousSets: List<com.jdluu.flexinsight.data.model.Set>
+        recentSets: List<com.jdluu.flexinsight.domain.model.Set>,
+        previousSets: List<com.jdluu.flexinsight.domain.model.Set>
     ) {
         repo.workoutsFlow.value = listOf(workout("rw", startTime = T2, routineId = ROUTINE))
         repo.workoutsFlow.value += workout("pw", startTime = T1, routineId = ROUTINE)
@@ -310,7 +310,7 @@ class CompareRoutineSessionsUseCaseTest {
     @Test
     fun `use case consumes latest emission of repository workouts flow`() = runTest {
         repo.workoutsFlow.test {
-            assertEquals(emptyList<com.jdluu.flexinsight.data.model.Workout>(), awaitItem())
+            assertEquals(emptyList<com.jdluu.flexinsight.domain.model.Workout>(), awaitItem())
 
             repo.workoutsFlow.value = listOf(
                 workout("recent", startTime = T2, routineId = ROUTINE),

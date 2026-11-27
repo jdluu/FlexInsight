@@ -2,12 +2,11 @@ package com.jdluu.flexinsight.data.sync
 
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.model.Exercise
-import com.jdluu.flexinsight.data.model.Set
-import com.jdluu.flexinsight.data.model.Workout
-import com.jdluu.flexinsight.data.model.WorkoutResponse
 import com.jdluu.flexinsight.data.preferences.SyncPreferencesManager
-import com.jdluu.flexinsight.data.repository.WorkoutRepository
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.Workout
+import com.jdluu.flexinsight.domain.repository.WorkoutRepository
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
@@ -50,7 +49,7 @@ class RecordingWorkoutRepository(
         flowOf(emptyList())
 
     override suspend fun syncWorkouts(): Result<Unit> = Result.Success(Unit)
-    override suspend fun saveWorkoutWithExercisesAndSets(workoutResponse: WorkoutResponse) {}
+    override suspend fun saveWorkout(workout: Workout, exercises: List<Exercise>, sets: List<Set>) {}
     override suspend fun getMostRecentSyncedTimestamp(): Long? = null
     override suspend fun updateWorkoutStatus(
         workoutId: String,

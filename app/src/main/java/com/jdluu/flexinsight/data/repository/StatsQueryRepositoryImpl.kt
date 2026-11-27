@@ -7,30 +7,34 @@ import com.jdluu.flexinsight.data.cache.CacheTTL
 import com.jdluu.flexinsight.data.local.dao.ExerciseDao
 import com.jdluu.flexinsight.data.local.dao.SetDao
 import com.jdluu.flexinsight.data.local.dao.WorkoutDao
-import com.jdluu.flexinsight.data.model.DailyDurationData
-import com.jdluu.flexinsight.data.model.DayInfo
-import com.jdluu.flexinsight.data.model.MuscleGroup
-import com.jdluu.flexinsight.data.model.MuscleGroupProgress
-import com.jdluu.flexinsight.data.model.PeriodComparison
-import com.jdluu.flexinsight.data.model.PRDetails
-import com.jdluu.flexinsight.data.model.PlannedWorkout
-import com.jdluu.flexinsight.data.model.ProfileInfo
-import com.jdluu.flexinsight.data.model.Set
-import com.jdluu.flexinsight.data.model.SingleWorkoutStats
-import com.jdluu.flexinsight.data.model.VolumeBalance
-import com.jdluu.flexinsight.data.model.VolumeTrend
-import com.jdluu.flexinsight.data.model.WeeklyGoalProgress
-import com.jdluu.flexinsight.data.model.WeeklyProgress
-import com.jdluu.flexinsight.data.model.WeeklyVolumeData
-import com.jdluu.flexinsight.data.model.Workout
-import com.jdluu.flexinsight.data.model.WorkoutStats
+import com.jdluu.flexinsight.data.mapper.EntityMapper
 import com.jdluu.flexinsight.domain.calc.DurationCalculator
 import com.jdluu.flexinsight.domain.calc.RecoveryScoreCalculator
 import com.jdluu.flexinsight.domain.calc.StreakCalculator
 import com.jdluu.flexinsight.domain.calc.TrainingLoadCalculator
 import com.jdluu.flexinsight.domain.calc.VolumeCalculator
+import com.jdluu.flexinsight.domain.model.DailyDurationData
+import com.jdluu.flexinsight.domain.model.DayInfo
+import com.jdluu.flexinsight.domain.model.MuscleGroup
+import com.jdluu.flexinsight.domain.model.MuscleGroupProgress
+import com.jdluu.flexinsight.domain.model.PRDetails
+import com.jdluu.flexinsight.domain.model.PeriodComparison
+import com.jdluu.flexinsight.domain.model.PlannedWorkout
+import com.jdluu.flexinsight.domain.model.ProfileInfo
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.SingleWorkoutStats
+import com.jdluu.flexinsight.domain.model.VolumeBalance
+import com.jdluu.flexinsight.domain.model.VolumeTrend
+import com.jdluu.flexinsight.domain.model.WeeklyGoalProgress
+import com.jdluu.flexinsight.domain.model.WeeklyProgress
+import com.jdluu.flexinsight.domain.model.WeeklyVolumeData
+import com.jdluu.flexinsight.domain.model.Workout
+import com.jdluu.flexinsight.domain.model.WorkoutStats
+import com.jdluu.flexinsight.domain.repository.ExerciseRepository
+import com.jdluu.flexinsight.domain.repository.StatsQueryRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
@@ -40,8 +44,6 @@ import java.time.temporal.ChronoUnit
 
 /**
  * Read/query implementation for statistics.
- * Optimized to avoid N+1 query problems by using batch operations.
- * Uses java.time, StatsCalculator, and CacheStrategy.
  */
 class StatsQueryRepositoryImpl(
     private val workoutDao: WorkoutDao,
@@ -51,28 +53,22 @@ class StatsQueryRepositoryImpl(
     private val dispatcherProvider: DispatcherProvider,
     private val cacheStrategy: CacheStrategy
 ) : StatsQueryRepository {
-    /**
-     * Calculate workout statistics with caching
-     */
+
     override suspend fun calculateStats(): WorkoutStats {
         return cacheStrategy.getOrFetch(CacheKeys.WORKOUT_STATS, CacheTTL.STATS) {
             computeWorkoutStats()
         }
     }
 
-    /**
-     * Calculate statistics for a single workout
-     */
     override suspend fun calculateWorkoutStats(workout: Workout): SingleWorkoutStats = withContext(dispatcherProvider.default) {
-        val exercises = exerciseDao.getExercisesByWorkoutId(workout.id)
+        val exercises = exerciseDao.getExercisesByWorkoutId(workout.id).map(EntityMapper::toDomain)
         val exerciseIds = exercises.map { it.id }
         val allSets = exerciseIds.flatMap { exerciseId ->
-            setDao.getSetsByExerciseId(exerciseId)
+            setDao.getSetsByExerciseId(exerciseId).map(EntityMapper::toDomain)
         }
 
         val totalSets = allSets.size
         val totalVolume = VolumeCalculator.totalSetVolume(allSets)
-
         val durationMinutes = DurationCalculator.workoutDurationMinutes(workout)
 
         SingleWorkoutStats(
@@ -82,32 +78,18 @@ class StatsQueryRepositoryImpl(
         )
     }
 
-    /**
-     * Get recent PRs
-     */
     override fun getRecentPRs(limit: Int): Flow<List<Set>> {
-        return setDao.getRecentPRsFlow(limit)
+        return setDao.getRecentPRsFlow(limit).map { list -> list.map(EntityMapper::toDomain) }
     }
 
-    /**
-     * Get PRs with exercise and workout details (optimized)
-     */
     override suspend fun getPRsWithDetails(limit: Int): List<PRDetails> {
         return cacheStrategy.getOrFetch("${CacheKeys.PRS_WITH_DETAILS}_$limit", CacheTTL.PRS) {
             computePRDetails(limit)
         }
     }
 
-    /**
-     * Get all PRs with details (limit 100)
-     */
-    override suspend fun getAllPRsWithDetails(): List<PRDetails> {
-        return getPRsWithDetails(limit = 100)
-    }
+    override suspend fun getAllPRsWithDetails(): List<PRDetails> = getPRsWithDetails(limit = 100)
 
-    /**
-     * Get muscle group progress for the last N weeks (optimized)
-     */
     override suspend fun getMuscleGroupProgress(weeks: Int): List<MuscleGroupProgress> {
         return cacheStrategy.getOrFetch("${CacheKeys.MUSCLE_GROUP_PROGRESS}$weeks", CacheTTL.PROGRESS) {
             computeMuscleGroupProgress(weeks)
@@ -122,8 +104,10 @@ class StatsQueryRepositoryImpl(
         val previousStart = today.minusMonths(1).withDayOfMonth(1).atStartOfDay(zone).toInstant().toEpochMilli()
 
         val currentWorkouts = workoutDao.getWorkoutsByDateRangeFlow(currentStart, currentEnd).first()
+            .map(EntityMapper::toDomain)
             .filter { !it.isDeleted }
         val previousWorkouts = workoutDao.getWorkoutsByDateRangeFlow(previousStart, currentStart).first()
+            .map(EntityMapper::toDomain)
             .filter { !it.isDeleted }
 
         if (currentWorkouts.isEmpty() && previousWorkouts.isEmpty()) return@withContext null
@@ -145,9 +129,6 @@ class StatsQueryRepositoryImpl(
         )
     }
 
-    /**
-     * Calculate volume trend comparing current period to previous period
-     */
     override suspend fun calculateVolumeTrend(weeks: Int): VolumeTrend {
         return cacheStrategy.getOrFetch("${CacheKeys.VOLUME_TREND}_$weeks", CacheTTL.PROGRESS) {
             val now = Instant.now()
@@ -156,11 +137,12 @@ class StatsQueryRepositoryImpl(
             val previousPeriodStart = now.minus(weeks.toLong() * 14, ChronoUnit.DAYS).toEpochMilli()
 
             val currentWorkouts = workoutDao.getWorkoutsByDateRangeFlow(currentPeriodStart, currentPeriodEnd).first()
+                .map(EntityMapper::toDomain)
             val previousWorkouts = workoutDao.getWorkoutsByDateRangeFlow(previousPeriodStart, currentPeriodStart).first()
+                .map(EntityMapper::toDomain)
 
             val currentVolume = calculateTotalVolumeForWorkouts(currentWorkouts)
             val previousVolume = calculateTotalVolumeForWorkouts(previousWorkouts)
-
             val percentageChange = VolumeCalculator.changePercent(currentVolume, previousVolume)
 
             VolumeTrend(
@@ -171,9 +153,6 @@ class StatsQueryRepositoryImpl(
         }
     }
 
-    /**
-     * Get weekly volume data for chart display
-     */
     override suspend fun getWeeklyVolumeData(weeks: Int): List<WeeklyVolumeData> = withContext(dispatcherProvider.default) {
         val weeklyProgress = getWeeklyProgress(weeks)
         weeklyProgress.mapIndexed { index, progress ->
@@ -184,9 +163,6 @@ class StatsQueryRepositoryImpl(
         }
     }
 
-    /**
-     * Get duration trend grouped by day of week
-     */
     override suspend fun getDurationTrend(weeks: Int): List<DailyDurationData> {
         return cacheStrategy.getOrFetch("${CacheKeys.DURATION_TREND}$weeks", CacheTTL.PROGRESS) {
             val now = Instant.now()
@@ -194,22 +170,19 @@ class StatsQueryRepositoryImpl(
             val startDate = now.minus(weeks.toLong() * 7, ChronoUnit.DAYS).toEpochMilli()
 
             val workouts = workoutDao.getWorkoutsByDateRangeFlow(startDate, endDate).first()
+                .map(EntityMapper::toDomain)
 
             DurationCalculator.durationTrend(workouts, startDate, endDate)
         }
     }
 
-    /**
-     * Get weekly goal progress
-     */
     override suspend fun getWeeklyGoalProgress(target: Int): WeeklyGoalProgress = withContext(dispatcherProvider.default) {
         val now = LocalDate.now()
         val weekStart = now.with(java.time.DayOfWeek.MONDAY).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val weekEnd = now.with(java.time.DayOfWeek.SUNDAY).atTime(java.time.LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val weekEnd = now.with(java.time.DayOfWeek.SUNDAY).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(weekStart, weekEnd).first()
         val completed = workouts.size
-
         val status = TrainingLoadCalculator.goalStatus(completed, target)
 
         WeeklyGoalProgress(
@@ -219,9 +192,6 @@ class StatsQueryRepositoryImpl(
         )
     }
 
-    /**
-     * Get week calendar data (Monday to Sunday)
-     */
     override suspend fun getWeekCalendarData(): List<DayInfo> = withContext(dispatcherProvider.default) {
         val now = LocalDate.now()
         val weekStart = now.with(java.time.DayOfWeek.MONDAY)
@@ -231,11 +201,12 @@ class StatsQueryRepositoryImpl(
         val weekStartTimestamp = weekStart.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val weekEndTimestamp = weekStart.plusDays(6).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val weekWorkouts = workoutDao.getWorkoutsByDateRangeFlow(weekStartTimestamp, weekEndTimestamp).first()
+            .map(EntityMapper::toDomain)
 
         for (i in 0..6) {
             val date = weekStart.plusDays(i.toLong())
             val dayStart = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            val dayEnd = date.atTime(java.time.LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val dayEnd = date.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
             val workouts = weekWorkouts.filter { it.startTime in dayStart..dayEnd }
             days.add(
@@ -252,21 +223,19 @@ class StatsQueryRepositoryImpl(
         days
     }
 
-    /**
-     * Get planned workouts for a specific day
-     */
     override suspend fun getPlannedWorkoutsForDay(timestamp: Long): List<PlannedWorkout> = withContext(dispatcherProvider.default) {
         val dayStart = DurationCalculator.startOfDay(timestamp)
         val dayEnd = DurationCalculator.endOfDay(timestamp)
 
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(dayStart, dayEnd).first()
+            .map(EntityMapper::toDomain)
         val workoutIds = workouts.map { it.id }
         val allExercises = workoutIds.flatMap { workoutId ->
-            exerciseDao.getExercisesByWorkoutId(workoutId)
+            exerciseDao.getExercisesByWorkoutId(workoutId).map(EntityMapper::toDomain)
         }
         val exerciseIds = allExercises.map { it.id }
         val allSets = exerciseIds.flatMap { exerciseId ->
-            setDao.getSetsByExerciseId(exerciseId)
+            setDao.getSetsByExerciseId(exerciseId).map(EntityMapper::toDomain)
         }
 
         val exercisesByWorkout = allExercises.groupBy { it.workoutId }
@@ -289,48 +258,33 @@ class StatsQueryRepositoryImpl(
         }
     }
 
-    /**
-     * Get volume balance across Push, Pull, Legs, Cardio
-     */
     override suspend fun getVolumeBalance(weeks: Int): VolumeBalance = withContext(dispatcherProvider.default) {
         val muscleGroupProgress = getMuscleGroupProgress(weeks)
         VolumeCalculator.volumeBalance(muscleGroupProgress)
     }
 
-    /**
-     * Get weekly progress
-     */
     override suspend fun getWeeklyProgress(weeks: Int): List<WeeklyProgress> {
         return cacheStrategy.getOrFetch("${CacheKeys.WEEKLY_PROGRESS}$weeks", CacheTTL.PROGRESS) {
             computeWeeklyProgress(weeks)
         }
     }
 
-    /**
-     * Get member since date (timestamp of first workout)
-     */
     override suspend fun getMemberSinceDate(): Long? {
         val workouts = workoutDao.getAllWorkoutsFlow().first()
         return workouts.minOfOrNull { it.startTime }
     }
 
-    /**
-     * Calculate account age in days
-     */
     override suspend fun calculateAccountAgeDays(): Int {
         val memberSince = getMemberSinceDate() ?: return 0
         return DurationCalculator.accountAgeDays(memberSince, System.currentTimeMillis())
     }
 
-    /**
-     * Get profile information
-     */
     override suspend fun getProfileInfo(hasApiKey: Boolean, remoteWorkoutCount: Int?): ProfileInfo = withContext(dispatcherProvider.default) {
         val workouts = workoutDao.getAllWorkoutsFlow().first()
         val localCount = workouts.size
 
         val totalWorkouts = if (remoteWorkoutCount != null) {
-            java.lang.Math.max(remoteWorkoutCount, localCount)
+            kotlin.math.max(remoteWorkoutCount, localCount)
         } else {
             localCount
         }
@@ -346,33 +300,28 @@ class StatsQueryRepositoryImpl(
         )
     }
 
-    // Helper functions
-
     private suspend fun calculateTotalVolumeForWorkouts(workouts: List<Workout>): Double {
         if (workouts.isEmpty()) return 0.0
 
         val workoutIds = workouts.map { it.id }
         val allExercises = workoutIds.flatMap { workoutId ->
-            exerciseDao.getExercisesByWorkoutId(workoutId)
+            exerciseDao.getExercisesByWorkoutId(workoutId).map(EntityMapper::toDomain)
         }
         val exerciseIds = allExercises.map { it.id }
         val allSets = exerciseIds.flatMap { exerciseId ->
-            setDao.getSetsByExerciseId(exerciseId)
+            setDao.getSetsByExerciseId(exerciseId).map(EntityMapper::toDomain)
         }
 
         return VolumeCalculator.totalVolume(workouts, allExercises, allSets)
     }
 
-    /**
-     * Get persistence data for the last N days (Consistency Heatmap)
-     */
     override suspend fun getConsistencyData(days: Int): List<DayInfo> = withContext(dispatcherProvider.default) {
         val now = LocalDate.now()
         val startDate = now.minusDays((days - 1).toLong())
         val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         val resultDays = ArrayList<DayInfo>(days)
 
-        val allWorkouts = workoutDao.getAllWorkoutsFlow().first()
+        val allWorkouts = workoutDao.getAllWorkoutsFlow().first().map(EntityMapper::toDomain)
         val workoutsByDate = allWorkouts.groupBy {
             Instant.ofEpochMilli(it.startTime).atZone(ZoneId.systemDefault()).toLocalDate()
         }
@@ -397,9 +346,7 @@ class StatsQueryRepositoryImpl(
         resultDays
     }
 
-    override suspend fun getMuscleRecoveryStatus(): Map<MuscleGroup, Float> {
-        return computeMuscleRecovery()
-    }
+    override suspend fun getMuscleRecoveryStatus(): Map<MuscleGroup, Float> = computeMuscleRecovery()
 
     private suspend fun computeWorkoutStats(): WorkoutStats {
         val workoutsWithDetails = workoutDao.getAllWorkoutsWithDetailsFlow().first()
@@ -417,9 +364,9 @@ class StatsQueryRepositoryImpl(
                 bestWeekDate = null
             )
         }
-        val workouts = workoutsWithDetails.map { it.workout }.filter { !it.isDeleted }
-        val allExercises = workoutsWithDetails.flatMap { wd -> wd.exercises.map { it.exercise } }
-        val allSets = workoutsWithDetails.flatMap { wd -> wd.exercises.flatMap { it.sets } }
+        val workouts = workoutsWithDetails.map { EntityMapper.toDomain(it.workout) }.filter { !it.isDeleted }
+        val allExercises = workoutsWithDetails.flatMap { wd -> wd.exercises.map { EntityMapper.toDomain(it.exercise) } }
+        val allSets = workoutsWithDetails.flatMap { wd -> wd.exercises.flatMap { ex -> ex.sets.map(EntityMapper::toDomain) } }
         val totalWorkouts = workouts.size
         val totalVolume = VolumeCalculator.totalVolume(workouts, allExercises, allSets)
         val averageVolume = if (totalWorkouts > 0) totalVolume / totalWorkouts else 0.0
@@ -448,10 +395,12 @@ class StatsQueryRepositoryImpl(
         val now = Instant.now()
         val endDate = now.toEpochMilli()
         val startDate = now.minus(weeks.toLong() * 7, ChronoUnit.DAYS).toEpochMilli()
-        val workouts = workoutDao.getWorkoutsByDateRangeFlow(startDate, endDate).first().filter { !it.isDeleted }
+        val workouts = workoutDao.getWorkoutsByDateRangeFlow(startDate, endDate).first()
+            .map(EntityMapper::toDomain)
+            .filter { !it.isDeleted }
         val workoutIds = workouts.map { it.id }
-        val allExercises = workoutIds.flatMap { exerciseDao.getExercisesByWorkoutId(it) }
-        val allSets = allExercises.map { it.id }.flatMap { setDao.getSetsByExerciseId(it) }
+        val allExercises = workoutIds.flatMap { exerciseDao.getExercisesByWorkoutId(it).map(EntityMapper::toDomain) }
+        val allSets = allExercises.map { it.id }.flatMap { setDao.getSetsByExerciseId(it).map(EntityMapper::toDomain) }
         val weekFields = java.time.temporal.WeekFields.of(java.util.Locale.getDefault())
         return workouts.groupBy { workout ->
             Instant.ofEpochMilli(workout.startTime)
@@ -470,11 +419,13 @@ class StatsQueryRepositoryImpl(
     }
 
     private suspend fun computePRDetails(limit: Int): List<PRDetails> {
-        val prSets = setDao.getRecentPRsFlow(limit).first()
+        val prSets = setDao.getRecentPRsFlow(limit).first().map(EntityMapper::toDomain)
         if (prSets.isEmpty()) return emptyList()
         val exerciseIds = prSets.map { it.exerciseId }.distinct()
-        val exercises = exerciseIds.mapNotNull { exerciseDao.getExerciseById(it) }
-        val workouts = exercises.map { it.workoutId }.distinct().associateWith { workoutDao.getWorkoutById(it) }
+        val exercises = exerciseIds.mapNotNull { exerciseDao.getExerciseById(it)?.let(EntityMapper::toDomain) }
+        val workouts = exercises.map { it.workoutId }.distinct().associateWith {
+            workoutDao.getWorkoutById(it)?.let(EntityMapper::toDomain)
+        }
         return prSets.mapNotNull { set ->
             val exercise = exercises.find { it.id == set.exerciseId } ?: return@mapNotNull null
             val workout = workouts[exercise.workoutId] ?: return@mapNotNull null
@@ -494,11 +445,12 @@ class StatsQueryRepositoryImpl(
         val now = Instant.now()
         val startDate = now.minus(weeks.toLong() * 7, ChronoUnit.DAYS).toEpochMilli()
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(startDate, now.toEpochMilli()).first()
+            .map(EntityMapper::toDomain)
             .filter { !it.isDeleted }
         if (workouts.isEmpty()) return emptyList()
         val workoutIds = workouts.map { it.id }
-        val allExercises = workoutIds.flatMap { exerciseDao.getExercisesByWorkoutId(it) }
-        val allSets = allExercises.associate { it.id to setDao.getSetsByExerciseId(it.id) }
+        val allExercises = workoutIds.flatMap { exerciseDao.getExercisesByWorkoutId(it).map(EntityMapper::toDomain) }
+        val allSets = allExercises.associate { it.id to setDao.getSetsByExerciseId(it.id).map(EntityMapper::toDomain) }
         val muscleGroupData = mutableMapOf<String, Pair<Double, Int>>()
         allExercises.forEach { exercise ->
             val muscleGroup = exerciseRepository.getMuscleGroupForExercise(exercise) ?: return@forEach
@@ -523,10 +475,13 @@ class StatsQueryRepositoryImpl(
     private suspend fun computeMuscleRecovery(): Map<MuscleGroup, Float> = withContext(dispatcherProvider.io) {
         val now = System.currentTimeMillis()
         val sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000L)
-        val workouts = workoutDao.getWorkoutsSinceFlow(sevenDaysAgo).first().filter { !it.isDeleted }
+        val workouts = workoutDao.getWorkoutsSinceFlow(sevenDaysAgo).first()
+            .map(EntityMapper::toDomain)
+            .filter { !it.isDeleted }
         val lastTrainedMap = mutableMapOf<MuscleGroup, Long>()
         workouts.sortedByDescending { it.startTime }.forEach { workout ->
             exerciseDao.getExercisesByWorkoutId(workout.id)
+                .map(EntityMapper::toDomain)
                 .mapNotNull { MuscleGroup.fromString(exerciseRepository.getMuscleGroupForExercise(it)) }
                 .distinct()
                 .forEach { group ->

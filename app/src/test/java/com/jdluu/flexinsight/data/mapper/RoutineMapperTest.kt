@@ -124,5 +124,35 @@ class RoutineMapperTest {
         assertEquals(3, folder.index)
     }
 
+    // region toCreateRoutineRequest
+
+    @Test
+    fun toCreateRoutineRequest_mapsDraftToNetworkPayload() {
+        val draft = com.jdluu.flexinsight.domain.model.CreateRoutineDraft(
+            title = "Upper A",
+            folderId = 3,
+            exercises = listOf(
+                com.jdluu.flexinsight.domain.model.CreateRoutineExerciseDraft(
+                    exerciseTemplateId = "tpl-1",
+                    sets = listOf(
+                        com.jdluu.flexinsight.domain.model.CreateRoutineSetDraft(
+                            type = "normal",
+                            weightKg = 80.0,
+                            reps = 8
+                        )
+                    )
+                )
+            )
+        )
+
+        val request = RoutineMapper.toCreateRoutineRequest(draft)
+
+        assertEquals("Upper A", request.routine.title)
+        assertEquals(3, request.routine.folderId)
+        assertEquals("tpl-1", request.routine.exercises.single().exerciseTemplateId)
+        assertEquals(80.0, request.routine.exercises.single().sets.single().weightKg!!, 0.0)
+        assertEquals(8, request.routine.exercises.single().sets.single().reps)
+    }
+
     // endregion
 }

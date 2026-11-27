@@ -10,6 +10,8 @@ import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
 import com.jdluu.flexinsight.core.logger.AppLogger
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
+import com.jdluu.flexinsight.domain.ai.AiFeatureStatus
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
 import com.google.mlkit.genai.common.DownloadStatus
 import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.common.GenAiException

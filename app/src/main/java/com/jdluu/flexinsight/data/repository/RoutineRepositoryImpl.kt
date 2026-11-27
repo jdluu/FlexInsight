@@ -11,18 +11,18 @@ import com.jdluu.flexinsight.data.cache.CacheKeys
 import com.jdluu.flexinsight.data.cache.CacheManager
 import com.jdluu.flexinsight.data.cache.CacheTTL
 import com.jdluu.flexinsight.data.mapper.RoutineMapper
-import com.jdluu.flexinsight.data.model.Routine
-import com.jdluu.flexinsight.data.model.RoutineResponse
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
+import com.jdluu.flexinsight.domain.model.CreateRoutineDraft
+import com.jdluu.flexinsight.domain.model.Routine
+import com.jdluu.flexinsight.domain.model.RoutineFolder
+import com.jdluu.flexinsight.domain.repository.ExerciseRepository
+import com.jdluu.flexinsight.domain.repository.RoutineRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 
-import com.jdluu.flexinsight.data.model.CreateRoutineRequest
-
 /**
  * Repository for routine-related operations.
- * Handles fetching and caching routines from API.
  */
 class RoutineRepositoryImpl(
     private val apiKeyManager: ApiKeyManager,
@@ -34,9 +34,6 @@ class RoutineRepositoryImpl(
     private var apiService: FlexApiService? = null
     private var currentApiKey: String? = null
 
-    /**
-     * Gets API service, creating it if needed
-     */
     private suspend fun getApiService(): Result<FlexApiService> {
         val apiKey = apiKeyManager.getApiKey() ?: return Result.error(
             ApiError.AuthError.InvalidApiKey
@@ -51,25 +48,18 @@ class RoutineRepositoryImpl(
         return Result.success(service)
     }
 
-    /**
-     * Invalidates the API service
-     */
     override fun invalidateApiService() {
         apiService = null
         currentApiKey = null
         cacheManager.invalidate(CacheKeys.ROUTINES)
     }
 
-    /**
-     * Sync routines from API
-     */
     override suspend fun syncRoutines(): Result<Unit> {
         val apiServiceResult = getApiService()
         if (apiServiceResult is Result.Error) {
             return Result.error(apiServiceResult.error)
         }
 
-        // Check network
         if (!networkMonitor.hasNetworkConnection()) {
             return Result.error(ApiError.NetworkError.NoConnection)
         }
@@ -81,9 +71,6 @@ class RoutineRepositoryImpl(
             var hasMore = true
             val allRoutines = mutableListOf<Routine>()
 
-            // Get exercise template mapping (ID -> MuscleGroup)
-            // We pass this to toRoutine, although with full details we get the title directly.
-            // Keeping it for consistency or fallback.
             val exerciseTemplateMappingResult = exerciseRepository.getExerciseTemplateMapping()
             val exerciseTemplateMapping = if (exerciseTemplateMappingResult is Result.Success) {
                 exerciseTemplateMappingResult.data
@@ -91,7 +78,6 @@ class RoutineRepositoryImpl(
                 emptyMap()
             }
 
-            // Fetch all pages of routines
             while (hasMore) {
                 val response = apiService.getRoutines(page, 50)
 
@@ -101,8 +87,7 @@ class RoutineRepositoryImpl(
                     )
                     val routineSummaries = paginatedResponse.routines
 
-                    if (routineSummaries != null && routineSummaries.isNotEmpty()) {
-                        // For each routine summary, fetch full details to get exercises
+                    if (!routineSummaries.isNullOrEmpty()) {
                         routineSummaries.forEach { summary ->
                             try {
                                 val detailResponse = apiService.getRoutineById(summary.id)
@@ -121,7 +106,6 @@ class RoutineRepositoryImpl(
                         }
                     }
 
-                    // Check if there are more pages
                     hasMore = page < paginatedResponse.pageCount
                     page++
                 } else {
@@ -137,7 +121,6 @@ class RoutineRepositoryImpl(
                 }
             }
 
-            // Cache routines
             cacheManager.put(CacheKeys.ROUTINES, allRoutines)
 
             Result.success(Unit)
@@ -147,9 +130,6 @@ class RoutineRepositoryImpl(
         }
     }
 
-    /**
-     * Get all routines - returns cached data immediately
-     */
     override fun getRoutines(): Flow<List<Routine>> {
         return flow {
             val cached = cacheManager.get<List<Routine>>(
@@ -160,18 +140,13 @@ class RoutineRepositoryImpl(
         }
     }
 
-    /**
-     * Get routine by ID
-     */
     override suspend fun getRoutineById(routineId: String): Result<Routine> {
-        val routinesResult = getRoutines()
-        val routines = routinesResult.first()
+        val routines = getRoutines().first()
         val routine = routines.firstOrNull { it.id == routineId }
 
         return if (routine != null) {
             Result.success(routine)
         } else {
-            // Try to fetch from API if not in cache
             val apiServiceResult = getApiService()
             if (apiServiceResult is Result.Error) {
                 return apiServiceResult
@@ -191,7 +166,6 @@ class RoutineRepositoryImpl(
                         ApiError.Unknown("Empty response body")
                     )
 
-                    // Get exercise template mapping
                     val exerciseTemplateMappingResult = exerciseRepository.getExerciseTemplateMapping()
                     val exerciseTemplateMapping = if (exerciseTemplateMappingResult is Result.Success) {
                         exerciseTemplateMappingResult.data
@@ -199,8 +173,8 @@ class RoutineRepositoryImpl(
                         emptyMap()
                     }
 
-                    val routine = RoutineMapper.toRoutine(routineResponse, exerciseTemplateMapping)
-                    Result.success(routine)
+                    val mappedRoutine = RoutineMapper.toRoutine(routineResponse, exerciseTemplateMapping)
+                    Result.success(mappedRoutine)
                 } else {
                     val error = ErrorHandler.handleHttpException(
                         retrofit2.HttpException(response)
@@ -214,12 +188,8 @@ class RoutineRepositoryImpl(
         }
     }
 
-    /**
-     * Get routine folders
-     */
-    override suspend fun getRoutineFolders(): Result<List<com.jdluu.flexinsight.data.model.RoutineFolder>> {
-        // Try cache first
-        val cached = cacheManager.get<List<com.jdluu.flexinsight.data.model.RoutineFolder>>(
+    override suspend fun getRoutineFolders(): Result<List<RoutineFolder>> {
+        val cached = cacheManager.get<List<RoutineFolder>>(
             CacheKeys.ROUTINE_FOLDERS,
             CacheTTL.ROUTINE_FOLDERS
         )
@@ -241,7 +211,7 @@ class RoutineRepositoryImpl(
         return try {
             var page = 1
             var hasMore = true
-            val allFolders = mutableListOf<com.jdluu.flexinsight.data.model.RoutineFolder>()
+            val allFolders = mutableListOf<RoutineFolder>()
 
             while (hasMore) {
                 val response = apiService.getRoutineFolders(page, 50)
@@ -256,47 +226,27 @@ class RoutineRepositoryImpl(
                         allFolders.addAll(foldersList.map { RoutineMapper.toRoutineFolder(it) })
                     }
 
-                    // Check if there are more pages - though folders response might not strictly follow pageCount logic,
-                    // typically it's limited. Assuming standard pagination if pageCount exists or just stop if empty.
-                    // The docs sample for folders doesn't explicitly show page_count, but let's assume standard behavior or stop if empty.
-                    // If page_count is not in response, we might need adjustments. Let's assume standard paginated response structure for now.
-                    // Wait, I didn't see page_count in the sample response in docs for buckets/folders.
-                    // Docs: {"page":1, "folders": [...]} - Missing page_count.
-                    // So we loop until empty results?
-
                     if (foldersList.isEmpty()) {
                         hasMore = false
                     } else {
-                         page++
-                         // Safety break for now if logic is unsure, but typically we'd look for empty list.
+                        page++
                     }
                 } else {
-                     val error = ErrorHandler.handleHttpException(retrofit2.HttpException(response))
-                     if (error is ApiError.AuthError) invalidateApiService()
-                     return Result.error(error)
+                    val error = ErrorHandler.handleHttpException(retrofit2.HttpException(response))
+                    if (error is ApiError.AuthError) invalidateApiService()
+                    return Result.error(error)
                 }
             }
 
-            // Refined Loop logic: Use do-while or check page count if available.
-            // Since docs don't show page_count, let's just use the fact that I added PaginatedRoutineFolderResponse which likely should have it or we trust the loop.
-            // Actually, checking PaginatedRoutineFolderResponse definition I created...
-            // data class PaginatedRoutineFolderResponse(val page: Int, val folders: List<RoutineFolderResponse>)
-            // I did NOT add pageCount. So I should iterate until empty list is returned.
-
             cacheManager.put(CacheKeys.ROUTINE_FOLDERS, allFolders)
             Result.success(allFolders)
-
         } catch (e: Exception) {
             val error = ErrorHandler.handleError(e)
             Result.error(error)
         }
     }
 
-    /**
-     * Creates a new routine on the user's Hevy account via POST /v1/routines.
-     * Invalidates the routines cache on success to trigger a re-sync.
-     */
-    override suspend fun createRoutine(request: CreateRoutineRequest): Result<String> {
+    override suspend fun createRoutine(draft: CreateRoutineDraft): Result<String> {
         val apiServiceResult = getApiService()
         if (apiServiceResult is Result.Error) {
             return Result.error(apiServiceResult.error)
@@ -309,6 +259,7 @@ class RoutineRepositoryImpl(
         val service = (apiServiceResult as Result.Success).data
 
         return try {
+            val request = RoutineMapper.toCreateRoutineRequest(draft)
             val response = service.createRoutine(request)
 
             if (response.isSuccessful) {
