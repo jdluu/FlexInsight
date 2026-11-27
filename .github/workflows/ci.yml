@@ -20,7 +20,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Run lint
         run: ./gradlew lintDebug --no-daemon
       - name: Upload lint report
@@ -39,7 +39,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Run unit tests
         run: ./gradlew testDebugUnitTest --no-daemon
       - name: Verify coverage floors (domain >= 95%, data/mapper >= 90%)
@@ -67,7 +67,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - name: Assemble debug APK
         run: ./gradlew assembleDebug --no-daemon
       - name: Upload APK artifact
