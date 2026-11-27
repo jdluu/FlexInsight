@@ -168,9 +168,10 @@ fun ExerciseHistoryItem(exercise: Exercise) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (!exercise.notes.isNullOrBlank()) {
+                val exerciseNotes = exercise.notes
+                if (!exerciseNotes.isNullOrBlank()) {
                     Text(
-                        text = exercise.notes,
+                        text = exerciseNotes,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -178,9 +179,10 @@ fun ExerciseHistoryItem(exercise: Exercise) {
                     )
                 }
             }
-            if (exercise.restDuration != null && exercise.restDuration > 0) {
+            val restDuration = exercise.restDuration
+            if (restDuration != null && restDuration > 0) {
                 PlateStatusPill(
-                    label = "${exercise.restDuration}s rest",
+                    label = "${restDuration}s rest",
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     borderColor = FlexTheme.colors.hairline

@@ -1,7 +1,7 @@
 package com.jdluu.flexinsight.core.logger
 
 import android.util.Log
-import com.jdluu.flexinsight.BuildConfig
+import com.jdluu.flexinsight.core.BuildConfig
 
 /**
  * Centralized logger for the application.

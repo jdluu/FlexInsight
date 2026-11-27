@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: lint-report
-          path: app/build/reports/lint-results-debug.html
+          path: '**/build/reports/lint-results-debug.html'
 
   unit-tests:
     name: Unit tests
@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-report
-          path: app/build/reports/jacoco/jacocoTestReport/
+          path: build/reports/jacoco/jacocoTestReport/
 
   build:
     name: Build APK

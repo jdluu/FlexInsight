@@ -3,7 +3,7 @@
 package com.jdluu.flexinsight.data.ai
 
 import android.content.Context
-import com.jdluu.flexinsight.BuildConfig
+import com.jdluu.flexinsight.data.BuildConfig
 import com.jdluu.flexinsight.core.dispatchers.DefaultDispatcherProvider
 import com.jdluu.flexinsight.core.dispatchers.DispatcherProvider
 import com.jdluu.flexinsight.core.errors.ApiError

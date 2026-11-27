@@ -136,7 +136,7 @@ fun ProfileSection(
                         )
                     }
 
-                    if (profileInfo.memberSince != null) {
+                    profileInfo.memberSince?.let { memberSince ->
                         VerticalDivider(
                             modifier = Modifier.height(36.dp),
                             thickness = 1.dp,
@@ -148,7 +148,7 @@ fun ProfileSection(
                             verticalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
                             Text(
-                                text = formatMemberSince(profileInfo.memberSince),
+                                text = formatMemberSince(memberSince),
                                 style = MonoMetricMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )

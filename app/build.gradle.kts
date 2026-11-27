@@ -51,9 +51,6 @@ android {
     testCoverage {
         jacocoVersion = "0.8.15"
     }
-    sourceSets {
-        getByName("androidTest").assets.directories.add("$projectDir/schemas")
-    }
 }
 
 kotlin {
@@ -63,11 +60,11 @@ kotlin {
     }
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
-
 dependencies {
+    implementation(project(":core:common"))
+    implementation(project(":core:domain"))
+    implementation(project(":core:data"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -81,42 +78,21 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.compose.ui.text.google.fonts)
 
-    // Networking
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.gson)
-    implementation(libs.okhttp)
-    implementation(libs.okhttp.logging)
-    implementation(libs.gson)
-
-    // Room Database
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
-
-    // DataStore (user preferences and Keystore-encrypted API key)
+    // DataStore (Glance widget preferences)
     implementation(libs.androidx.datastore.preferences)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
-    // WorkManager
+    // WorkManager (HiltWorkerFactory initialization in Application)
     implementation(libs.androidx.work.runtime.ktx)
 
-    testImplementation(libs.junit)
-    testImplementation(libs.robolectric)
-    testImplementation(libs.androidx.test.core)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.turbine)
-    testImplementation(libs.mockk)
-    testImplementation(libs.androidx.work.testing)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.room.testing)
-    androidTestImplementation(libs.androidx.test.core)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    // Health Connect permissions launcher in UI
+    implementation(libs.androidx.health.connect)
+
+    // Home screen widget (Glance)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
 
     // Hilt
     implementation(libs.hilt.android)
@@ -125,53 +101,23 @@ dependencies {
     ksp(libs.hilt.compiler)
     ksp(libs.androidx.hilt.compiler)
 
-    // ML Kit Prompt API (Gemini Nano)
-    implementation(libs.mlkit.genai.prompt)
-    implementation(libs.guava.android)
-    implementation(libs.kotlinx.coroutines.guava)
+    testImplementation(testFixtures(project(":core:common")))
+    testImplementation(testFixtures(project(":core:domain")))
+    testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation(libs.mockk)
+    testImplementation(libs.androidx.work.testing)
 
-    // Health Connect
-    implementation(libs.androidx.health.connect)
-
-    // Home screen widget (Glance)
-    implementation(libs.androidx.glance.appwidget)
-    implementation(libs.androidx.glance.material3)
-}
-
-// JaCoCo coverage for JVM unit tests. UI composables/theme and generated
-// code are excluded; the gate protects domain/data logic from regressions.
-tasks.register<JacocoReport>("jacocoTestReport") {
-    dependsOn(tasks.named("testDebugUnitTest"))
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-    }
-    val excludes = listOf(
-        "**/ui/**",
-        "**/di/**",
-        "**/domain/repository/**",
-        "**/*\$DefaultImpls*",
-        "**/databinding/**",
-        "**/*Binding*",
-        "**/R$*",
-        "**/R.class",
-        "**/*_HiltModules*",
-        "**/Hilt_*",
-        "**/*_Factory*",
-        "**/*_Impl*",
-        "**/*MembersInjector*"
-    )
-    val kotlinClasses = fileTree(layout.buildDirectory.dir("intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")) {
-        exclude(excludes)
-    }
-    val javaClasses = fileTree(layout.buildDirectory.dir("intermediates/javac/debug/compileDebugJavaWithJavac/classes")) {
-        exclude(excludes)
-    }
-    classDirectories.setFrom(files(kotlinClasses, javaClasses))
-    sourceDirectories.setFrom(files("src/main/java"))
-    executionData.setFrom(fileTree(layout.buildDirectory) {
-        include("jacoco/testDebugUnitTest.exec")
-    })
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
 
 tasks.withType<Test>().configureEach {
@@ -187,53 +133,5 @@ tasks.withType<Test>().configureEach {
     extensions.configure(JacocoTaskExtension::class) {
         isIncludeNoLocationClasses = true
         excludes = listOf("jdk.internal.*")
-    }
-    finalizedBy(tasks.named("jacocoTestReport"))
-}
-
-// Coverage gate on refactored logic packages. Fails the build if any drops
-// below its floor, protecting domain/data behavior from regression.
-val coverageFloors = mapOf(
-    "com/jdluu/flexinsight/domain" to 0.95,
-    "com/jdluu/flexinsight/data/mapper" to 0.90
-)
-
-tasks.register("verifyCoverage") {
-    dependsOn(tasks.named("jacocoTestReport"))
-    doLast {
-        val report = layout.buildDirectory.file(
-            "reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-        ).get().asFile
-        val factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
-        factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
-        val doc = factory.newDocumentBuilder().parse(report)
-        val packages = doc.getElementsByTagName("package")
-        var failures = 0
-        for (i in 0 until packages.length) {
-            val pkgEl = packages.item(i) as org.w3c.dom.Element
-            val pkgName = pkgEl.getAttribute("name")
-            val floorEntry = coverageFloors.entries.firstOrNull { pkgName.startsWith(it.key) }
-                ?: continue
-            val floor = floorEntry.value
-            // Aggregate the package-level LINE counter (direct child), not per-class ones.
-            var missed = 0.0
-            var covered = 0.0
-            val children = pkgEl.childNodes
-            for (j in 0 until children.length) {
-                val node = children.item(j)
-                if (node is org.w3c.dom.Element && node.tagName == "counter" && node.getAttribute("type") == "LINE") {
-                    missed = node.getAttribute("missed").toDouble()
-                    covered = node.getAttribute("covered").toDouble()
-                }
-            }
-            val ratio = covered / (missed + covered)
-            if (ratio < floor) {
-                failures++
-                println("COVERAGE GATE FAILED: $pkgName " + String.format("%.1f", ratio * 100) + "% < " + floor * 100 + "%")
-            } else {
-                println("Coverage OK: $pkgName " + String.format("%.1f", ratio * 100) + "%")
-            }
-        }
-        if (failures > 0) throw GradleException("$failures package(s) below coverage floor")
     }
 }

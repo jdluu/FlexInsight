@@ -1,6 +1,7 @@
 package com.jdluu.flexinsight.data.preferences
 
 import android.content.Context
+import androidx.annotation.VisibleForTesting
 import androidx.datastore.core.DataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import androidx.datastore.preferences.core.Preferences
@@ -67,7 +68,8 @@ class SyncPreferencesManager @Inject constructor(
     }
 
     /** Clears all sync metadata (for tests). */
-    internal suspend fun clearAllForTests() {
+    @VisibleForTesting
+    suspend fun clearAllForTests() {
         context.syncDataStore.edit { it.clear() }
     }
 }

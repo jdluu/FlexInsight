@@ -183,9 +183,10 @@ fun WorkoutDetailScreen(
                     useMetric = useMetric
                 )
             }
-            if (!workout.notes.isNullOrBlank()) {
+            val workoutNotes = workout.notes
+            if (!workoutNotes.isNullOrBlank()) {
                 item {
-                    NotesSection(notes = workout.notes)
+                    NotesSection(notes = workoutNotes)
                 }
             }
             item {
