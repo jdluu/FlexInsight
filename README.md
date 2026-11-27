@@ -28,6 +28,7 @@ reports integration state, including whether the Hevy API key is connected.
 - **Dashboard** — recent workouts, volume trends, training load, recovery preview, sync status
 - **History** — filtering, comparisons, PR tracking, routine diff, analysis
 - **Planner** — calendar view, rescheduling, AI plans, routine export to Hevy
+- **Plate Rack & Rest Timer** — calibrated `kg`/`lb` barbell plate loader, warm-up ramp (`50%`/`70%`/`85%`), and persistent gym-floor rest timer banner
 - **Recovery** — composite recovery score (Hevy + optional Health Connect), soreness logging, muscle heatmap
 - **AI Trainer** — on-device coaching via ML Kit GenAI (Gemini Nano), grounded in your Hevy data.
   Works via a Hevy data pipeline: workouts sync into Room, `HevyAiDataAccessor` assembles profile and
@@ -101,11 +102,13 @@ microphone, or SMS permissions are used.
 
 ## Building from source
 
-Requirements: JDK 17+ and the Android SDK.
+Requirements: JDK 21 and the Android SDK.
 
 ```bash
 ./gradlew assembleDebug        # build debug APK
+./gradlew installDebug         # install debug APK on a device or emulator
 ./gradlew testDebugUnitTest    # run unit tests
+./gradlew verifyCoverage       # verify JaCoCo coverage floors
 ./gradlew lintDebug            # run lint checks
 ```
 
