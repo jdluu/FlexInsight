@@ -1,35 +1,36 @@
 [versions]
-agp = "8.13.2"
-kotlin = "2.1.20"
-ksp = "2.1.20-1.0.32"
-coreKtx = "1.15.0"
+agp = "9.5.2"
+kotlin = "2.4.21"
+ksp = "2.3.14"
+coreKtx = "1.18.0"
 junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.10.0"
 lifecycleViewmodelCompose = "2.10.0"
-activityCompose = "1.10.0"
-composeBom = "2026.02.01"
-navigationCompose = "2.9.7"
-retrofit = "2.11.0"
-okhttp = "4.12.0"
-gson = "2.12.1"
-room = "2.7.0"
-datastore = "1.1.3"
-coroutines = "1.10.1"
-workmanager = "2.10.0"
-daggerHilt = "2.56.1"
+activityCompose = "1.12.4"
+composeBom = "2026.06.01"
+navigationCompose = "2.9.8"
+retrofit = "3.0.0"
+okhttp = "5.4.0"
+gson = "2.15.0"
+room = "2.8.5"
+datastore = "1.2.1"
+coroutines = "1.11.0"
+workmanager = "2.11.2"
+daggerHilt = "2.60.1"
 hiltNavigationCompose = "1.3.0"
 hiltWork = "1.3.0"
-securityCrypto = "1.1.0-alpha06"
-genaiPrompt = "1.0.0-beta4"
-guava = "33.4.0-android"
-healthConnect = "1.1.0-alpha11"
-glance = "1.1.1"
-robolectric = "4.14.1"
-kotlinxSerialization = "1.7.3"
+securityCrypto = "1.1.0"
+genaiPrompt = "1.0.0-beta5"
+guava = "33.8.0-android"
+healthConnect = "1.1.0"
+glance = "1.2.0"
+robolectric = "4.18.1"
+kotlinxSerialization = "1.13.0"
 turbine = "1.2.1"
-mockk = "1.13.16"
+mockk = "1.14.12"
+androidxTestCore = "1.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -75,7 +76,7 @@ androidx-health-connect = { group = "androidx.health.connect", name = "connect-c
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
 androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
-androidx-test-core = { group = "androidx.test", name = "core", version = "1.6.1" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
@@ -84,7 +85,6 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "daggerHilt" }
