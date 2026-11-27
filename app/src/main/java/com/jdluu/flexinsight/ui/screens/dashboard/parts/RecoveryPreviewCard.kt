@@ -1,98 +1,121 @@
 package com.jdluu.flexinsight.ui.screens.dashboard.parts
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.*
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.jdluu.flexinsight.R
 import com.jdluu.flexinsight.data.model.MuscleGroup
+import com.jdluu.flexinsight.domain.calc.RecoveryScoreCalculator
+import com.jdluu.flexinsight.ui.components.CalibratedPlateBar
 import com.jdluu.flexinsight.ui.components.MuscleHeatmap
+import com.jdluu.flexinsight.ui.components.PlateCard
+import com.jdluu.flexinsight.ui.components.PlateStatusPill
+import com.jdluu.flexinsight.ui.components.recoveryColorFor
+import com.jdluu.flexinsight.ui.components.recoveryContainerFor
+import com.jdluu.flexinsight.ui.theme.FlexTheme
+import com.jdluu.flexinsight.ui.theme.PlateNumeralLarge
 
 @Composable
 fun RecoveryPreviewCard(
     muscleRecovery: Map<MuscleGroup, Float>,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val averageRecovery = if (muscleRecovery.isNotEmpty()) {
-        (muscleRecovery.values.sum() / muscleRecovery.size * 100).toInt()
-    } else 100
+    val score = if (muscleRecovery.isNotEmpty()) {
+        RecoveryScoreCalculator.overallRecoveryScore(muscleRecovery)
+    } else {
+        100
+    }
+    val fraction = score / 100f
+    val statusColor = recoveryColorFor(fraction)
+    val (pillBg, pillFg) = recoveryContainerFor(fraction)
+    val statusLabel = when {
+        fraction < 0.35f -> "Fatigued"
+        fraction < 0.70f -> "Moderate"
+        else -> "Ready"
+    }
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .clip(RoundedCornerShape(24.dp))
-            .clickable { onClick() },
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+    PlateCard(
+        modifier = modifier.padding(horizontal = 16.dp),
+        onClick = onClick,
+        contentPadding = PaddingValues(16.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Column {
+                Text(
+                    text = stringResource(id = R.string.recovery_composite_readiness),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
                     Text(
-                        text = "Muscle Recovery Status",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        text = "$score%",
+                        style = PlateNumeralLarge,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
-                        text = "$averageRecovery% Overall Readiness",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold
+                    PlateStatusPill(
+                        label = statusLabel,
+                        containerColor = pillBg,
+                        contentColor = pillFg
                     )
                 }
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-            ) {
-                MuscleHeatmap(
-                    recoveryMap = muscleRecovery,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-            
             Row(
-                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
+                Text(
+                    text = stringResource(id = R.string.recovery_open_details),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
                 Icon(
-                    imageVector = Icons.Default.AutoAwesome,
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(16.dp)
-                )
-                Text(
-                    text = "Ask AI Coach for today's optimal routine",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        CalibratedPlateBar(
+            progress = fraction,
+            segments = 10,
+            activeColor = statusColor,
+            barHeight = 10.dp
+        )
+
+        Spacer(modifier = Modifier.height(14.dp))
+        HorizontalDivider(thickness = 1.dp, color = FlexTheme.colors.hairline)
+        Spacer(modifier = Modifier.height(12.dp))
+
+        MuscleHeatmap(
+            recoveryMap = muscleRecovery,
+            figureHeight = 136.dp
+        )
     }
 }

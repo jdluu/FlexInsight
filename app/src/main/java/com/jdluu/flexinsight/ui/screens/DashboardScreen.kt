@@ -1,43 +1,32 @@
 package com.jdluu.flexinsight.ui.screens
 
 import androidx.compose.foundation.background
-import com.jdluu.flexinsight.ui.components.FeaturedWorkoutCardSkeleton
-import com.jdluu.flexinsight.ui.components.StatsSkeleton
-import com.jdluu.flexinsight.ui.components.shimmerEffect
-import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import com.jdluu.flexinsight.core.network.NetworkState
-import com.jdluu.flexinsight.ui.components.ErrorBanner
-import com.jdluu.flexinsight.ui.components.NetworkStatusIndicator
-import com.jdluu.flexinsight.ui.common.LoadingState
-import com.jdluu.flexinsight.ui.screens.dashboard.parts.*
-import com.jdluu.flexinsight.ui.theme.BackgroundDark
 import androidx.compose.ui.res.stringResource
-import com.jdluu.flexinsight.R
-import com.jdluu.flexinsight.data.model.ProfileInfo
-import com.jdluu.flexinsight.ui.viewmodel.DashboardViewModel
-import kotlinx.coroutines.flow.flowOf
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jdluu.flexinsight.R
+import com.jdluu.flexinsight.ui.components.ErrorBanner
+import com.jdluu.flexinsight.ui.components.FeaturedWorkoutCardSkeleton
+import com.jdluu.flexinsight.ui.components.NetworkStatusIndicator
+import com.jdluu.flexinsight.ui.components.StatsSkeleton
+import com.jdluu.flexinsight.ui.screens.dashboard.parts.*
+import com.jdluu.flexinsight.ui.viewmodel.DashboardViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel = hiltViewModel(),
+    viewModel: DashboardViewModel,
     onNavigateToWorkoutDetail: (String) -> Unit = {},
     onNavigateToRecovery: () -> Unit = {},
     onNavigateToHistory: () -> Unit = {},
@@ -46,148 +35,150 @@ fun DashboardScreen(
     onNavigateToSettings: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isRefreshing = uiState.loadingState == LoadingState.Loading
     val useMetric = uiState.units == "Metric"
-    val listState = rememberLazyListState()
 
-    LaunchedEffect(uiState.isLoading) {
-        if (!uiState.isLoading) {
-            // This LaunchedEffect might need adjustment if isRefreshing is fully derived.
-            // For now, keeping it as is based on the instruction's partial change.
-        }
-    }
-
-    if (uiState.isLoading && !isRefreshing) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(top = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            Box(modifier = Modifier.height(16.dp)) // Padding
-            FeaturedWorkoutCardSkeleton()
-            StatsSkeleton()
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .height(120.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .shimmerEffect()
-            )
-        }
-        return
-    }
-
-    // Network status indicator
-    val networkState = uiState.networkState
-
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentPadding = PaddingValues(
-                top = if (isRefreshing) 60.dp else 0.dp,
-                bottom = 100.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+        DashboardHeader(
+            userName = uiState.profileInfo?.displayName,
+            lastSyncAt = uiState.lastSyncAt,
+            isSyncing = uiState.isSyncing,
+            onSyncClick = { viewModel.sync() },
+            onProfileClick = onNavigateToSettings
+        )
+
+        if (uiState.isLoading && uiState.workoutStats == null && uiState.latestWorkout == null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                FeaturedWorkoutCardSkeleton()
+                StatsSkeleton()
+            }
+            return@Column
+        }
+
+        val error = uiState.error
+        if (error != null && uiState.workoutStats == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    ErrorBanner(error = error)
+                    Button(onClick = { viewModel.refresh() }) {
+                        Text(text = stringResource(id = R.string.action_retry))
+                    }
+                }
+            }
+            return@Column
+        }
+
+        PullToRefreshBox(
+            isRefreshing = uiState.isSyncing,
+            onRefresh = { viewModel.sync() },
+            modifier = Modifier.fillMaxSize()
         ) {
-            if (networkState is NetworkState.Unavailable) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(top = 14.dp, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
                 item {
                     NetworkStatusIndicator(
-                        networkState = networkState,
+                        networkState = uiState.networkState,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                     )
                 }
-            }
 
-            // Error banner
-            uiState.error?.let { error ->
+                if (error != null) {
+                    item {
+                        ErrorBanner(
+                            error = error,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
+
+                if (uiState.deloadAlert?.shouldDeload == true) {
+                    item {
+                        DeloadBanner(message = uiState.deloadAlert?.message)
+                    }
+                }
+
+                // First Viewport 1: Composite Readiness Hero -> RecoveryScreen
                 item {
-                    ErrorBanner(
-                        error = error,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        onDismiss = null
+                    RecoveryPreviewCard(
+                        muscleRecovery = uiState.muscleRecovery,
+                        onClick = onNavigateToRecovery
                     )
                 }
-            }
-            item {
-                DashboardHeader(
-                    profileInfo = uiState.profileInfo,
-                    onNotificationsClick = { onNavigateToSettings() },
-                    onRefreshClick = { viewModel.sync() }
-                )
-            }
-            item {
-                DashboardSyncRow(
-                    lastSyncAt = uiState.lastSyncAt,
-                    isSyncing = uiState.isSyncing || isRefreshing,
-                    onSyncClick = { viewModel.sync() }
-                )
-            }
-            item {
-                DeloadBanner(message = uiState.deloadAlert?.takeIf { it.shouldDeload }?.message)
-            }
-            item {
-                TrainingLoadCard(score = uiState.trainingLoad)
-            }
-            item {
-                uiState.latestWorkout?.let { workout ->
-                    LastSessionAnalysisCard(
-                        workout = workout,
-                        workoutStats = uiState.latestWorkoutStats,
-                        useMetric = useMetric,
-                        onClick = { onNavigateToWorkoutDetail(workout.id) }
-                    )
-                } ?: run {
-                    FeaturedWorkoutCardPlaceholder()
-                }
-            }
-            item {
-                WeeklyProgressSection(
-                    progress = uiState.weeklyProgress,
-                    muscleGroupProgress = uiState.muscleGroupProgress,
-                    useMetric = useMetric,
-                    onSeeAllClick = { onNavigateToHistory() }
-                )
-            }
-            item {
-                RecoveryPreviewCard(
-                    muscleRecovery = uiState.muscleRecovery,
-                    onClick = { onNavigateToRecovery() }
-                )
-            }
-            item {
-                DailyInsightCard(
-                    dailyInsight = uiState.dailyInsight,
-                    isGeneratingInsight = uiState.isGeneratingInsight,
-                    onChatClick = { onNavigateToAITrainer() }
-                )
-            }
-        }
 
-        // Pull-to-refresh indicator
-        if (isRefreshing) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 16.dp)
-            ) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
-                )
+                // First Viewport 2: Next Planned Session
+                item {
+                    NextSessionCard(
+                        plannedWorkout = uiState.todayPlannedWorkout,
+                        onOpenPlanner = onNavigateToPlanner
+                    )
+                }
+
+                // First Viewport 3: Segmented Weekly Volume & Key Metrics
+                item {
+                    WeeklyVolumePlateCard(
+                        workoutStats = uiState.workoutStats,
+                        weeklyProgress = uiState.weeklyProgress,
+                        weeklyGoalProgress = uiState.weeklyGoalProgress,
+                        currentStreak = uiState.currentStreak,
+                        useMetric = useMetric
+                    )
+                }
+
+                // Below fold: Last Session, Training Load, AI Note, 4-week Muscle Focus
+                item {
+                    LastSessionAnalysisCard(
+                        workout = uiState.latestWorkout,
+                        stats = uiState.latestWorkoutStats,
+                        useMetric = useMetric,
+                        onClick = {
+                            uiState.latestWorkout?.id?.let(onNavigateToWorkoutDetail)
+                        }
+                    )
+                }
+
+                if (uiState.trainingLoad != null) {
+                    item {
+                        TrainingLoadCard(score = uiState.trainingLoad)
+                    }
+                }
+
+                if (uiState.dailyInsight != null || uiState.isGeneratingInsight) {
+                    item {
+                        QuickInsightCard(
+                            insight = uiState.dailyInsight,
+                            isLoading = uiState.isGeneratingInsight
+                        )
+                    }
+                }
+
+                if (uiState.muscleGroupProgress.isNotEmpty()) {
+                    item {
+                        MuscleGroupProgressSection(
+                            muscleGroupProgress = uiState.muscleGroupProgress
+                        )
+                    }
+                }
             }
         }
     }

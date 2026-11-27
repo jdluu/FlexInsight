@@ -1,185 +1,142 @@
 package com.jdluu.flexinsight.ui.screens.dashboard.parts
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.*
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.jdluu.flexinsight.ui.theme.Primary
-import com.jdluu.flexinsight.ui.theme.SurfaceCard
-import com.jdluu.flexinsight.ui.theme.TextSecondary
+import com.jdluu.flexinsight.R
+import com.jdluu.flexinsight.data.model.MuscleGroupProgress
+import com.jdluu.flexinsight.ui.components.CalibratedPlateBar
+import com.jdluu.flexinsight.ui.components.PlateCard
+import com.jdluu.flexinsight.ui.theme.MonoMetricSmall
 
 @Composable
-fun DailyInsightCard(
-    dailyInsight: String? = null,
-    isGeneratingInsight: Boolean = false,
-    onChatClick: () -> Unit = {}
+fun QuickInsightCard(
+    insight: String?,
+    isLoading: Boolean,
+    modifier: Modifier = Modifier
 ) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        onClick = onChatClick
+    if (insight == null && !isLoading) return
+
+    PlateCard(
+        modifier = modifier.padding(horizontal = 16.dp),
+        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
+        borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+        contentPadding = PaddingValues(16.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            Icon(
+                imageVector = Icons.Outlined.AutoAwesome,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(
+                text = stringResource(id = R.string.dashboard_quick_insight),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = stringResource(id = R.string.ai_trainer_offline_badge),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (isLoading) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.AutoAwesome,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Daily Insight",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = stringResource(id = R.string.recovery_smart_analysis_running),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        } else if (insight != null) {
+            Text(
+                text = insight,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
+    }
+}
+
+@Composable
+fun MuscleGroupProgressSection(
+    muscleGroupProgress: List<MuscleGroupProgress>,
+    modifier: Modifier = Modifier
+) {
+    if (muscleGroupProgress.isEmpty()) return
+
+    val topGroups = muscleGroupProgress.sortedByDescending { it.sets }.take(4)
+    val maxSets = topGroups.maxOfOrNull { it.sets }?.takeIf { it > 0 } ?: 1
+
+    PlateCard(
+        modifier = modifier.padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(16.dp)
+    ) {
+        Text(
+            text = "4-Week Muscle Focus",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            topGroups.forEach { progress ->
+                val ratio = (progress.sets.toFloat() / maxSets.toFloat()).coerceIn(0f, 1f)
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = progress.muscleGroup,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "${progress.sets} sets · ${progress.intensity}",
+                            style = MonoMetricSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    CalibratedPlateBar(
+                        progress = ratio,
+                        segments = 8,
+                        activeColor = MaterialTheme.colorScheme.primary,
+                        barHeight = 6.dp
                     )
                 }
             }
-
-            if (isGeneratingInsight) {
-                 Row(
-                     verticalAlignment = Alignment.CenterVertically,
-                     horizontalArrangement = Arrangement.spacedBy(8.dp)
-                 ) {
-                     CircularProgressIndicator(
-                         modifier = Modifier.size(16.dp),
-                         strokeWidth = 2.dp,
-                         color = MaterialTheme.colorScheme.primary
-                     )
-                     Text(
-                         text = "Generating tip...",
-                         fontSize = 14.sp,
-                         color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
-                         lineHeight = 20.sp,
-                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                     )
-                 }
-            } else {
-                Text(
-                    text = dailyInsight ?: "Consistency is key! Complete today's workout to keep your streak alive.",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f),
-                    lineHeight = 20.sp,
-                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                )
-            }
-
-            TextButton(
-                onClick = onChatClick,
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Text(
-                    text = "Chat with Trainer",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.OpenInNew,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(14.dp)
-                )
-            }
         }
-    }
-}
-
-@Composable
-fun QuickActionsGrid(
-    onStartClick: () -> Unit = {},
-    onAnalyticsClick: () -> Unit = {}
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-    ) {
-        Text(
-            text = "Quick Actions",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            QuickActionButton("Start", Icons.Default.PlayArrow, MaterialTheme.colorScheme.onPrimary, containerColor = MaterialTheme.colorScheme.primary, onClick = onStartClick, modifier = Modifier.weight(1f))
-            QuickActionButton("Analytics", Icons.Default.Analytics, MaterialTheme.colorScheme.onSurface, containerColor = MaterialTheme.colorScheme.surface, onClick = onAnalyticsClick, modifier = Modifier.weight(1f))
-        }
-    }
-}
-
-@Composable
-fun QuickActionButton(
-    label: String,
-    icon: ImageVector,
-    iconColor: Color,
-    containerColor: Color = MaterialTheme.colorScheme.surface,
-    onClick: () -> Unit = {},
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-                .clickable(onClick = onClick),
-            shape = RoundedCornerShape(16.dp),
-            color = containerColor,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = label,
-                    tint = iconColor,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
-        Text(
-            text = label,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
