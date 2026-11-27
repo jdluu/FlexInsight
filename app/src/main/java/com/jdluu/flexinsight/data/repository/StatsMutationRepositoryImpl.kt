@@ -2,6 +2,7 @@ package com.jdluu.flexinsight.data.repository
 
 import com.jdluu.flexinsight.data.cache.CacheKeys
 import com.jdluu.flexinsight.data.cache.CacheManager
+import com.jdluu.flexinsight.domain.repository.StatsMutationRepository
 
 /**
  * Mutation implementation for statistics: invalidates cached derived stats.

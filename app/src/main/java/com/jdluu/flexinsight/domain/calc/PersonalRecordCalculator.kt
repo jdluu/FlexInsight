@@ -1,6 +1,6 @@
 package com.jdluu.flexinsight.domain.calc
 
-import com.jdluu.flexinsight.data.model.Set
+import com.jdluu.flexinsight.domain.model.Set
 
 /**
  * Pure personal-record math: best-set tonnage and PR-flag detection.

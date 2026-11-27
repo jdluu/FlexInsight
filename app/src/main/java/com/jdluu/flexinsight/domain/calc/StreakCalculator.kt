@@ -1,6 +1,6 @@
 package com.jdluu.flexinsight.domain.calc
 
-import com.jdluu.flexinsight.data.model.Workout
+import com.jdluu.flexinsight.domain.model.Workout
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId

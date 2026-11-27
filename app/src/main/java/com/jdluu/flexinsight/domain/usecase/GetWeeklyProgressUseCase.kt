@@ -1,7 +1,7 @@
 package com.jdluu.flexinsight.domain.usecase
 
-import com.jdluu.flexinsight.data.model.WeeklyProgress
-import com.jdluu.flexinsight.data.repository.StatsRepository
+import com.jdluu.flexinsight.domain.model.WeeklyProgress
+import com.jdluu.flexinsight.domain.repository.StatsRepository
 import javax.inject.Inject
 
 class GetWeeklyProgressUseCase @Inject constructor(

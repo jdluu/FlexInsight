@@ -1,7 +1,7 @@
 package com.jdluu.flexinsight.domain.calc
 
-import com.jdluu.flexinsight.data.model.DailyDurationData
-import com.jdluu.flexinsight.data.model.Workout
+import com.jdluu.flexinsight.domain.model.DailyDurationData
+import com.jdluu.flexinsight.domain.model.Workout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Test

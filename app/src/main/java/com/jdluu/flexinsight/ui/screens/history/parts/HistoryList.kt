@@ -15,9 +15,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jdluu.flexinsight.R
-import com.jdluu.flexinsight.data.model.Exercise
-import com.jdluu.flexinsight.data.model.PRDetails
-import com.jdluu.flexinsight.data.model.Workout
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.PRDetails
+import com.jdluu.flexinsight.domain.model.Workout
 import com.jdluu.flexinsight.ui.components.EmptyStateIllustration
 import com.jdluu.flexinsight.ui.components.PlateCard
 import com.jdluu.flexinsight.ui.components.PlateSectionHeader

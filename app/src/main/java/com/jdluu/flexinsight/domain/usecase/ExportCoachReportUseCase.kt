@@ -1,8 +1,8 @@
 package com.jdluu.flexinsight.domain.usecase
 
-import com.jdluu.flexinsight.data.ai.FlexAIClient
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.repository.FlexRepository
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
+import com.jdluu.flexinsight.domain.repository.FlexRepository
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

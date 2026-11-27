@@ -1,29 +1,32 @@
 package com.jdluu.flexinsight.data.local.dao
 
 import androidx.room.*
-import com.jdluu.flexinsight.data.model.Workout
+import com.jdluu.flexinsight.data.local.entity.ExerciseEntity
+import com.jdluu.flexinsight.data.local.entity.SetEntity
+import com.jdluu.flexinsight.data.local.entity.WorkoutEntity
+import com.jdluu.flexinsight.data.local.entity.WorkoutWithDetailsEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WorkoutDao {
     @Query("SELECT * FROM workouts WHERE isDeleted = 0 ORDER BY startTime DESC")
-    fun getAllWorkoutsFlow(): Flow<List<Workout>>
+    fun getAllWorkoutsFlow(): Flow<List<WorkoutEntity>>
 
     @Transaction
     @Query("SELECT * FROM workouts ORDER BY startTime DESC")
-    fun getAllWorkoutsWithDetailsFlow(): Flow<List<com.jdluu.flexinsight.data.model.WorkoutWithDetails>>
+    fun getAllWorkoutsWithDetailsFlow(): Flow<List<WorkoutWithDetailsEntity>>
 
     @Query("SELECT * FROM workouts WHERE isDeleted = 0 ORDER BY startTime DESC LIMIT :limit")
-    fun getRecentWorkoutsFlow(limit: Int): Flow<List<Workout>>
+    fun getRecentWorkoutsFlow(limit: Int): Flow<List<WorkoutEntity>>
 
     @Query("SELECT * FROM workouts WHERE id = :workoutId")
-    suspend fun getWorkoutById(workoutId: String): Workout?
+    suspend fun getWorkoutById(workoutId: String): WorkoutEntity?
 
     @Query("SELECT id FROM workouts WHERE id IN (:ids)")
     suspend fun getExistingWorkoutIds(ids: List<String>): List<String>
 
     @Query("SELECT * FROM workouts WHERE id = :workoutId")
-    fun getWorkoutByIdFlow(workoutId: String): Flow<Workout?>
+    fun getWorkoutByIdFlow(workoutId: String): Flow<WorkoutEntity?>
 
     @Query("SELECT COUNT(*) FROM workouts WHERE isDeleted = 0")
     fun getWorkoutCountFlow(): Flow<Int>
@@ -35,25 +38,25 @@ interface WorkoutDao {
     suspend fun getMostRecentSyncedTimestamp(): Long?
 
     @Query("SELECT * FROM workouts WHERE startTime >= :startTimestamp AND startTime <= :endTimestamp ORDER BY startTime DESC")
-    fun getWorkoutsByDateRangeFlow(startTimestamp: Long, endTimestamp: Long): Flow<List<Workout>>
+    fun getWorkoutsByDateRangeFlow(startTimestamp: Long, endTimestamp: Long): Flow<List<WorkoutEntity>>
 
     @Query("SELECT * FROM workouts WHERE startTime >= :startTimestamp ORDER BY startTime DESC")
-    fun getWorkoutsSinceFlow(startTimestamp: Long): Flow<List<Workout>>
+    fun getWorkoutsSinceFlow(startTimestamp: Long): Flow<List<WorkoutEntity>>
 
     @Query("SELECT * FROM workouts WHERE needsSync = 1")
-    suspend fun getWorkoutsNeedingSync(): List<Workout>
+    suspend fun getWorkoutsNeedingSync(): List<WorkoutEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkout(workout: Workout)
+    suspend fun insertWorkout(workout: WorkoutEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWorkouts(workouts: List<Workout>)
+    suspend fun insertWorkouts(workouts: List<WorkoutEntity>)
 
     @Update
-    suspend fun updateWorkout(workout: Workout)
+    suspend fun updateWorkout(workout: WorkoutEntity)
 
     @Delete
-    suspend fun deleteWorkout(workout: Workout)
+    suspend fun deleteWorkout(workout: WorkoutEntity)
 
     @Query("UPDATE workouts SET isDeleted = 1 WHERE id = :workoutId")
     suspend fun softDeleteWorkoutById(workoutId: String)
@@ -64,24 +67,17 @@ interface WorkoutDao {
     @Query("UPDATE workouts SET lastSynced = :timestamp, needsSync = 0 WHERE id = :workoutId")
     suspend fun markWorkoutSynced(workoutId: String, timestamp: Long = System.currentTimeMillis())
 
-    /**
-     * Inserts or updates a complete workout with its related exercises and sets atomically.
-     */
     @Transaction
     suspend fun insertWorkoutWithDetails(
-        workout: Workout,
-        exercises: List<com.jdluu.flexinsight.data.model.Exercise>,
-        sets: List<com.jdluu.flexinsight.data.model.Set>,
-        exerciseDao: com.jdluu.flexinsight.data.local.dao.ExerciseDao,
-        setDao: com.jdluu.flexinsight.data.local.dao.SetDao
+        workout: WorkoutEntity,
+        exercises: List<ExerciseEntity>,
+        sets: List<SetEntity>,
+        exerciseDao: ExerciseDao,
+        setDao: SetDao
     ) {
         insertWorkout(workout)
-        
-        // Clear existing related data to ensure clean state on update
         exerciseDao.deleteExercisesByWorkoutId(workout.id)
-        
         exerciseDao.insertExercises(exercises)
         setDao.insertSets(sets)
     }
 }
-

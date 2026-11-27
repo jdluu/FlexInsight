@@ -4,38 +4,38 @@ import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
 import com.jdluu.flexinsight.core.network.NetworkMonitor
 import com.jdluu.flexinsight.core.network.NetworkState
-import com.jdluu.flexinsight.data.ai.AiFeatureStatus
-import com.jdluu.flexinsight.data.ai.FlexAIClient
-import com.jdluu.flexinsight.data.ai.HevyAiDataAccessor
-import com.jdluu.flexinsight.data.health.HealthConnectRepository
-import com.jdluu.flexinsight.data.health.HealthConnectSnapshot
-import com.jdluu.flexinsight.data.model.CreateRoutineRequest
-import com.jdluu.flexinsight.data.model.DayInfo
-import com.jdluu.flexinsight.data.model.Exercise
-import com.jdluu.flexinsight.data.model.ExerciseHistoryResponse
-import com.jdluu.flexinsight.data.model.MuscleGroup
-import com.jdluu.flexinsight.data.model.MuscleGroupProgress
-import com.jdluu.flexinsight.data.model.PRDetails
-import com.jdluu.flexinsight.data.model.PeriodComparison
-import com.jdluu.flexinsight.data.model.PlannedWorkout
-import com.jdluu.flexinsight.data.model.ProfileInfo
-import com.jdluu.flexinsight.data.model.Routine
-import com.jdluu.flexinsight.data.model.RoutineFolder
-import com.jdluu.flexinsight.data.model.Set
-import com.jdluu.flexinsight.data.model.SingleWorkoutStats
-import com.jdluu.flexinsight.data.model.Workout
-import com.jdluu.flexinsight.data.model.DailyDurationData
-import com.jdluu.flexinsight.data.model.WeeklyProgress
-import com.jdluu.flexinsight.data.model.WeeklyVolumeData
-import com.jdluu.flexinsight.data.model.WeeklyGoalProgress
-import com.jdluu.flexinsight.data.model.VolumeBalance
-import com.jdluu.flexinsight.data.model.VolumeTrend
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
 import com.jdluu.flexinsight.domain.ai.AiContextProvider
-import com.jdluu.flexinsight.data.repository.ExerciseRepository
-import com.jdluu.flexinsight.data.repository.FlexRepository
-import com.jdluu.flexinsight.data.repository.RoutineRepository
+import com.jdluu.flexinsight.domain.ai.AiContextSnapshot
+import com.jdluu.flexinsight.domain.ai.AiFeatureStatus
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
+import com.jdluu.flexinsight.domain.health.HealthConnectSnapshot
+import com.jdluu.flexinsight.domain.model.CreateRoutineDraft
+import com.jdluu.flexinsight.domain.model.DailyDurationData
+import com.jdluu.flexinsight.domain.model.DayInfo
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.ExerciseHistory
+import com.jdluu.flexinsight.domain.model.MuscleGroup
+import com.jdluu.flexinsight.domain.model.MuscleGroupProgress
+import com.jdluu.flexinsight.domain.model.PRDetails
+import com.jdluu.flexinsight.domain.model.PeriodComparison
+import com.jdluu.flexinsight.domain.model.PlannedWorkout
+import com.jdluu.flexinsight.domain.model.ProfileInfo
+import com.jdluu.flexinsight.domain.model.Routine
+import com.jdluu.flexinsight.domain.model.RoutineFolder
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.SingleWorkoutStats
+import com.jdluu.flexinsight.domain.model.VolumeBalance
+import com.jdluu.flexinsight.domain.model.VolumeTrend
+import com.jdluu.flexinsight.domain.model.WeeklyGoalProgress
+import com.jdluu.flexinsight.domain.model.WeeklyProgress
+import com.jdluu.flexinsight.domain.model.WeeklyVolumeData
+import com.jdluu.flexinsight.domain.model.Workout
+import com.jdluu.flexinsight.domain.repository.ExerciseRepository
+import com.jdluu.flexinsight.domain.repository.FlexRepository
+import com.jdluu.flexinsight.domain.repository.RoutineRepository
 import com.jdluu.flexinsight.widget.WidgetUpdater
 import io.mockk.coEvery
 import io.mockk.every
@@ -116,7 +116,7 @@ class ScriptableFlexRepository : FlexRepository {
 
     override fun getAllExercises(): Flow<List<Exercise>> = flowOf(allExercises)
 
-    override suspend fun getExerciseHistory(templateId: String): Result<ExerciseHistoryResponse> =
+    override suspend fun getExerciseHistory(templateId: String): Result<ExerciseHistory> =
         Result.Error(ApiError.Unknown("not faked"))
 
     override suspend fun getWorkoutById(workoutId: String): Workout? = workoutById
@@ -222,7 +222,7 @@ class ScriptableFlexRepository : FlexRepository {
 /** Hand-written scriptable [RoutineRepository] double. */
 class ScriptableRoutineRepository : RoutineRepository {
     var createResult: Result<String> = Result.Success("routine-1")
-    val createdRequests = mutableListOf<CreateRoutineRequest>()
+    val createdDrafts = mutableListOf<CreateRoutineDraft>()
 
     override fun invalidateApiService() {}
     override suspend fun syncRoutines(): Result<Unit> = Result.Success(Unit)
@@ -231,8 +231,8 @@ class ScriptableRoutineRepository : RoutineRepository {
         Result.Error(ApiError.Unknown("not faked"))
     override suspend fun getRoutineFolders(): Result<List<RoutineFolder>> =
         Result.Success(emptyList())
-    override suspend fun createRoutine(request: CreateRoutineRequest): Result<String> {
-        createdRequests += request
+    override suspend fun createRoutine(draft: CreateRoutineDraft): Result<String> {
+        createdDrafts += draft
         return createResult
     }
 }
@@ -253,7 +253,7 @@ class ScriptableExerciseRepository : ExerciseRepository {
     override suspend fun getExercisesByWorkoutIdSuspend(workoutId: String): List<Exercise> =
         emptyList()
     override suspend fun getExerciseById(exerciseId: String): Exercise? = null
-    override suspend fun getExerciseHistory(templateId: String): Result<ExerciseHistoryResponse> =
+    override suspend fun getExerciseHistory(templateId: String): Result<ExerciseHistory> =
         Result.Error(ApiError.Unknown("not faked"))
 }
 
@@ -261,8 +261,8 @@ class ScriptableExerciseRepository : ExerciseRepository {
 class StaticAiContextProvider(
     private val text: String = "System Context - Hevy Training Data"
 ) : AiContextProvider {
-    override suspend fun buildContext(userQuery: String?): HevyAiDataAccessor.ContextSnapshot =
-        HevyAiDataAccessor.ContextSnapshot(
+    override suspend fun buildContext(userQuery: String?): AiContextSnapshot =
+        AiContextSnapshot(
             text = text,
             hasWorkoutData = true,
             hasApiKey = true,
@@ -289,13 +289,12 @@ fun networkMonitorStub(
 fun widgetUpdaterStub(): WidgetUpdater = mockk(relaxUnitFun = true)
 
 /**
- * HealthConnectRepository is final and bound to the Health Connect SDK; tests stub
- * it at the repository boundary.
+ * HealthConnectDataSource stub for unit tests.
  */
 fun healthConnectRepositoryStub(
     sdkAvailable: Boolean = false,
     snapshot: HealthConnectSnapshot = HealthConnectSnapshot()
-): HealthConnectRepository = mockk {
+): HealthConnectDataSource = mockk {
     every { requiredPermissions } returns emptySet()
     every { isSdkAvailable() } returns sdkAvailable
     coEvery { readSnapshot() } returns snapshot

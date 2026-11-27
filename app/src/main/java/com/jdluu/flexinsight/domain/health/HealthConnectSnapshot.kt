@@ -1,4 +1,4 @@
-package com.jdluu.flexinsight.data.health
+package com.jdluu.flexinsight.domain.health
 
 /**
  * Aggregated Health Connect metrics for recovery, AI context, and training load fusion.

@@ -3,6 +3,7 @@ package com.jdluu.flexinsight.data.repository
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.ErrorHandler
 import com.jdluu.flexinsight.core.errors.Result
+import com.jdluu.flexinsight.core.logger.AppLogger
 import com.jdluu.flexinsight.core.network.NetworkMonitor
 import com.jdluu.flexinsight.data.api.FlexApiClient
 import com.jdluu.flexinsight.data.api.FlexApiService
@@ -12,12 +13,16 @@ import com.jdluu.flexinsight.data.cache.CacheTTL
 import com.jdluu.flexinsight.data.local.dao.ExerciseDao
 import com.jdluu.flexinsight.data.local.dao.SetDao
 import com.jdluu.flexinsight.data.local.dao.WorkoutDao
+import com.jdluu.flexinsight.data.mapper.EntityMapper
 import com.jdluu.flexinsight.data.mapper.WorkoutMapper
-import com.jdluu.flexinsight.data.model.Exercise
-import com.jdluu.flexinsight.data.model.Set
 import com.jdluu.flexinsight.data.model.WorkoutResponse
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
 import com.jdluu.flexinsight.data.preferences.SyncPreferencesManager
+import com.jdluu.flexinsight.data.sync.SyncManager
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.Workout
+import com.jdluu.flexinsight.domain.repository.WorkoutMutationRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -26,8 +31,6 @@ import kotlinx.coroutines.sync.withPermit
 
 /**
  * Mutation/sync implementation for workouts.
- * Owns all writes: persisting API payloads, remote sync (full and event-based),
- * and local workout state updates.
  */
 class WorkoutMutationRepositoryImpl(
     private val workoutDao: WorkoutDao,
@@ -37,21 +40,17 @@ class WorkoutMutationRepositoryImpl(
     private val networkMonitor: NetworkMonitor,
     private val apiClient: FlexApiClient,
     private val cacheManager: CacheManager,
-    private val syncManager: com.jdluu.flexinsight.data.sync.SyncManager,
+    private val syncManager: SyncManager,
     private val syncPreferencesManager: SyncPreferencesManager
 ) : WorkoutMutationRepository {
     private var apiService: FlexApiService? = null
     private var currentApiKey: String? = null
 
-    /**
-     * Gets API service, creating it if needed
-     */
     private suspend fun getApiService(): Result<FlexApiService> {
         val apiKey = apiKeyManager.getApiKey() ?: return Result.error(
             ApiError.AuthError.InvalidApiKey
         )
 
-        // Recreate service if API key has changed
         if (apiService == null || currentApiKey != apiKey) {
             apiService = apiClient.createApiService(apiKey)
             currentApiKey = apiKey
@@ -61,18 +60,22 @@ class WorkoutMutationRepositoryImpl(
         return Result.success(service)
     }
 
-    /**
-     * Invalidates the API service (useful when API key is updated)
-     */
     override fun invalidateApiService() {
         apiService = null
         currentApiKey = null
     }
 
-    /**
-     * Saves a workout with its exercises and sets to the database atomically
-     */
-    override suspend fun saveWorkoutWithExercisesAndSets(workoutResponse: WorkoutResponse) {
+    override suspend fun saveWorkout(workout: Workout, exercises: List<Exercise>, sets: List<Set>) {
+        workoutDao.insertWorkoutWithDetails(
+            workout = EntityMapper.toEntity(workout),
+            exercises = exercises.map(EntityMapper::toEntity),
+            sets = sets.map(EntityMapper::toEntity),
+            exerciseDao = exerciseDao,
+            setDao = setDao
+        )
+    }
+
+    private suspend fun saveWorkoutWithExercisesAndSets(workoutResponse: WorkoutResponse) {
         val workout = WorkoutMapper.toWorkout(workoutResponse)
         val exercises = mutableListOf<Exercise>()
         val sets = mutableListOf<Set>()
@@ -86,68 +89,48 @@ class WorkoutMutationRepositoryImpl(
             }
         }
 
-        workoutDao.insertWorkoutWithDetails(
-            workout = workout,
-            exercises = exercises,
-            sets = sets,
-            exerciseDao = exerciseDao,
-            setDao = setDao
-        )
+        saveWorkout(workout, exercises, sets)
     }
 
-    /**
-     * Sync workouts from API
-     * Tries events endpoint first for incremental sync, falls back to regular workouts endpoint
-     */
     override suspend fun syncWorkouts(): Result<Unit> {
         val apiServiceResult = getApiService()
         if (apiServiceResult is Result.Error) {
             return Result.error(apiServiceResult.error)
         }
 
-        // Check network before syncing
         if (!networkMonitor.hasNetworkConnection()) {
             return Result.error(ApiError.NetworkError.NoConnection)
         }
 
-        // Check if we have any workouts in the database (for incremental sync)
         val mostRecentSynced = workoutDao.getMostRecentSyncedTimestamp()
         val localCount = workoutDao.getWorkoutCount()
 
-        // Check remote count to see if we are missing data (backfill needed)
-        // This prevents the issue where we have a recent timestamp but are missing older workouts
         var shouldForceFullSync = false
         try {
             val remoteCountResult = fetchRemoteWorkoutCount()
             if (remoteCountResult is Result.Success) {
                 val remoteCount = remoteCountResult.data
-                // If we have significantly fewer workouts than remote, force full sync
                 if (localCount < remoteCount) {
                     shouldForceFullSync = true
-                    com.jdluu.flexinsight.core.logger.AppLogger.d("Force full sync: Local $localCount < Remote $remoteCount")
+                    AppLogger.d("Force full sync: Local $localCount < Remote $remoteCount")
                 }
             }
         } catch (e: Exception) {
-            // Ignore error, proceed with standard logic
-            com.jdluu.flexinsight.core.logger.AppLogger.e("Failed to check remote count during sync: ${e.message}")
+            AppLogger.e("Failed to check remote count during sync: ${e.message}")
         }
 
         val isIncrementalSync = mostRecentSynced != null && !shouldForceFullSync
 
-        // Try events endpoint first for incremental sync
         if (isIncrementalSync) {
             val eventsResult = syncWorkoutsFromEvents()
             if (eventsResult is Result.Success) {
                 return eventsResult
             }
-            // If events endpoint fails (404, etc.), fall through to regular sync
         }
 
-        // Fallback to regular workouts endpoint
         val apiService = (apiServiceResult as Result.Success).data
 
         return try {
-
             var page = 1
             var hasMore = true
             var allWorkoutsExist = false
@@ -181,7 +164,6 @@ class WorkoutMutationRepositoryImpl(
                     val idsToFetch = workoutIds.filter { it !in existingIds }
                     fetchAndSaveWorkoutDetails(apiService, idsToFetch)
 
-                    // Check if there are more pages
                     hasMore = page < paginatedResponse.pageCount
                     page++
                 } else {
@@ -206,26 +188,18 @@ class WorkoutMutationRepositoryImpl(
         }
     }
 
-    /**
-     * Converts timestamp (milliseconds) to ISO 8601 format for API
-     */
     private fun timestampToIso8601(timestampMillis: Long): String {
         val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
         dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
         return dateFormat.format(java.util.Date(timestampMillis))
     }
 
-    /**
-     * Sync workouts from events endpoint
-     * Uses incremental sync with 'since' parameter based on lastSynced timestamp
-     */
     private suspend fun syncWorkoutsFromEvents(): Result<Unit> {
         val apiServiceResult = getApiService()
         if (apiServiceResult is Result.Error) {
             return Result.error(apiServiceResult.error)
         }
 
-        // Check network before syncing
         if (!networkMonitor.hasNetworkConnection()) {
             return Result.error(ApiError.NetworkError.NoConnection)
         }
@@ -233,14 +207,9 @@ class WorkoutMutationRepositoryImpl(
         val apiService = (apiServiceResult as Result.Success).data
 
         return try {
-            // Get most recent synced timestamp
             val mostRecentSynced = workoutDao.getMostRecentSyncedTimestamp()
             val sinceParam = mostRecentSynced?.let { timestampToIso8601(it) }
-
-            // If no previous sync, return error to fallback to regular sync
-            if (sinceParam == null) {
-                return Result.error(ApiError.Unknown("No previous sync timestamp, use regular sync"))
-            }
+                ?: return Result.error(ApiError.Unknown("No previous sync timestamp, use regular sync"))
 
             var page = 1
             var hasMore = true
@@ -272,7 +241,6 @@ class WorkoutMutationRepositoryImpl(
                     }
                     fetchAndSaveWorkoutDetails(apiService, idsToRefresh.distinct())
 
-                    // Check if there are more pages
                     hasMore = page < eventsResponse.pageCount
                     page++
                 } else {
@@ -297,9 +265,6 @@ class WorkoutMutationRepositoryImpl(
         }
     }
 
-    /**
-     * Update workout status (completed/incomplete)
-     */
     override suspend fun updateWorkoutStatus(workoutId: String, isCompleted: Boolean, endTime: Long?): Result<Unit> {
         val workout = workoutDao.getWorkoutById(workoutId) ?: return Result.error(ApiError.Unknown("Workout not found"))
 
@@ -309,16 +274,11 @@ class WorkoutMutationRepositoryImpl(
         )
 
         workoutDao.updateWorkout(updatedWorkout)
-
-        // Queue for background sync immediately
         syncManager.syncNow()
 
         return Result.success(Unit)
     }
 
-    /**
-     * Reschedule a workout
-     */
     override suspend fun rescheduleWorkout(workoutId: String, newStartTime: Long): Result<Unit> {
         val workout = workoutDao.getWorkoutById(workoutId) ?: return Result.error(ApiError.Unknown("Workout not found"))
 
@@ -328,8 +288,6 @@ class WorkoutMutationRepositoryImpl(
         )
 
         workoutDao.updateWorkout(updatedWorkout)
-
-        // Queue for background sync immediately
         syncManager.syncNow()
 
         return Result.success(Unit)
@@ -355,14 +313,10 @@ class WorkoutMutationRepositoryImpl(
                                     cacheExerciseTemplatesFromWorkout(fullWorkout)
                                 }
                             } else {
-                                com.jdluu.flexinsight.core.logger.AppLogger.e(
-                                    "Failed to fetch details for workout $workoutId"
-                                )
+                                AppLogger.e("Failed to fetch details for workout $workoutId")
                             }
                         } catch (e: Exception) {
-                            com.jdluu.flexinsight.core.logger.AppLogger.e(
-                                "Exception fetching details for workout $workoutId: ${e.message}"
-                            )
+                            AppLogger.e("Exception fetching details for workout $workoutId: ${e.message}")
                         }
                     }
                 }
@@ -370,11 +324,6 @@ class WorkoutMutationRepositoryImpl(
         }
     }
 
-    /**
-     * Remote workout count used by the sync decision logic.
-     * Mirrors [WorkoutQueryRepositoryImpl.getRemoteWorkoutCount] without introducing a
-     * mutation-to-query dependency.
-     */
     private suspend fun fetchRemoteWorkoutCount(): Result<Int> {
         val apiServiceResult = getApiService()
         if (apiServiceResult is Result.Error) {
@@ -397,8 +346,8 @@ class WorkoutMutationRepositoryImpl(
                     Result.error(ApiError.Unknown("Empty response body"))
                 }
             } else {
-                 val error = ErrorHandler.handleHttpException(retrofit2.HttpException(response))
-                 Result.error(error)
+                val error = ErrorHandler.handleHttpException(retrofit2.HttpException(response))
+                Result.error(error)
             }
         } catch (e: Exception) {
             val error = ErrorHandler.handleError(e)
@@ -422,7 +371,6 @@ class WorkoutMutationRepositoryImpl(
     }
 
     companion object {
-        /** Limit parallel Hevy detail requests to avoid rate limits. */
         private const val SYNC_DETAIL_CONCURRENCY = 3
     }
 }

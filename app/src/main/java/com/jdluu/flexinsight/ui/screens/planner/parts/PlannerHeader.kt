@@ -10,7 +10,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jdluu.flexinsight.R
-import com.jdluu.flexinsight.data.model.WeeklyGoalProgress
+import com.jdluu.flexinsight.domain.model.WeeklyGoalProgress
 import com.jdluu.flexinsight.ui.components.CalibratedPlateBar
 import com.jdluu.flexinsight.ui.components.PlateCard
 import com.jdluu.flexinsight.ui.components.PlateStatusPill

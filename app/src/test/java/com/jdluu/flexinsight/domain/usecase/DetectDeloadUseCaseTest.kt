@@ -1,9 +1,9 @@
 package com.jdluu.flexinsight.domain.usecase
 
-import com.jdluu.flexinsight.data.health.HealthConnectRepository
-import com.jdluu.flexinsight.data.health.HealthConnectSnapshot
-import com.jdluu.flexinsight.data.model.DayInfo
-import com.jdluu.flexinsight.data.model.VolumeTrend
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
+import com.jdluu.flexinsight.domain.health.HealthConnectSnapshot
+import com.jdluu.flexinsight.domain.model.DayInfo
+import com.jdluu.flexinsight.domain.model.VolumeTrend
 import com.jdluu.flexinsight.fakes.FakeFlexRepository
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -17,7 +17,7 @@ import java.util.Locale
 class DetectDeloadUseCaseTest {
 
     private lateinit var flexRepo: FakeFlexRepository
-    private val healthRepo = mockk<HealthConnectRepository>()
+    private val healthRepo = mockk<HealthConnectDataSource>()
     private val originalLocale = Locale.getDefault()
 
     @Before

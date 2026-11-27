@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.jdluu.flexinsight.data.model.ProfileInfo
+import com.jdluu.flexinsight.domain.model.ProfileInfo
 import com.jdluu.flexinsight.data.sync.SyncState
 import com.jdluu.flexinsight.ui.common.LoadingState
 import com.jdluu.flexinsight.ui.common.UiError

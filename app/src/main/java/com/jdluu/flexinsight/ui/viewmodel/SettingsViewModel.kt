@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jdluu.flexinsight.core.errors.ErrorHandler
 import com.jdluu.flexinsight.core.logger.AppLogger
-import com.jdluu.flexinsight.data.model.ProfileInfo
-import com.jdluu.flexinsight.data.health.HealthConnectRepository
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
 import com.jdluu.flexinsight.data.sync.SyncCoordinator
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
+import com.jdluu.flexinsight.domain.model.ProfileInfo
+import com.jdluu.flexinsight.domain.repository.FlexRepository
 import com.jdluu.flexinsight.domain.usecase.ExportCoachReportUseCase
-import com.jdluu.flexinsight.data.repository.FlexRepository
 import com.jdluu.flexinsight.core.network.NetworkMonitor
 import com.jdluu.flexinsight.core.network.NetworkState
 import com.jdluu.flexinsight.ui.common.LoadingState
@@ -58,7 +58,7 @@ class SettingsViewModel @Inject constructor(
     private val userPreferencesManager: UserPreferencesManager,
     private val apiKeyManager: com.jdluu.flexinsight.data.preferences.ApiKeyManager,
     private val networkMonitor: NetworkMonitor,
-    private val healthConnectRepository: HealthConnectRepository,
+    private val healthConnectRepository: HealthConnectDataSource,
     private val syncCoordinator: SyncCoordinator,
     private val exportCoachReportUseCase: ExportCoachReportUseCase
 ) : ViewModel() {

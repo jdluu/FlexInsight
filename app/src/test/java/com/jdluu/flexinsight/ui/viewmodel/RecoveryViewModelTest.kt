@@ -5,8 +5,8 @@ import androidx.test.core.app.ApplicationProvider
 import app.cash.turbine.test
 import com.jdluu.flexinsight.TestApplication
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.health.HealthConnectSnapshot
-import com.jdluu.flexinsight.data.model.MuscleGroup
+import com.jdluu.flexinsight.domain.health.HealthConnectSnapshot
+import com.jdluu.flexinsight.domain.model.MuscleGroup
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
 import com.jdluu.flexinsight.domain.usecase.CalculateTrainingLoadUseCase
 import com.jdluu.flexinsight.domain.usecase.DetectDeloadUseCase

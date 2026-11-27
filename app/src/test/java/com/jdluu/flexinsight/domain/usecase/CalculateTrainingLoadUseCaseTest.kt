@@ -1,8 +1,8 @@
 package com.jdluu.flexinsight.domain.usecase
 
-import com.jdluu.flexinsight.data.health.HealthConnectRepository
-import com.jdluu.flexinsight.data.health.HealthConnectSnapshot
-import com.jdluu.flexinsight.data.model.WeeklyGoalProgress
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
+import com.jdluu.flexinsight.domain.health.HealthConnectSnapshot
+import com.jdluu.flexinsight.domain.model.WeeklyGoalProgress
 import com.jdluu.flexinsight.fakes.FakeFlexRepository
 import com.jdluu.flexinsight.fakes.TestDefaults
 import io.mockk.coEvery
@@ -18,7 +18,7 @@ import java.util.Locale
 class CalculateTrainingLoadUseCaseTest {
 
     private lateinit var flexRepo: FakeFlexRepository
-    private val healthRepo = mockk<HealthConnectRepository>()
+    private val healthRepo = mockk<HealthConnectDataSource>()
 
     private val originalLocale = Locale.getDefault()
 

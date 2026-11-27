@@ -1,20 +1,20 @@
 package com.jdluu.flexinsight.domain.usecase
 
-import com.jdluu.flexinsight.data.health.HealthConnectRepository
-import com.jdluu.flexinsight.data.health.HealthConnectSnapshot
-import com.jdluu.flexinsight.data.repository.FlexRepository
 import com.jdluu.flexinsight.domain.calc.TrainingLoadCalculator
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
+import com.jdluu.flexinsight.domain.health.HealthConnectSnapshot
 import com.jdluu.flexinsight.domain.model.TrainingLoadScore
+import com.jdluu.flexinsight.domain.repository.FlexRepository
 import javax.inject.Inject
 
 class CalculateTrainingLoadUseCase @Inject constructor(
     private val flexRepository: FlexRepository,
-    private val healthConnectRepository: HealthConnectRepository
+    private val healthConnectDataSource: HealthConnectDataSource
 ) {
     suspend operator fun invoke(): TrainingLoadScore {
         val stats = runCatching { flexRepository.calculateStats() }.getOrNull()
         val goal = runCatching { flexRepository.getWeeklyGoalProgress() }.getOrNull()
-        val health: HealthConnectSnapshot = healthConnectRepository.readSnapshot()
+        val health: HealthConnectSnapshot = healthConnectDataSource.readSnapshot()
 
         val volumeScore = TrainingLoadCalculator.hevyVolumeScore(
             goalCompleted = goal?.completed,

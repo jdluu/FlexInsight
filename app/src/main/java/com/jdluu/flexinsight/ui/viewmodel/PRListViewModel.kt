@@ -2,9 +2,9 @@ package com.jdluu.flexinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jdluu.flexinsight.data.model.PRDetails
+import com.jdluu.flexinsight.domain.model.PRDetails
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
-import com.jdluu.flexinsight.data.repository.FlexRepository
+import com.jdluu.flexinsight.domain.repository.FlexRepository
 import com.jdluu.flexinsight.ui.common.LoadingState
 import com.jdluu.flexinsight.ui.common.UiError
 import com.jdluu.flexinsight.ui.utils.safeLaunch

@@ -1,7 +1,7 @@
 package com.jdluu.flexinsight.domain.usecase
 
-import com.jdluu.flexinsight.data.ai.HevyAiDataAccessor
 import com.jdluu.flexinsight.domain.ai.AiContextProvider
+import com.jdluu.flexinsight.domain.ai.AiContextSnapshot
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
@@ -9,7 +9,7 @@ import org.junit.Test
 
 class BuildAiContextUseCaseTest {
 
-    private fun snapshot(text: String, usesLive: Boolean = false) = HevyAiDataAccessor.ContextSnapshot(
+    private fun snapshot(text: String, usesLive: Boolean = false) = AiContextSnapshot(
         text = text,
         hasWorkoutData = true,
         hasApiKey = true,
@@ -19,9 +19,9 @@ class BuildAiContextUseCaseTest {
 
     private class FakeContextProvider : AiContextProvider {
         var lastQuery: String? = null
-        lateinit var response: HevyAiDataAccessor.ContextSnapshot
+        lateinit var response: AiContextSnapshot
 
-        override suspend fun buildContext(userQuery: String?): HevyAiDataAccessor.ContextSnapshot {
+        override suspend fun buildContext(userQuery: String?): AiContextSnapshot {
             lastQuery = userQuery
             return response
         }

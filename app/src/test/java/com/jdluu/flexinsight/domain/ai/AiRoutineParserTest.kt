@@ -27,8 +27,8 @@ class AiRoutineParserTest {
         assertEquals(listOf("Bench Press", "Squat"), result.matchedExercises)
         assertTrue(result.unmatchedExercises.isEmpty())
         assertFalse(result.usedPlaceholder)
-        assertEquals(2, result.request.routine.exercises.size)
-        assertEquals("bench-id", result.request.routine.exercises[0].exerciseTemplateId)
+        assertEquals(2, result.draft.exercises.size)
+        assertEquals("bench-id", result.draft.exercises[0].exerciseTemplateId)
     }
 
     @Test
@@ -43,7 +43,7 @@ class AiRoutineParserTest {
         assertEquals(listOf("Bench Press"), result.matchedExercises)
         assertEquals(listOf("Mystery Curl"), result.unmatchedExercises)
         assertFalse(result.usedPlaceholder)
-        assertEquals(1, result.request.routine.exercises.size)
+        assertEquals(1, result.draft.exercises.size)
     }
 
     @Test
@@ -53,7 +53,7 @@ class AiRoutineParserTest {
         assertTrue(result.usedPlaceholder)
         assertTrue(result.matchedExercises.isEmpty())
         assertTrue(result.unmatchedExercises.isEmpty())
-        assertEquals("0", result.request.routine.exercises.single().exerciseTemplateId)
+        assertEquals("0", result.draft.exercises.single().exerciseTemplateId)
     }
 
     @Test

@@ -2,21 +2,18 @@ package com.jdluu.flexinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jdluu.flexinsight.data.model.CreateRoutineBody
-import com.jdluu.flexinsight.data.model.CreateRoutineExercise
-import com.jdluu.flexinsight.data.model.CreateRoutineRequest
-import com.jdluu.flexinsight.data.model.CreateRoutineSet
-import com.jdluu.flexinsight.data.model.DayInfo
-import com.jdluu.flexinsight.data.model.MuscleGroupProgress
-import com.jdluu.flexinsight.data.model.PlannedWorkout
-import com.jdluu.flexinsight.data.model.Routine
-import com.jdluu.flexinsight.data.model.RoutineFolder
-import com.jdluu.flexinsight.data.model.VolumeBalance
-import com.jdluu.flexinsight.data.model.WeeklyGoalProgress
-import com.jdluu.flexinsight.data.repository.FlexRepository
-import com.jdluu.flexinsight.data.repository.ExerciseRepository
-import com.jdluu.flexinsight.data.repository.RoutineRepository
+import com.jdluu.flexinsight.domain.model.DayInfo
+import com.jdluu.flexinsight.domain.model.MuscleGroupProgress
+import com.jdluu.flexinsight.domain.model.PlannedWorkout
+import com.jdluu.flexinsight.domain.model.Routine
+import com.jdluu.flexinsight.domain.model.RoutineFolder
+import com.jdluu.flexinsight.domain.model.VolumeBalance
+import com.jdluu.flexinsight.domain.model.WeeklyGoalProgress
+import com.jdluu.flexinsight.domain.repository.ExerciseRepository
+import com.jdluu.flexinsight.domain.repository.FlexRepository
+import com.jdluu.flexinsight.domain.repository.RoutineRepository
 import com.jdluu.flexinsight.domain.ai.AiRoutineParser
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
 import com.jdluu.flexinsight.domain.util.ExerciseTemplateMatcher
 import com.jdluu.flexinsight.ui.common.LoadingState
 import com.jdluu.flexinsight.ui.common.UiError
@@ -27,7 +24,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.jdluu.flexinsight.ui.utils.safeLaunch
-import com.jdluu.flexinsight.data.ai.FlexAIClient
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
 import com.jdluu.flexinsight.core.errors.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -320,7 +316,7 @@ class PlannerViewModel @Inject constructor(
                 templateIdResolver = resolver
             )
 
-            val result = routineRepository.createRoutine(parseResult.request)
+            val result = routineRepository.createRoutine(parseResult.draft)
 
             _uiState.update { state ->
                 when (result) {

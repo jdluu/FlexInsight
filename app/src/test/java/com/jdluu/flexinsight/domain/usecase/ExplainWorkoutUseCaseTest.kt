@@ -2,7 +2,8 @@ package com.jdluu.flexinsight.domain.usecase
 
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.ai.HevyAiDataAccessor
+import com.jdluu.flexinsight.domain.ai.AiContextProvider
+import com.jdluu.flexinsight.domain.ai.AiContextSnapshot
 import com.jdluu.flexinsight.fakes.FakeFlexAIClient
 import com.jdluu.flexinsight.fakes.FakeFlexRepository
 import com.jdluu.flexinsight.fakes.FakeWorkoutRepository
@@ -22,7 +23,7 @@ class ExplainWorkoutUseCaseTest {
     private val flexRepo = FakeFlexRepository()
     private val workoutRepo = FakeWorkoutRepository()
     private val aiClient = FakeFlexAIClient()
-    private val accessor = mockk<HevyAiDataAccessor>()
+    private val accessor = mockk<AiContextProvider>()
     private val buildAiContext = BuildAiContextUseCase(accessor)
 
     private fun useCase() = ExplainWorkoutUseCase(flexRepo, workoutRepo, aiClient, buildAiContext)
@@ -48,7 +49,7 @@ class ExplainWorkoutUseCaseTest {
             set("s1", "e1", weight = 100.0, reps = 10, rpe = 8.0),
             set("s2", "e1", weight = 80.0, reps = 12, rpe = null)
         )
-        coEvery { accessor.buildContext("Push Day") } returns HevyAiDataAccessor.ContextSnapshot(
+        coEvery { accessor.buildContext("Push Day") } returns AiContextSnapshot(
             text = "AI CONTEXT",
             hasWorkoutData = true,
             hasApiKey = true,
@@ -76,7 +77,7 @@ class ExplainWorkoutUseCaseTest {
     fun `workout name is used as live history query`() = runTest {
         flexRepo.workoutByIdToReturn = workout("w1", name = "Legs")
         workoutRepo.exercisesByWorkout["w1"] = emptyList()
-        coEvery { accessor.buildContext("Legs") } returns HevyAiDataAccessor.ContextSnapshot(
+        coEvery { accessor.buildContext("Legs") } returns AiContextSnapshot(
             text = "", hasWorkoutData = false, hasApiKey = true, workoutCount = 0
         )
 
@@ -91,7 +92,7 @@ class ExplainWorkoutUseCaseTest {
         // exercise-history query token, which can match unrelated template names
         flexRepo.workoutByIdToReturn = workout("w1", name = null)
         workoutRepo.exercisesByWorkout["w1"] = emptyList()
-        coEvery { accessor.buildContext("workout") } returns HevyAiDataAccessor.ContextSnapshot(
+        coEvery { accessor.buildContext("workout") } returns AiContextSnapshot(
             text = "", hasWorkoutData = false, hasApiKey = true, workoutCount = 0
         )
 
@@ -109,7 +110,7 @@ class ExplainWorkoutUseCaseTest {
         )
         workoutRepo.setsByExercise["e1"] = listOf(set("s1", "e1", weight = 140.0, reps = 5))
         workoutRepo.setsByExercise["e2"] = listOf(set("s2", "e2", weight = null, reps = null))
-        coEvery { accessor.buildContext("W") } returns HevyAiDataAccessor.ContextSnapshot(
+        coEvery { accessor.buildContext("W") } returns AiContextSnapshot(
             text = "", hasWorkoutData = true, hasApiKey = true, workoutCount = 1
         )
 
@@ -125,7 +126,7 @@ class ExplainWorkoutUseCaseTest {
     @Test
     fun `ai client error result is propagated unchanged`() = runTest {
         flexRepo.workoutByIdToReturn = workout("w1", name = "N")
-        coEvery { accessor.buildContext("N") } returns HevyAiDataAccessor.ContextSnapshot(
+        coEvery { accessor.buildContext("N") } returns AiContextSnapshot(
             text = "", hasWorkoutData = false, hasApiKey = true, workoutCount = 0
         )
         aiClient.response = Result.Error(ApiError.Unknown("model busy"))

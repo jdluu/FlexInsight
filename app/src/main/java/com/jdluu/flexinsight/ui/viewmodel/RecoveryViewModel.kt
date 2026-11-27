@@ -6,13 +6,13 @@ import com.jdluu.flexinsight.core.dispatchers.DefaultDispatcherProvider
 import com.jdluu.flexinsight.core.dispatchers.DispatcherProvider
 import com.jdluu.flexinsight.core.errors.ErrorHandler
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.ai.FlexAIClient
-import com.jdluu.flexinsight.data.health.HealthConnectRepository
-import com.jdluu.flexinsight.data.health.HealthConnectSnapshot
-import com.jdluu.flexinsight.data.model.MuscleGroup
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
 import com.jdluu.flexinsight.domain.calc.RecoveryScoreCalculator
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
+import com.jdluu.flexinsight.domain.health.HealthConnectSnapshot
 import com.jdluu.flexinsight.domain.model.DeloadAlert
+import com.jdluu.flexinsight.domain.model.MuscleGroup
 import com.jdluu.flexinsight.domain.model.TrainingLoadScore
 import com.jdluu.flexinsight.domain.usecase.CalculateTrainingLoadUseCase
 import com.jdluu.flexinsight.domain.usecase.DetectDeloadUseCase
@@ -54,7 +54,7 @@ class RecoveryViewModel @Inject constructor(
     private val getMuscleRecoveryUseCase: GetMuscleRecoveryUseCase,
     private val calculateTrainingLoadUseCase: CalculateTrainingLoadUseCase,
     private val detectDeloadUseCase: DetectDeloadUseCase,
-    private val healthConnectRepository: HealthConnectRepository,
+    private val healthConnectRepository: HealthConnectDataSource,
     private val userPreferencesManager: UserPreferencesManager,
     private val aiClient: FlexAIClient,
     private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()

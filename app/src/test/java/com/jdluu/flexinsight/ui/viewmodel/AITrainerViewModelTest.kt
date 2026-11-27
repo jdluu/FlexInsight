@@ -3,13 +3,13 @@ package com.jdluu.flexinsight.ui.viewmodel
 import app.cash.turbine.test
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.ai.AiFeatureStatus
-import com.jdluu.flexinsight.data.ai.HevyAiDataAccessor
 import com.jdluu.flexinsight.data.preferences.ApiKeyStatusSource
-import com.jdluu.flexinsight.data.repository.FlexRepository
 import com.jdluu.flexinsight.data.sync.ManualSyncScheduler
 import com.jdluu.flexinsight.data.sync.SyncCompleteListener
 import com.jdluu.flexinsight.domain.ai.AiContextProvider
+import com.jdluu.flexinsight.domain.ai.AiContextSnapshot
+import com.jdluu.flexinsight.domain.ai.AiFeatureStatus
+import com.jdluu.flexinsight.domain.repository.FlexRepository
 import com.jdluu.flexinsight.domain.usecase.BuildAiContextUseCase
 import com.jdluu.flexinsight.fakes.FakeAiClient
 import com.jdluu.flexinsight.TestApplication
@@ -274,7 +274,7 @@ class AITrainerViewModelTest {
 
     // region Fixtures
 
-    private fun defaultSnapshot() = HevyAiDataAccessor.ContextSnapshot(
+    private fun defaultSnapshot() = AiContextSnapshot(
         text = systemContextText,
         hasWorkoutData = true,
         hasApiKey = true,
@@ -297,13 +297,13 @@ class AITrainerViewModelTest {
 
     /** Returns queued snapshots in order, then repeats [base]; flags live history for real queries. */
     private class FakeContextProvider(
-        private val base: HevyAiDataAccessor.ContextSnapshot
+        private val base: AiContextSnapshot
     ) : AiContextProvider {
         val queries = mutableListOf<String?>()
-        val queued = ArrayDeque<HevyAiDataAccessor.ContextSnapshot>()
+        val queued = ArrayDeque<AiContextSnapshot>()
         var usesLiveForQueries = false
 
-        override suspend fun buildContext(userQuery: String?): HevyAiDataAccessor.ContextSnapshot {
+        override suspend fun buildContext(userQuery: String?): AiContextSnapshot {
             queries += userQuery
             val next = queued.removeFirstOrNull() ?: base
             return next.copy(usesLiveExerciseHistory = userQuery != null && usesLiveForQueries)

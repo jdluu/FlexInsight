@@ -4,8 +4,8 @@ import app.cash.turbine.TurbineTestContext
 import app.cash.turbine.test
 import com.jdluu.flexinsight.TestApplication
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.model.PRDetails
-import com.jdluu.flexinsight.data.model.PeriodComparison
+import com.jdluu.flexinsight.domain.model.PRDetails
+import com.jdluu.flexinsight.domain.model.PeriodComparison
 import com.jdluu.flexinsight.domain.usecase.CompareRoutineSessionsUseCase
 import com.jdluu.flexinsight.domain.usecase.GetPRDetailsUseCase
 import com.jdluu.flexinsight.domain.usecase.GetWeeklyProgressUseCase
@@ -60,7 +60,7 @@ class HistoryViewModelTest {
     fun setUp() {
 
         repository = ScriptableFlexRepository().apply {
-            profileInfo = com.jdluu.flexinsight.data.model.ProfileInfo(null, null, false, 7, 30)
+            profileInfo = com.jdluu.flexinsight.domain.model.ProfileInfo(null, null, false, 7, 30)
             workouts = listOf(
                 TestDefaults.workout("w-new", name = "Push Day", startTime = now - dayMs, routineId = "r1"),
                 TestDefaults.workout("w-old", name = "Push Day", startTime = now - 8 * dayMs, routineId = "r1"),

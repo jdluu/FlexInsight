@@ -23,7 +23,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.jdluu.flexinsight.R
-import com.jdluu.flexinsight.data.model.PlannedWorkout
+import com.jdluu.flexinsight.domain.model.PlannedWorkout
 import com.jdluu.flexinsight.ui.components.EmptyStateIllustration
 import com.jdluu.flexinsight.ui.components.PlateSectionHeader
 import com.jdluu.flexinsight.ui.components.PlateStatusPill

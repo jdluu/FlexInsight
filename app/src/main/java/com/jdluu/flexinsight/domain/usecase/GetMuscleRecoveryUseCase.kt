@@ -1,7 +1,7 @@
 package com.jdluu.flexinsight.domain.usecase
 
-import com.jdluu.flexinsight.data.model.MuscleGroup
-import com.jdluu.flexinsight.data.repository.StatsRepository
+import com.jdluu.flexinsight.domain.model.MuscleGroup
+import com.jdluu.flexinsight.domain.repository.StatsRepository
 import javax.inject.Inject
 
 class GetMuscleRecoveryUseCase @Inject constructor(

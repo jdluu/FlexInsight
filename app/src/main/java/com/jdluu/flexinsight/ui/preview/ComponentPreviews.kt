@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.jdluu.flexinsight.data.model.MuscleGroup
+import com.jdluu.flexinsight.domain.model.MuscleGroup
 import com.jdluu.flexinsight.data.sync.SyncState
 import com.jdluu.flexinsight.domain.model.RoutineComparison
 import com.jdluu.flexinsight.domain.model.TrainingLoadScore

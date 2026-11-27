@@ -1,6 +1,6 @@
 package com.jdluu.flexinsight.domain.calc
 
-import com.jdluu.flexinsight.data.model.MuscleGroup
+import com.jdluu.flexinsight.domain.model.MuscleGroup
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

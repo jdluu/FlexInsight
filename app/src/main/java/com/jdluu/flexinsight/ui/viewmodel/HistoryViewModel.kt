@@ -2,20 +2,20 @@ package com.jdluu.flexinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jdluu.flexinsight.data.ai.FlexAIClient
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
 import com.jdluu.flexinsight.core.errors.ErrorHandler
-import com.jdluu.flexinsight.data.model.PersonalRecord
-import com.jdluu.flexinsight.data.model.Set
-import com.jdluu.flexinsight.data.model.Workout
-import com.jdluu.flexinsight.data.model.Exercise
-import com.jdluu.flexinsight.data.model.WorkoutStats
-import com.jdluu.flexinsight.data.model.PRDetails
-import com.jdluu.flexinsight.data.model.VolumeTrend
-import com.jdluu.flexinsight.data.model.WeeklyVolumeData
-import com.jdluu.flexinsight.data.model.DailyDurationData
-import com.jdluu.flexinsight.data.model.MuscleGroupProgress
+import com.jdluu.flexinsight.domain.model.PersonalRecord
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.Workout
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.WorkoutStats
+import com.jdluu.flexinsight.domain.model.PRDetails
+import com.jdluu.flexinsight.domain.model.VolumeTrend
+import com.jdluu.flexinsight.domain.model.WeeklyVolumeData
+import com.jdluu.flexinsight.domain.model.DailyDurationData
+import com.jdluu.flexinsight.domain.model.MuscleGroupProgress
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
-import com.jdluu.flexinsight.data.repository.FlexRepository
+import com.jdluu.flexinsight.domain.repository.FlexRepository
 import com.jdluu.flexinsight.ui.common.LoadingState
 import com.jdluu.flexinsight.ui.common.UiError
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,8 +41,8 @@ data class HistoryUiState(
     val weeklyVolumeData: List<WeeklyVolumeData> = emptyList(),
     val durationTrend: List<DailyDurationData> = emptyList(),
     val muscleGroupProgress: List<MuscleGroupProgress> = emptyList(),
-    val volumeBalance: com.jdluu.flexinsight.data.model.VolumeBalance? = null,
-    val consistencyData: List<com.jdluu.flexinsight.data.model.DayInfo> = emptyList(),
+    val volumeBalance: com.jdluu.flexinsight.domain.model.VolumeBalance? = null,
+    val consistencyData: List<com.jdluu.flexinsight.domain.model.DayInfo> = emptyList(),
     val prsWithDetails: List<PRDetails> = emptyList(),
     val exercises: List<Exercise> = emptyList(),
     val dateFilter: String = "All Time",

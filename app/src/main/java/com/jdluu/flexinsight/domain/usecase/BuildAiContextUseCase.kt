@@ -1,7 +1,7 @@
 package com.jdluu.flexinsight.domain.usecase
 
-import com.jdluu.flexinsight.data.ai.HevyAiDataAccessor
 import com.jdluu.flexinsight.domain.ai.AiContextProvider
+import com.jdluu.flexinsight.domain.ai.AiContextSnapshot
 import javax.inject.Inject
 
 /**
@@ -12,7 +12,7 @@ import javax.inject.Inject
 class BuildAiContextUseCase @Inject constructor(
     private val aiContextProvider: AiContextProvider
 ) {
-    suspend operator fun invoke(userQuery: String? = null): HevyAiDataAccessor.ContextSnapshot {
+    suspend operator fun invoke(userQuery: String? = null): AiContextSnapshot {
         return aiContextProvider.buildContext(userQuery)
     }
 }

@@ -2,16 +2,17 @@ package com.jdluu.flexinsight.data.ai
 
 import com.jdluu.flexinsight.core.errors.Result
 import com.jdluu.flexinsight.core.logger.AppLogger
-import com.jdluu.flexinsight.data.health.HealthConnectRepository
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
-import com.jdluu.flexinsight.data.repository.ExerciseRepository
-import com.jdluu.flexinsight.data.repository.FlexRepository
-import com.jdluu.flexinsight.data.repository.RoutineRepository
-import com.jdluu.flexinsight.data.repository.StatsRepository
-import com.jdluu.flexinsight.data.repository.WorkoutRepository
 import com.jdluu.flexinsight.domain.ai.AiContextProvider
+import com.jdluu.flexinsight.domain.ai.AiContextSnapshot
 import com.jdluu.flexinsight.domain.ai.PromptBuilder
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
+import com.jdluu.flexinsight.domain.repository.ExerciseRepository
+import com.jdluu.flexinsight.domain.repository.FlexRepository
+import com.jdluu.flexinsight.domain.repository.RoutineRepository
+import com.jdluu.flexinsight.domain.repository.StatsRepository
+import com.jdluu.flexinsight.domain.repository.WorkoutRepository
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,20 +36,11 @@ class HevyAiDataAccessor @Inject constructor(
     private val exerciseRepository: ExerciseRepository,
     private val userPreferencesManager: UserPreferencesManager,
     private val apiKeyManager: ApiKeyManager,
-    private val healthConnectRepository: HealthConnectRepository,
+    private val healthConnectDataSource: HealthConnectDataSource,
     private val promptBuilder: PromptBuilder
 ) : AiContextProvider {
 
-    data class ContextSnapshot(
-        val text: String,
-        val hasWorkoutData: Boolean,
-        val hasApiKey: Boolean,
-        val workoutCount: Int,
-        /** True when live Hevy exercise_history API was queried for this turn. */
-        val usesLiveExerciseHistory: Boolean = false
-    )
-
-    override suspend fun buildContext(userQuery: String?): ContextSnapshot {
+    override suspend fun buildContext(userQuery: String?): AiContextSnapshot {
         val hasApiKey = apiKeyManager.hasApiKey()
         val workoutCount = try {
             flexRepository.getWorkoutCount().first()
@@ -57,7 +49,7 @@ class HevyAiDataAccessor @Inject constructor(
         }
 
         if (!hasApiKey) {
-            return ContextSnapshot(
+            return AiContextSnapshot(
                 text = promptBuilder.noApiKeyContext(),
                 hasWorkoutData = false,
                 hasApiKey = false,
@@ -66,7 +58,7 @@ class HevyAiDataAccessor @Inject constructor(
         }
 
         if (workoutCount == 0) {
-            return ContextSnapshot(
+            return AiContextSnapshot(
                 text = promptBuilder.zeroWorkoutContext(),
                 hasWorkoutData = false,
                 hasApiKey = true,
@@ -198,7 +190,7 @@ class HevyAiDataAccessor @Inject constructor(
         val healthConnect = if (!userPreferencesManager.getHealthConnectEnabled()) {
             PromptBuilder.HealthConnectInput.Disabled
         } else {
-            healthConnectRepository.readSnapshot().let { health ->
+            healthConnectDataSource.readSnapshot().let { health ->
                 when {
                     !health.isAvailable -> PromptBuilder.HealthConnectInput.Unavailable
                     !health.isPermissionGranted -> PromptBuilder.HealthConnectInput.PermissionMissing
@@ -232,7 +224,7 @@ class HevyAiDataAccessor @Inject constructor(
             )
         )
 
-        return ContextSnapshot(
+        return AiContextSnapshot(
             text = output.text,
             hasWorkoutData = true,
             usesLiveExerciseHistory = output.usesLiveExerciseHistory,

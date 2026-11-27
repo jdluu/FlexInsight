@@ -1,17 +1,19 @@
-package com.jdluu.flexinsight.data.repository
+package com.jdluu.flexinsight.domain.repository
 
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.model.WorkoutResponse
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.Workout
 
 /**
- * Mutation concerns for workouts: persisting API payloads, syncing with the remote API,
+ * Mutation concerns for workouts: persisting synced workouts, remote sync,
  * and updating local workout state.
  * Reads/queries live in [WorkoutQueryRepository].
  */
 interface WorkoutMutationRepository {
     fun invalidateApiService()
 
-    suspend fun saveWorkoutWithExercisesAndSets(workoutResponse: WorkoutResponse)
+    suspend fun saveWorkout(workout: Workout, exercises: List<Exercise>, sets: List<Set>)
 
     suspend fun syncWorkouts(): Result<Unit>
 

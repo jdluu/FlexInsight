@@ -41,8 +41,8 @@ class PRListViewModelTest {
 
         repository = ScriptableFlexRepository()
         repository.prsWithDetails = listOf(
-            com.jdluu.flexinsight.data.model.PRDetails("Bench Press", 1000L, "Chest", 100.0, "w1", "s1"),
-            com.jdluu.flexinsight.data.model.PRDetails("Squat", 2000L, "Legs", 140.0, "w2", "s2")
+            com.jdluu.flexinsight.domain.model.PRDetails("Bench Press", 1000L, "Chest", 100.0, "w1", "s1"),
+            com.jdluu.flexinsight.domain.model.PRDetails("Squat", 2000L, "Legs", 140.0, "w2", "s2")
         )
         userPreferences = UserPreferencesManager(ApplicationProvider.getApplicationContext<Context>())
         kotlinx.coroutines.runBlocking { userPreferences.resetForTests() }
@@ -107,7 +107,7 @@ class PRListViewModelTest {
             cancelAndIgnoreRemainingEvents()
         }
 
-        repository.prsWithDetails += com.jdluu.flexinsight.data.model.PRDetails(
+        repository.prsWithDetails += com.jdluu.flexinsight.domain.model.PRDetails(
             "Deadlift", 3000L, "Back", 180.0, "w3", "s3"
         )
         viewModel.loadPRs()

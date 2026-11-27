@@ -9,10 +9,10 @@ import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
 import com.jdluu.flexinsight.core.network.NetworkMonitor
 import com.jdluu.flexinsight.core.network.NetworkState
-import com.jdluu.flexinsight.data.model.MuscleGroup
-import com.jdluu.flexinsight.data.model.PlannedWorkout
-import com.jdluu.flexinsight.data.model.ProfileInfo
-import com.jdluu.flexinsight.data.model.WeeklyProgress
+import com.jdluu.flexinsight.domain.model.MuscleGroup
+import com.jdluu.flexinsight.domain.model.PlannedWorkout
+import com.jdluu.flexinsight.domain.model.ProfileInfo
+import com.jdluu.flexinsight.domain.model.WeeklyProgress
 import com.jdluu.flexinsight.data.preferences.SyncPreferencesManager
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
 import com.jdluu.flexinsight.data.sync.SyncCoordinator

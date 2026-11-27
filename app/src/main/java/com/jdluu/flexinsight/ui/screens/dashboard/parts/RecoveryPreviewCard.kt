@@ -14,7 +14,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.jdluu.flexinsight.R
-import com.jdluu.flexinsight.data.model.MuscleGroup
+import com.jdluu.flexinsight.domain.model.MuscleGroup
 import com.jdluu.flexinsight.domain.calc.RecoveryScoreCalculator
 import com.jdluu.flexinsight.ui.components.CalibratedPlateBar
 import com.jdluu.flexinsight.ui.components.MuscleHeatmap

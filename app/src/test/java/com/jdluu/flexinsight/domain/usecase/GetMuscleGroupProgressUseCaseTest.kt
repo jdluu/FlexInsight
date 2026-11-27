@@ -1,6 +1,6 @@
 package com.jdluu.flexinsight.domain.usecase
 
-import com.jdluu.flexinsight.data.model.MuscleGroupProgress
+import com.jdluu.flexinsight.domain.model.MuscleGroupProgress
 import com.jdluu.flexinsight.fakes.FakeStatsRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals

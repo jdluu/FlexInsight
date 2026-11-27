@@ -1,9 +1,11 @@
 package com.jdluu.flexinsight.di
 
-import com.jdluu.flexinsight.data.ai.FlexAIClient
 import com.jdluu.flexinsight.data.ai.GeminiNanoClient
 import com.jdluu.flexinsight.data.ai.HevyAiDataAccessor
+import com.jdluu.flexinsight.data.health.HealthConnectRepository
 import com.jdluu.flexinsight.domain.ai.AiContextProvider
+import com.jdluu.flexinsight.domain.ai.FlexAIClient
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -25,4 +27,10 @@ abstract class AiModule {
     abstract fun bindAiContextProvider(
         hevyAiDataAccessor: HevyAiDataAccessor
     ): AiContextProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindHealthConnectDataSource(
+        healthConnectRepository: HealthConnectRepository
+    ): HealthConnectDataSource
 }

@@ -14,8 +14,10 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import com.jdluu.flexinsight.core.dispatchers.DefaultDispatcherProvider
 import com.jdluu.flexinsight.core.dispatchers.DispatcherProvider
 import com.jdluu.flexinsight.core.logger.AppLogger
-import com.jdluu.flexinsight.data.model.Workout
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
+import com.jdluu.flexinsight.domain.health.HealthConnectSnapshot
+import com.jdluu.flexinsight.domain.model.Workout
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.withContext
 import java.time.Instant
@@ -29,8 +31,8 @@ class HealthConnectRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val userPreferencesManager: UserPreferencesManager,
     private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
-) {
-    val requiredPermissions: Set<String> = setOf(
+) : HealthConnectDataSource {
+    override val requiredPermissions: Set<String> = setOf(
         HealthPermission.getReadPermission(SleepSessionRecord::class),
         HealthPermission.getReadPermission(HeartRateRecord::class),
         HealthPermission.getReadPermission(StepsRecord::class),
@@ -41,7 +43,7 @@ class HealthConnectRepository @Inject constructor(
 
     fun getSdkStatus(): Int = HealthConnectClient.getSdkStatus(context)
 
-    fun isSdkAvailable(): Boolean =
+    override fun isSdkAvailable(): Boolean =
         getSdkStatus() == HealthConnectClient.SDK_AVAILABLE
 
     suspend fun getClientOrNull(): HealthConnectClient? = withContext(dispatcherProvider.io) {
@@ -64,7 +66,7 @@ class HealthConnectRepository @Inject constructor(
         }
     }
 
-    suspend fun readSnapshot(): HealthConnectSnapshot = withContext(dispatcherProvider.io) {
+    override suspend fun readSnapshot(): HealthConnectSnapshot = withContext(dispatcherProvider.io) {
         if (!userPreferencesManager.getHealthConnectEnabled()) {
             return@withContext HealthConnectSnapshot(isAvailable = isSdkAvailable())
         }
@@ -160,7 +162,7 @@ class HealthConnectRepository @Inject constructor(
     /**
      * Writes completed Hevy strength sessions to Health Connect (when enabled and not view-only).
      */
-    suspend fun writeWorkoutsToHealthConnect(workouts: List<Workout>): Int = withContext(dispatcherProvider.io) {
+    override suspend fun writeWorkoutsToHealthConnect(workouts: List<Workout>): Int = withContext(dispatcherProvider.io) {
         if (!userPreferencesManager.getHealthConnectEnabled()) return@withContext 0
         if (!userPreferencesManager.getHealthConnectWriteEnabled()) return@withContext 0
         if (userPreferencesManager.getViewOnlyMode()) return@withContext 0

@@ -1,9 +1,9 @@
-package com.jdluu.flexinsight.data.repository
+package com.jdluu.flexinsight.domain.repository
 
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.data.model.Exercise
-import com.jdluu.flexinsight.data.model.Set
-import com.jdluu.flexinsight.data.model.Workout
+import com.jdluu.flexinsight.domain.model.Exercise
+import com.jdluu.flexinsight.domain.model.Set
+import com.jdluu.flexinsight.domain.model.Workout
 import kotlinx.coroutines.flow.Flow
 
 /**

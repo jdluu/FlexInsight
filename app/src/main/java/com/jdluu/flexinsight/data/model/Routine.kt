@@ -1,15 +1,6 @@
 package com.jdluu.flexinsight.data.model
 
-import androidx.compose.runtime.Stable
 import com.google.gson.annotations.SerializedName
-
-/**
- * Routine exercise within a routine
- */
-data class RoutineExercise(
-    val templateId: String,
-    val name: String? // Can be looked up from exercise templates
-)
 
 /**
  * Routine exercise API response
@@ -19,17 +10,6 @@ data class RoutineExerciseResponse(
     val templateId: String,
     @SerializedName("title")
     val title: String?
-)
-
-/**
- * Routine - Local representation
- */
-@Stable
-data class Routine(
-    val id: String,
-    val name: String,
-    val exerciseCount: Int,
-    val exercises: List<RoutineExercise>?
 )
 
 /**
@@ -48,7 +28,6 @@ data class RoutineResponse(
 
 /**
  * Paginated response wrapper for routines
- * Actual API response structure: {"page":1,"page_count":5,"routines":[...]}
  */
 data class PaginatedRoutineResponse(
     @SerializedName("page")
@@ -58,4 +37,3 @@ data class PaginatedRoutineResponse(
     @SerializedName("routines")
     val routines: List<RoutineResponse>?
 )
-

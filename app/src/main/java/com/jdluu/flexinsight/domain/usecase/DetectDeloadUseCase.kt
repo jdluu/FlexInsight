@@ -1,17 +1,17 @@
 package com.jdluu.flexinsight.domain.usecase
 
-import com.jdluu.flexinsight.data.health.HealthConnectRepository
-import com.jdluu.flexinsight.data.repository.FlexRepository
+import com.jdluu.flexinsight.domain.health.HealthConnectDataSource
 import com.jdluu.flexinsight.domain.model.DeloadAlert
+import com.jdluu.flexinsight.domain.repository.FlexRepository
 import javax.inject.Inject
 
 class DetectDeloadUseCase @Inject constructor(
     private val flexRepository: FlexRepository,
-    private val healthConnectRepository: HealthConnectRepository
+    private val healthConnectDataSource: HealthConnectDataSource
 ) {
     suspend operator fun invoke(): DeloadAlert {
         val trend = runCatching { flexRepository.calculateVolumeTrend(weeks = 4) }.getOrNull()
-        val health = healthConnectRepository.readSnapshot()
+        val health = healthConnectDataSource.readSnapshot()
         val consistency = runCatching { flexRepository.getConsistencyData(14) }.getOrDefault(emptyList())
 
         val volumeRising = trend != null && trend.percentageChange > 5.0
