@@ -1,8 +1,8 @@
 # AGENTS.md
 
 Runtime instruction set for coding agents working on FlexInsight.
-Android fitness app (Kotlin 2.1.20 / AGP 8.13.2 / Compose / Hilt / Room / WorkManager).
-Min SDK 26, compile/target SDK 36, JDK 21, Gradle 8.13. Single module: `:app`.
+Android fitness app (Kotlin 2.4.21 / AGP 9.5.2 / Compose / Hilt / Room / WorkManager).
+Min SDK 26, compile/target SDK 36, JDK 21, Gradle 9.9.2. Single module: `:app`.
 
 ## Commands
 
