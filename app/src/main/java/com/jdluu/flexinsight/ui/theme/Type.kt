@@ -1,141 +1,230 @@
 package com.jdluu.flexinsight.ui.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.compose.ui.text.googlefonts.Font as GoogleFontCallable
 import com.jdluu.flexinsight.R
 
-// Font definitions
-val provider = GoogleFont.Provider(
-    providerAuthority = "com.google.android.gms.fonts",
-    providerPackage = "com.google.android.gms",
-    certificates = R.array.com_google_android_gms_fonts_certs
+val BarlowCondensedFamily = FontFamily(
+    Font(resId = R.font.barlow_condensed_medium, weight = FontWeight.Medium),
+    Font(resId = R.font.barlow_condensed_semibold, weight = FontWeight.SemiBold),
+    Font(resId = R.font.barlow_condensed_bold, weight = FontWeight.Bold)
 )
 
-val OutfitFont = GoogleFont("Outfit")
-val InterFont = GoogleFont("Inter")
-
-val OutfitFamily = FontFamily(
-    GoogleFontCallable(googleFont = OutfitFont, fontProvider = provider),
-    GoogleFontCallable(googleFont = OutfitFont, fontProvider = provider, weight = FontWeight.Bold),
-    GoogleFontCallable(googleFont = OutfitFont, fontProvider = provider, weight = FontWeight.SemiBold),
-    GoogleFontCallable(googleFont = OutfitFont, fontProvider = provider, weight = FontWeight.Medium)
+@OptIn(ExperimentalTextApi::class)
+val SchibstedGroteskFamily = FontFamily(
+    Font(
+        resId = R.font.schibsted_grotesk_variable,
+        weight = FontWeight.Normal,
+        variationSettings = FontVariation.Settings(FontVariation.weight(400))
+    ),
+    Font(
+        resId = R.font.schibsted_grotesk_variable,
+        weight = FontWeight.Medium,
+        variationSettings = FontVariation.Settings(FontVariation.weight(500))
+    ),
+    Font(
+        resId = R.font.schibsted_grotesk_variable,
+        weight = FontWeight.SemiBold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(600))
+    ),
+    Font(
+        resId = R.font.schibsted_grotesk_variable,
+        weight = FontWeight.Bold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(700))
+    )
 )
 
-val InterFamily = FontFamily(
-    GoogleFontCallable(googleFont = InterFont, fontProvider = provider),
-    GoogleFontCallable(googleFont = InterFont, fontProvider = provider, weight = FontWeight.Medium),
-    GoogleFontCallable(googleFont = InterFont, fontProvider = provider, weight = FontWeight.Normal)
+@OptIn(ExperimentalTextApi::class)
+val ChivoMonoFamily = FontFamily(
+    Font(
+        resId = R.font.chivo_mono_variable,
+        weight = FontWeight.Normal,
+        variationSettings = FontVariation.Settings(FontVariation.weight(400))
+    ),
+    Font(
+        resId = R.font.chivo_mono_variable,
+        weight = FontWeight.Medium,
+        variationSettings = FontVariation.Settings(FontVariation.weight(500))
+    ),
+    Font(
+        resId = R.font.chivo_mono_variable,
+        weight = FontWeight.SemiBold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(600))
+    ),
+    Font(
+        resId = R.font.chivo_mono_variable,
+        weight = FontWeight.Bold,
+        variationSettings = FontVariation.Settings(FontVariation.weight(700))
+    )
+)
+
+val PlateNumeralLarge = TextStyle(
+    fontFamily = BarlowCondensedFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 44.sp,
+    lineHeight = 46.sp,
+    letterSpacing = (-0.5).sp,
+    fontFeatureSettings = "tnum"
+)
+
+val PlateNumeralMedium = TextStyle(
+    fontFamily = BarlowCondensedFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 30.sp,
+    lineHeight = 32.sp,
+    letterSpacing = (-0.25).sp,
+    fontFeatureSettings = "tnum"
+)
+
+val PlateNumeralSmall = TextStyle(
+    fontFamily = BarlowCondensedFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 22.sp,
+    lineHeight = 24.sp,
+    letterSpacing = 0.sp,
+    fontFeatureSettings = "tnum"
+)
+
+val MonoMetricLarge = TextStyle(
+    fontFamily = ChivoMonoFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 16.sp,
+    lineHeight = 20.sp,
+    letterSpacing = 0.sp,
+    fontFeatureSettings = "tnum"
+)
+
+val MonoMetricMedium = TextStyle(
+    fontFamily = ChivoMonoFamily,
+    fontWeight = FontWeight.Medium,
+    fontSize = 14.sp,
+    lineHeight = 18.sp,
+    letterSpacing = 0.sp,
+    fontFeatureSettings = "tnum"
+)
+
+val MonoMetricSmall = TextStyle(
+    fontFamily = ChivoMonoFamily,
+    fontWeight = FontWeight.Medium,
+    fontSize = 12.sp,
+    lineHeight = 16.sp,
+    letterSpacing = 0.2.sp,
+    fontFeatureSettings = "tnum"
 )
 
 val Typography = Typography(
     displayLarge = TextStyle(
-        fontFamily = OutfitFamily,
+        fontFamily = BarlowCondensedFamily,
         fontWeight = FontWeight.Bold,
-        fontSize = 57.sp,
-        lineHeight = 64.sp,
-        letterSpacing = (-0.25).sp
+        fontSize = 52.sp,
+        lineHeight = 56.sp,
+        letterSpacing = (-0.5).sp,
+        fontFeatureSettings = "tnum"
     ),
     displayMedium = TextStyle(
-        fontFamily = OutfitFamily,
+        fontFamily = BarlowCondensedFamily,
         fontWeight = FontWeight.Bold,
-        fontSize = 45.sp,
-        lineHeight = 52.sp,
-        letterSpacing = 0.sp
+        fontSize = 40.sp,
+        lineHeight = 44.sp,
+        letterSpacing = (-0.25).sp,
+        fontFeatureSettings = "tnum"
     ),
     displaySmall = TextStyle(
-        fontFamily = OutfitFamily,
+        fontFamily = BarlowCondensedFamily,
         fontWeight = FontWeight.Bold,
-        fontSize = 36.sp,
-        lineHeight = 44.sp,
-        letterSpacing = 0.sp
+        fontSize = 32.sp,
+        lineHeight = 36.sp,
+        letterSpacing = 0.sp,
+        fontFeatureSettings = "tnum"
     ),
     headlineLarge = TextStyle(
-        fontFamily = OutfitFamily,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 32.sp,
-        lineHeight = 40.sp,
-        letterSpacing = 0.sp
-    ),
-    headlineMedium = TextStyle(
-        fontFamily = OutfitFamily,
-        fontWeight = FontWeight.SemiBold,
+        fontFamily = BarlowCondensedFamily,
+        fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
-        lineHeight = 36.sp,
-        letterSpacing = 0.sp
-    ),
-    headlineSmall = TextStyle(
-        fontFamily = OutfitFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.sp
     ),
-    titleLarge = TextStyle(
-        fontFamily = OutfitFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 22.sp,
+    headlineMedium = TextStyle(
+        fontFamily = BarlowCondensedFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 24.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
-    titleMedium = TextStyle(
-        fontFamily = InterFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 16.sp,
+    headlineSmall = TextStyle(
+        fontFamily = SchibstedGroteskFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 20.sp,
+        lineHeight = 26.sp,
+        letterSpacing = (-0.15).sp
+    ),
+    titleLarge = TextStyle(
+        fontFamily = SchibstedGroteskFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 19.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.15.sp
+        letterSpacing = (-0.1).sp
+    ),
+    titleMedium = TextStyle(
+        fontFamily = SchibstedGroteskFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 16.sp,
+        lineHeight = 22.sp,
+        letterSpacing = 0.sp
     ),
     titleSmall = TextStyle(
-        fontFamily = InterFamily,
-        fontWeight = FontWeight.Medium,
+        fontFamily = SchibstedGroteskFamily,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.1.sp
+        letterSpacing = 0.05.sp
     ),
     bodyLarge = TextStyle(
-        fontFamily = InterFamily,
+        fontFamily = SchibstedGroteskFamily,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        fontSize = 15.sp,
+        lineHeight = 22.sp,
+        letterSpacing = 0.1.sp
     ),
     bodyMedium = TextStyle(
-        fontFamily = InterFamily,
+        fontFamily = SchibstedGroteskFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.25.sp
+        letterSpacing = 0.15.sp
     ),
     bodySmall = TextStyle(
-        fontFamily = InterFamily,
+        fontFamily = SchibstedGroteskFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.4.sp
+        letterSpacing = 0.2.sp
     ),
     labelLarge = TextStyle(
-        fontFamily = InterFamily,
-        fontWeight = FontWeight.Medium,
+        fontFamily = SchibstedGroteskFamily,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.1.sp
     ),
     labelMedium = TextStyle(
-        fontFamily = InterFamily,
+        fontFamily = SchibstedGroteskFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.25.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = InterFamily,
-        fontWeight = FontWeight.Medium,
+        fontFamily = SchibstedGroteskFamily,
+        fontWeight = FontWeight.SemiBold,
         fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        lineHeight = 14.sp,
+        letterSpacing = 0.35.sp
     )
 )
