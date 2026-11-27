@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-27T08:42:00Z",
+  "generatedAt": "2026-11-27T18:45:00Z",
   "title": "Design System: FlexInsight — Calibrated Plate Rack",
   "extensions": {
     "colorMeta": {
@@ -388,9 +388,25 @@
       "name": "CalibratedPlateBar",
       "kind": "custom",
       "refersTo": "plate-bar",
-      "description": "Segmented IPF plate-band capacity meter showing discrete filled cells over a recessed track.",
+      "description": "Segmented IPF plate-band capacity meter showing discrete filled cells over a recessed track (3-12 cells).",
       "html": "<div class=\"ds-plate-bar\" role=\"progressbar\" aria-valuenow=\"70\" aria-valuemin=\"0\" aria-valuemax=\"100\"><span class=\"ds-plate-cell ds-filled\"></span><span class=\"ds-plate-cell ds-filled\"></span><span class=\"ds-plate-cell ds-filled\"></span><span class=\"ds-plate-cell ds-filled\"></span><span class=\"ds-plate-cell\"></span></div>",
       "css": ".ds-plate-bar { display: flex; gap: 3px; width: 100%; height: 10px; } .ds-plate-cell { flex: 1; height: 100%; border-radius: 3px; background: #2F333D; } .ds-plate-cell.ds-filled { background: #34D399; }"
+    },
+    {
+      "name": "BarbellSleeveDiagram",
+      "kind": "custom",
+      "refersTo": "plate-card",
+      "description": "Horizontal calibrated barbell sleeve diagram scaling IPF plate discs inside PlateRackScreen.",
+      "html": "<div class=\"ds-sleeve\"><span class=\"ds-collar\"></span><span class=\"ds-disc ds-disc-red\">25</span><span class=\"ds-disc ds-disc-blue\">20</span><span class=\"ds-disc ds-disc-steel\">2.5</span></div>",
+      "css": ".ds-sleeve { display: flex; align-items: center; gap: 2px; padding: 14px 12px; border-radius: 14px; background: #252830; } .ds-collar { width: 10px; height: 32px; border-radius: 2px; background: #484E5C; margin-right: 2px; } .ds-disc { display: inline-flex; align-items: center; justify-content: center; border-radius: 3px; font-family: 'Chivo Mono', monospace; font-size: 11px; font-weight: 500; } .ds-disc-red { width: 22px; height: 84px; background: #F87171; color: #340B0B; } .ds-disc-blue { width: 20px; height: 80px; background: #5B8BFF; color: #08122B; } .ds-disc-steel { width: 14px; height: 44px; background: #8C94A6; color: #121316; }"
+    },
+    {
+      "name": "LiveRestTimerStrip",
+      "kind": "nav",
+      "refersTo": "bottom-nav",
+      "description": "Flush gym-floor rest timer bar pinned above FlexBottomNavigation with calibrated progress track and 48dp quick controls.",
+      "html": "<div class=\"ds-timer-strip\"><div class=\"ds-timer-meta\"><span class=\"ds-timer-clock\">01:18</span><span class=\"ds-timer-label\">Plate Rack</span></div><button class=\"ds-timer-btn\" type=\"button\">+15s</button></div>",
+      "css": ".ds-timer-strip { display: flex; align-items: center; justify-content: space-between; padding: 8px 16px; background: #1B1D22; border-top: 1px solid #2D313B; color: #F3F2EE; } .ds-timer-meta { display: flex; flex-direction: column; gap: 2px; } .ds-timer-clock { font-family: 'Chivo Mono', monospace; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; } .ds-timer-label { font-family: 'Schibsted Grotesk', sans-serif; font-size: 11px; color: #A8AFBD; } .ds-timer-btn { min-height: 48px; padding: 0 12px; border: none; background: transparent; color: #5B8BFF; font-family: 'Chivo Mono', monospace; font-size: 14px; font-weight: 500; cursor: pointer; }"
     },
     {
       "name": "ChatInput",
@@ -421,7 +437,7 @@
     "rules": [
       {
         "name": "The Plate Color Law",
-        "body": "Plate hues (Green, Amber, Crimson) carry strictly diagnostic recovery, fatigue, or error meaning; never use semantic plate colors as decorative card accents, and never hardcode hex literals inside screen composables (the sole exception is the Glance FlexHomeWidget, which mirrors the exact Light/Dark ColorProvider pairs from Color.kt).",
+        "body": "Plate hues (Green, Amber, Crimson) carry strictly diagnostic recovery, fatigue, or error meaning (and standard competition barbell sleeve colors inside BarbellSleeveDiagram); never use semantic plate colors as decorative card accents, and never hardcode hex literals inside screen composables (the sole exception is the Glance FlexHomeWidget, which mirrors the exact Light/Dark ColorProvider pairs from Color.kt).",
         "section": "colors"
       },
       {
@@ -446,7 +462,7 @@
       },
       {
         "name": "The Scrim-Free Chrome Rule",
-        "body": "TopAppBar and FlexBottomNavigation sit flush on the background/surface plane separated by a single 1.dp hairline divider instead of blurred glass or gradient fades.",
+        "body": "TopAppBar, LiveRestTimerStrip, and FlexBottomNavigation sit flush on the background/surface plane separated by a single 1.dp hairline divider instead of blurred glass or gradient fades.",
         "section": "elevation"
       }
     ],
