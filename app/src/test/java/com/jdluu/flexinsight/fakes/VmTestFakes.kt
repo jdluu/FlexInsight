@@ -337,6 +337,8 @@ suspend fun UserPreferencesManager.resetForTests() {
     setNotificationsEnabled(true)
     setHealthConnectEnabled(false)
     setHealthConnectWriteEnabled(false)
+    setRecoveryMood(7.5f)
+    setRecoveryNotes("")
 }
 
 /** Minimal FlexAIClient double for view models that only generate one-shot responses. */
