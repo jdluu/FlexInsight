@@ -2,7 +2,7 @@
 
 Runtime instruction set for coding agents working on FlexInsight.
 Android fitness app (Kotlin 2.1.20 / AGP 8.13.2 / Compose / Hilt / Room / WorkManager).
-Min SDK 26, compile/target SDK 36, JDK 17, Gradle 8.13. Single module: `:app`.
+Min SDK 26, compile/target SDK 36, JDK 21, Gradle 8.13. Single module: `:app`.
 
 ## Commands
 
@@ -178,4 +178,4 @@ A change is complete only when all of the following are true:
 6. The summary states what changed, which commands actually ran, and their real exit status.
 
 CI (`.github/workflows/ci.yml`) runs `lintDebug`, `testDebugUnitTest` + `verifyCoverage`, then
-`assembleDebug` on JDK 17. Local reproduction of CI is those four commands.
+`assembleDebug` on JDK 21. Local reproduction of CI is those four commands.
