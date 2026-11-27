@@ -1,47 +1,40 @@
 package com.jdluu.flexinsight.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 
-/**
- * Skeleton for the FeaturedWorkoutCard on the Dashboard
- */
 @Composable
 fun FeaturedWorkoutCardSkeleton() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .height(240.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .padding(horizontal = 16.dp)
+            .height(172.dp)
+            .clip(MaterialTheme.shapes.large)
             .shimmerEffect()
     )
 }
 
-/**
- * Skeleton for the stats boxes on the Dashboard
- */
 @Composable
 fun StatsSkeleton() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         repeat(3) { index ->
             key(index) {
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(80.dp)
-                        .clip(RoundedCornerShape(16.dp))
+                        .height(84.dp)
+                        .clip(MaterialTheme.shapes.large)
                         .shimmerEffect()
                 )
             }
@@ -49,22 +42,21 @@ fun StatsSkeleton() {
     }
 }
 
-/**
- * Skeleton for a list of workout items (e.g., in History)
- */
 @Composable
 fun WorkoutHistoryListSkeleton() {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         repeat(5) { index ->
             key(index) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(100.dp)
-                        .clip(RoundedCornerShape(16.dp))
+                        .height(88.dp)
+                        .clip(MaterialTheme.shapes.large)
                         .shimmerEffect()
                 )
             }
@@ -72,41 +64,70 @@ fun WorkoutHistoryListSkeleton() {
     }
 }
 
-/**
- * Skeleton for the Planner screen
- */
 @Composable
 fun PlannerSkeleton() {
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Box(modifier = Modifier.fillMaxWidth().height(60.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect()) // Header
-        Box(modifier = Modifier.fillMaxWidth().height(120.dp).clip(RoundedCornerShape(16.dp)).shimmerEffect()) // Goal card
-        Box(modifier = Modifier.fillMaxWidth().height(80.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect()) // Calendar
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(88.dp)
+                .clip(MaterialTheme.shapes.large)
+                .shimmerEffect()
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(74.dp)
+                .clip(MaterialTheme.shapes.medium)
+                .shimmerEffect()
+        )
         repeat(3) { index ->
             key(index) {
-                Box(modifier = Modifier.fillMaxWidth().height(100.dp).clip(RoundedCornerShape(16.dp)).shimmerEffect()) // Workout list
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(92.dp)
+                        .clip(MaterialTheme.shapes.large)
+                        .shimmerEffect()
+                )
             }
         }
     }
 }
 
-/**
- * Skeleton for the Recovery screen
- */
 @Composable
 fun RecoverySkeleton() {
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Box(modifier = Modifier.fillMaxWidth().height(60.dp).clip(RoundedCornerShape(12.dp)).shimmerEffect()) // Header
-        Box(modifier = Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(24.dp)).shimmerEffect()) // Score card
-        repeat(2) { index ->
-            key(index) {
-                Box(modifier = Modifier.fillMaxWidth().height(140.dp).clip(RoundedCornerShape(16.dp)).shimmerEffect()) // Sections
-            }
-        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(148.dp)
+                .clip(MaterialTheme.shapes.large)
+                .shimmerEffect()
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(260.dp)
+                .clip(MaterialTheme.shapes.large)
+                .shimmerEffect()
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(132.dp)
+                .clip(MaterialTheme.shapes.large)
+                .shimmerEffect()
+        )
     }
 }
