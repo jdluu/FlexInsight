@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -61,32 +62,36 @@ class WorkoutDetailViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             userPreferencesManager.unitsFlow.collect { units ->
-                _uiState.value = _uiState.value.copy(units = units)
+                _uiState.update { it.copy(units = units) }
             }
         }
 
         if (workoutId != null) {
             loadWorkoutData(workoutId)
         } else {
-            _uiState.value = _uiState.value.copy(
-                loadingState = LoadingState.Error(com.jdluu.flexinsight.core.errors.ApiError.Unknown("No workout ID provided")),
-                error = UiError.Unknown("No workout ID provided")
-            )
+            _uiState.update {
+                it.copy(
+                    loadingState = LoadingState.Error(com.jdluu.flexinsight.core.errors.ApiError.Unknown("No workout ID provided")),
+                    error = UiError.Unknown("No workout ID provided")
+                )
+            }
         }
     }
 
     private fun loadWorkoutData(workoutId: String) {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
+                _uiState.update { it.copy(loadingState = LoadingState.Loading, error = null) }
 
                 val workout = repository.getWorkoutByIdFlow(workoutId).first()
 
                 if (workout == null) {
-                    _uiState.value = _uiState.value.copy(
-                        loadingState = LoadingState.Error(com.jdluu.flexinsight.core.errors.ApiError.Unknown("Workout not found")),
-                        error = UiError.Unknown("Workout not found")
-                    )
+                    _uiState.update {
+                        it.copy(
+                            loadingState = LoadingState.Error(com.jdluu.flexinsight.core.errors.ApiError.Unknown("Workout not found")),
+                            error = UiError.Unknown("Workout not found")
+                        )
+                    }
                     return@launch
                 }
 
@@ -98,21 +103,25 @@ class WorkoutDetailViewModel @Inject constructor(
                     ExerciseWithSets(exercise, sets)
                 }
 
-                _uiState.value = _uiState.value.copy(
-                    loadingState = LoadingState.Success,
-                    workout = workout,
-                    workoutStats = workoutStats,
-                    exercisesWithSets = exercisesWithSets,
-                    error = null
-                )
+                _uiState.update {
+                    it.copy(
+                        loadingState = LoadingState.Success,
+                        workout = workout,
+                        workoutStats = workoutStats,
+                        exercisesWithSets = exercisesWithSets,
+                        error = null
+                    )
+                }
 
                 generateWorkoutAnalysis(workout, exercisesWithSets)
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(
-                    loadingState = LoadingState.Error(apiError),
-                    error = UiError.fromApiError(apiError)
-                )
+                _uiState.update {
+                    it.copy(
+                        loadingState = LoadingState.Error(apiError),
+                        error = UiError.fromApiError(apiError)
+                    )
+                }
             }
         }
     }
@@ -121,7 +130,7 @@ class WorkoutDetailViewModel @Inject constructor(
         if (!aiClient.isAvailable()) return
         if (_uiState.value.aiReflection != null) return
 
-        _uiState.value = _uiState.value.copy(isGeneratingReflection = true)
+        _uiState.update { it.copy(isGeneratingReflection = true) }
 
         val durationMinutes = workout.endTime?.let { end ->
             java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(end - workout.startTime)
@@ -134,10 +143,12 @@ class WorkoutDetailViewModel @Inject constructor(
 
         val result = aiClient.generateResponse(prompt)
 
-        _uiState.value = _uiState.value.copy(isGeneratingReflection = false)
-
-        if (result is com.jdluu.flexinsight.core.errors.Result.Success) {
-            _uiState.value = _uiState.value.copy(aiReflection = result.data)
+        _uiState.update {
+            if (result is com.jdluu.flexinsight.core.errors.Result.Success) {
+                it.copy(isGeneratingReflection = false, aiReflection = result.data)
+            } else {
+                it.copy(isGeneratingReflection = false)
+            }
         }
     }
 
@@ -149,18 +160,22 @@ class WorkoutDetailViewModel @Inject constructor(
     fun explainWorkout() {
         val id = _uiState.value.workout?.id ?: return
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isExplainingWorkout = true, workoutExplanation = null)
+            _uiState.update { it.copy(isExplainingWorkout = true, workoutExplanation = null) }
             when (val result = explainWorkoutUseCase(id)) {
                 is com.jdluu.flexinsight.core.errors.Result.Success ->
-                    _uiState.value = _uiState.value.copy(
-                        workoutExplanation = result.data,
-                        isExplainingWorkout = false
-                    )
+                    _uiState.update {
+                        it.copy(
+                            workoutExplanation = result.data,
+                            isExplainingWorkout = false
+                        )
+                    }
                 is com.jdluu.flexinsight.core.errors.Result.Error ->
-                    _uiState.value = _uiState.value.copy(
-                        workoutExplanation = result.error.message ?: "Could not explain workout",
-                        isExplainingWorkout = false
-                    )
+                    _uiState.update {
+                        it.copy(
+                            workoutExplanation = result.error.message.ifBlank { "Could not explain workout" },
+                            isExplainingWorkout = false
+                        )
+                    }
             }
         }
     }
