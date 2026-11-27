@@ -30,6 +30,11 @@ data class FlexExtendedColors(
     val plateAmber: Color,
     val plateCrimson: Color,
     val plateSteel: Color,
+    val onPlateSteel: Color,
+    val plateWhite: Color,
+    val onPlateWhite: Color,
+    val plateBlack: Color,
+    val onPlateBlack: Color,
     val hairline: Color,
     val chalkTrack: Color
 )
@@ -52,6 +57,11 @@ private val LightFlexExtendedColors = FlexExtendedColors(
     plateAmber = AmberPlateLight,
     plateCrimson = CrimsonPlateLight,
     plateSteel = SteelPlateLight,
+    onPlateSteel = OnSteelPlateLight,
+    plateWhite = WhitePlateLight,
+    onPlateWhite = OnWhitePlateLight,
+    plateBlack = BlackPlateLight,
+    onPlateBlack = OnBlackPlateLight,
     hairline = ChalkHairline,
     chalkTrack = ChalkSurfaceHighest
 )
@@ -74,6 +84,11 @@ private val DarkFlexExtendedColors = FlexExtendedColors(
     plateAmber = AmberPlateDark,
     plateCrimson = CrimsonPlateDark,
     plateSteel = SteelPlateDark,
+    onPlateSteel = OnSteelPlateDark,
+    plateWhite = WhitePlateDark,
+    onPlateWhite = OnWhitePlateDark,
+    plateBlack = BlackPlateDark,
+    onPlateBlack = OnBlackPlateDark,
     hairline = IronHairline,
     chalkTrack = IronSurfaceHighest
 )

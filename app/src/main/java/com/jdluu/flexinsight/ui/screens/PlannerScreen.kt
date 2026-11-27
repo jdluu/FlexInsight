@@ -26,7 +26,8 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlannerScreen(
-    viewModel: PlannerViewModel = viewModel()
+    viewModel: PlannerViewModel = viewModel(),
+    onNavigateToPlateRack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
@@ -38,7 +39,10 @@ fun PlannerScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            PlannerHeader(hevyEditingEnabled = uiState.hevyEditingEnabled)
+            PlannerHeader(
+                hevyEditingEnabled = uiState.hevyEditingEnabled,
+                onOpenPlateRack = onNavigateToPlateRack
+            )
             PlannerSkeleton()
         }
         return
@@ -50,7 +54,10 @@ fun PlannerScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            PlannerHeader(hevyEditingEnabled = uiState.hevyEditingEnabled)
+            PlannerHeader(
+                hevyEditingEnabled = uiState.hevyEditingEnabled,
+                onOpenPlateRack = onNavigateToPlateRack
+            )
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -209,7 +216,10 @@ fun PlannerScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        PlannerHeader(hevyEditingEnabled = uiState.hevyEditingEnabled)
+        PlannerHeader(
+            hevyEditingEnabled = uiState.hevyEditingEnabled,
+            onOpenPlateRack = onNavigateToPlateRack
+        )
 
         PullToRefreshBox(
             isRefreshing = uiState.isLoading,

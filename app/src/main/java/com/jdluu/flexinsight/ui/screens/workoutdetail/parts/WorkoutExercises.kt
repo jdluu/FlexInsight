@@ -30,6 +30,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.res.stringResource
+import com.jdluu.flexinsight.R
 import com.jdluu.flexinsight.ui.components.PlateSectionHeader
 import com.jdluu.flexinsight.ui.components.PlateStatusPill
 import com.jdluu.flexinsight.ui.components.rememberReducedMotion
@@ -38,19 +40,22 @@ import com.jdluu.flexinsight.ui.theme.MonoMetricMedium
 import com.jdluu.flexinsight.ui.theme.MonoMetricSmall
 import com.jdluu.flexinsight.ui.utils.UnitConverter
 import com.jdluu.flexinsight.ui.viewmodel.ExerciseWithSets
+import kotlin.math.roundToInt
 
 data class SetData(
     val number: Int,
     val weight: String,
     val reps: String,
     val rpe: String,
-    val isPR: Boolean = false
+    val isPR: Boolean = false,
+    val rawWeightDisplay: Double? = null
 )
 
 @Composable
 fun ExercisesSection(
     exercisesWithSets: List<ExerciseWithSets>,
-    useMetric: Boolean = false
+    useMetric: Boolean = false,
+    onLoadWeight: ((Double) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
@@ -68,12 +73,17 @@ fun ExercisesSection(
 
             val setsData = remember(sets, useMetric, locale) {
                 sets.map { set ->
+                    val converted = UnitConverter.convertWeight(set.weight, useMetric)
+                    val snappedWeight = converted?.takeIf { it > 0.0 }?.let { raw ->
+                        if (useMetric) (raw * 4.0).roundToInt() / 4.0 else (raw * 2.0).roundToInt() / 2.0
+                    }
                     SetData(
                         number = set.number,
                         weight = UnitConverter.formatWeight(set.weight, useMetric),
                         reps = set.reps?.toString() ?: "-",
                         rpe = if (set.rpe != null) String.format(locale, "%.1f", set.rpe) else "-",
-                        isPR = set.isPersonalRecord
+                        isPR = set.isPersonalRecord,
+                        rawWeightDisplay = snappedWeight
                     )
                 }
             }
@@ -95,7 +105,8 @@ fun ExercisesSection(
                 isExpanded = index == 0,
                 setsData = setsData,
                 bestSet = bestSetText,
-                useMetric = useMetric
+                useMetric = useMetric,
+                onLoadWeight = onLoadWeight
             )
         }
     }
@@ -111,7 +122,8 @@ fun ExpandableExerciseCard(
     setsData: List<SetData> = emptyList(),
     improvement: String? = null,
     bestSet: String? = null,
-    useMetric: Boolean = false
+    useMetric: Boolean = false,
+    onLoadWeight: ((Double) -> Unit)? = null
 ) {
     var expanded by remember { mutableStateOf(isExpanded) }
     val reducedMotion = rememberReducedMotion()
@@ -248,7 +260,7 @@ fun ExpandableExerciseCard(
                         }
 
                         setsData.forEach { set ->
-                            SetRow(set)
+                            SetRow(set = set, onLoadWeight = onLoadWeight)
                         }
 
                         if (improvement != null) {
@@ -280,7 +292,22 @@ fun ExpandableExerciseCard(
 }
 
 @Composable
-fun SetRow(set: SetData) {
+fun SetRow(
+    set: SetData,
+    onLoadWeight: ((Double) -> Unit)? = null
+) {
+    val loadWeight = set.rawWeightDisplay
+    val clickableModifier = if (loadWeight != null && onLoadWeight != null) {
+        Modifier
+            .defaultMinSize(minHeight = 48.dp)
+            .clickable(
+                onClickLabel = stringResource(id = R.string.plate_rack_set_load_desc, set.weight),
+                onClick = { onLoadWeight(loadWeight) }
+            )
+    } else {
+        Modifier
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -292,6 +319,8 @@ fun SetRow(set: SetData) {
                     MaterialTheme.colorScheme.surfaceContainerLow
                 }
             )
+            .then(clickableModifier),
+        contentAlignment = Alignment.Center
     ) {
         Row(
             modifier = Modifier

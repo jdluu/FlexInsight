@@ -1,6 +1,8 @@
 package com.jdluu.flexinsight.ui.screens.planner.parts
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,7 +23,8 @@ import com.jdluu.flexinsight.ui.theme.PlateNumeralMedium
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlannerHeader(
-    hevyEditingEnabled: Boolean = false
+    hevyEditingEnabled: Boolean = false,
+    onOpenPlateRack: () -> Unit = {}
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         TopAppBar(
@@ -42,7 +45,14 @@ fun PlannerHeader(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         borderColor = FlexTheme.colors.hairline,
-                        modifier = Modifier.padding(end = 12.dp)
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+                }
+                IconButton(onClick = onOpenPlateRack) {
+                    Icon(
+                        imageVector = Icons.Outlined.FitnessCenter,
+                        contentDescription = stringResource(id = R.string.content_desc_plate_rack),
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             },

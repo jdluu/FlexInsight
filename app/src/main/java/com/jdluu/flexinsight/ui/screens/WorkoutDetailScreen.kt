@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jdluu.flexinsight.R
 import com.jdluu.flexinsight.domain.calc.DurationCalculator
+import com.jdluu.flexinsight.domain.calc.WeightUnit
 import com.jdluu.flexinsight.ui.components.EmptyStateIllustration
 import com.jdluu.flexinsight.ui.components.ErrorBanner
 import com.jdluu.flexinsight.ui.screens.workoutdetail.parts.*
@@ -28,10 +29,12 @@ import java.util.Locale
 @Composable
 fun WorkoutDetailScreen(
     viewModel: WorkoutDetailViewModel,
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    onNavigateToPlateRack: (Double?, WeightUnit) -> Unit = { _, _ -> }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val useMetric = uiState.units == "Metric"
+    val activeUnit = if (useMetric) WeightUnit.KG else WeightUnit.LB
     val context = LocalContext.current
 
     if (uiState.isLoading) {
@@ -44,6 +47,7 @@ fun WorkoutDetailScreen(
             WorkoutDetailTopBar(
                 onNavigateBack = onNavigateBack,
                 onShareClick = {},
+                onOpenPlateRack = { onNavigateToPlateRack(null, activeUnit) },
                 shareEnabled = false
             )
             Box(
@@ -66,6 +70,7 @@ fun WorkoutDetailScreen(
             WorkoutDetailTopBar(
                 onNavigateBack = onNavigateBack,
                 onShareClick = {},
+                onOpenPlateRack = { onNavigateToPlateRack(null, activeUnit) },
                 shareEnabled = false
             )
             Box(
@@ -94,6 +99,7 @@ fun WorkoutDetailScreen(
             WorkoutDetailTopBar(
                 onNavigateBack = onNavigateBack,
                 onShareClick = {},
+                onOpenPlateRack = { onNavigateToPlateRack(null, activeUnit) },
                 shareEnabled = false
             )
             Box(
@@ -154,7 +160,8 @@ fun WorkoutDetailScreen(
     ) {
         WorkoutDetailTopBar(
             onNavigateBack = onNavigateBack,
-            onShareClick = shareWorkout
+            onShareClick = shareWorkout,
+            onOpenPlateRack = { onNavigateToPlateRack(null, activeUnit) }
         )
         LazyColumn(
             modifier = Modifier
@@ -180,7 +187,8 @@ fun WorkoutDetailScreen(
             item {
                 ExercisesSection(
                     exercisesWithSets = uiState.exercisesWithSets,
-                    useMetric = useMetric
+                    useMetric = useMetric,
+                    onLoadWeight = { weight -> onNavigateToPlateRack(weight, activeUnit) }
                 )
             }
             val workoutNotes = workout.notes
