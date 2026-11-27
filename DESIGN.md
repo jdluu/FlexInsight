@@ -148,29 +148,86 @@ components:
 
 # Design System: FlexInsight — Calibrated Plate Rack
 
-<!-- impeccable:design-map -->
-Name: FlexInsight — Calibrated Plate Rack
-Colors: primary: cobalt-plate-light #1E4EC7; secondary: green-plate-light #19734B; tertiary: amber-plate-light #B45309; neutral: chalk-ground #F3F2EE; primary: on-cobalt-light #FFFFFF (+45 more in the sidecar)
-Fonts: Barlow Condensed (display, headline); Schibsted Grotesk (title, body, label); Chivo Mono (mono-metric)
-Spacing: xs 4px, sm 8px, md 12px, base 16px, lg 20px, xl 24px
-Radius: extra-small 6px, small 10px, medium 14px, large 16px, extra-large 22px
-North Star: "Calibrated Plate Rack"
-Rules:
-- Plate Color Law: semantic hues (`Color.kt`/`FlexHomeWidget.kt` only).
-- Contrast-Paired Container: `on*Container` ink on `*ContainerLight` (`>= 4.5:1`).
-- Tabular Lock: `tnum` numerals (`PlateNumeral*`/`MonoMetric*`).
-- No-Kicker: no uppercase eyebrow kickers above titles.
-- Single-Boundary: `1.dp` hairline border, `tonalElevation = 0.dp`.
-- Scrim-Free Chrome: flush `1.dp` dividers, zero blur/gradients.
-Don't:
-- No nested bordered cards in `PlateCard`/`ExpandableExerciseCard`.
-- No shadows, blur, or decorative gradients.
-- No eyebrow kickers, raw hex in screens, or emojis for `Icons`.
-Map: app/src/main/java/com/jdluu/flexinsight/ui/theme/Color.kt
-Map: app/src/main/java/com/jdluu/flexinsight/ui/theme/Theme.kt
-Map: app/src/main/res/font/
-Map: app/src/main/java/com/jdluu/flexinsight/widget/FlexHomeWidget.kt
-Map: app/src/main/java/com/jdluu/flexinsight/ui/theme/Shape.kt
-Map: app/src/main/java/com/jdluu/flexinsight/ui/components/
-Map: app/src/main/java/com/jdluu/flexinsight/ui/screens/platerack/parts/
-Full: .impeccable/design-full.md (read a section when you need its detail)
+## Overview
+
+**Creative North Star: "Calibrated Plate Rack"**
+
+FlexInsight is a phone-first Android training console inspired by calibrated IPF competition barbell plates and stamped gym iron: flat matte surfaces anchored by `1dp` machined hairlines, tabular competition numerals, and semantic color bands restricted to functional status. Both Magnesium Chalk light (`ChalkGround`, `ChalkSurface`) and Cast Iron dark (`IronGround`, `IronSurface`) are first-class themes (System, Light, or Dark).
+
+**Key Characteristics:**
+- Dual light and dark grounds tuned to WCAG 2.1 AA (`>= 4.5:1` body, `>= 3:1` display).
+- Flat tonal containers framed once by `1dp` hairlines (`ChalkHairline`, `IronHairline`), zero shadows, zero nested bordered cards.
+- Semantic IPF plate accents: Cobalt for primary controls and AI; Green, Amber, and Crimson strictly for recovery, moderate fatigue/deload, and strain/error states.
+- Three-voice bundled typography (`Barlow Condensed`, `Schibsted Grotesk`, `Chivo Mono` with `tnum`).
+
+## Colors
+
+All color tokens live in `app/src/main/java/com/jdluu/flexinsight/ui/theme/Color.kt` and resolve via `MaterialTheme.colorScheme` and `FlexTheme.colors` in `app/src/main/java/com/jdluu/flexinsight/ui/theme/Theme.kt` (`dynamicColor = false` so plate-color meaning never shifts).
+
+- **Primary** (`CobaltPlate*`, `CobaltContainer*`): Primary CTAs, active nav tab and pill, sync control, active filters, and on-device AI badges.
+- **Secondary** (`GreenPlate*`, `GreenContainer*`): Recovered readiness (`>= 70%`), PR markers, and sync success.
+- **Tertiary** (`AmberPlate*`, `AmberContainer*`): Moderate recovery (`35%–69%`), deload advisories, and view-only lock reminders.
+- **Error & Strain** (`CrimsonPlate*`, `CrimsonContainer*`): High strain (`< 35%`), offline and sync errors, and destructive clear-cache actions.
+- **Neutral & Sleeves**: `Chalk*` (light ground, cards, tracks, hairlines), `Iron*` (dark ground, cards, tracks, hairlines), `Ink*` and `Steel*` text hierarchy, plus `SteelPlate*`, `WhitePlate*`, and `BlackPlate*` for barbell sleeve discs.
+
+**The Plate Color Law.** Semantic hues (`Green`, `Amber`, `Crimson`) carry strictly diagnostic recovery, fatigue, or error meaning (and IPF barbell sleeve colors in `BarbellSleeveDiagram`). Never hardcode `Color(0x...)` inside screens (only `Color.kt` and Glance `FlexHomeWidget` define day-night pairs).
+
+**The Contrast-Paired Container Rule.** Light-mode banners, pills, and icon containers pair dark `on*Container` ink with high-lightness `*ContainerLight` fills instead of white text on saturated amber or crimson (`>= 4.5:1` in daylight).
+
+## Typography
+
+Bundled fonts live in `app/src/main/res/font/` and map in `app/src/main/java/com/jdluu/flexinsight/ui/theme/Type.kt`: `Barlow Condensed` (weights 500, 600, 700), `Schibsted Grotesk` (variable 400–700), and `Chivo Mono` (variable 400–700, `tnum`).
+
+- **Display & Plate Numerals**: `displayLarge`–`displaySmall` (52sp, 40sp, 32sp `Barlow Condensed Bold`, `tnum`) plus `PlateNumeralLarge` (44sp), `PlateNumeralMedium` (30sp), and `PlateNumeralSmall` (22sp) for readiness percentages, PRs, and timers.
+- **Headline**: `headlineLarge` (28sp) and `headlineMedium` (24sp) in `Barlow Condensed` for `TopAppBar` titles; `headlineSmall` (20sp Bold, `Schibsted Grotesk`) for modals and subsections.
+- **Title, Body & Label**: `Schibsted Grotesk` (`titleLarge` 19sp, `titleMedium` 16sp, `titleSmall` 14sp; `bodyLarge` 15sp, `bodyMedium` 14sp, `bodySmall` 12sp; `labelLarge` 14sp, `labelMedium` 12sp, `labelSmall` 11sp).
+- **Mono Telemetry**: `MonoMetricLarge` (16sp), `MonoMetricMedium` (14sp), and `MonoMetricSmall` (12sp) in `Chivo Mono` (`tnum`) for set weights, dates, sync timestamps, and plate weights.
+
+**The Tabular Lock Rule.** Numeric telemetry uses `fontFeatureSettings = "tnum"` (`PlateNumeral*` and `MonoMetric*`) so figures stay column-aligned across updates and `1.3x` font scaling.
+
+**The No-Kicker Rule.** Screen headers and cards never stack small uppercase eyebrow kickers above titles; headings lead directly above a `1dp` divider.
+
+## Layout
+
+Compact phone-first (`minSdk = 26`, `targetSdk = 36`) edge-to-edge layout in `MainActivity` with a 4-destination `FlexBottomNavigation` (**Today**, **History**, **Planner**, **Coach**). Secondary screens (`Recovery`, `WorkoutDetail`, `HistoryAnalysis`, `PRList`, `PlateRack`, `Settings`) push above the bar with `ArrowBack`, system Back support, `.navigationBarsPadding()`, and `.imePadding()`. Active rest timers dock via a flat `LiveRestTimerStrip` above the bottom bar (or pinned to navigation insets on secondary screens).
+
+`LazyColumn` feeds follow a `4dp` grid (16dp outer and card padding, 14–20dp vertical spacing, 24dp onboarding and hero margins). Every interactive control (`StepButton`, `FilterChip`, tabs, sync pill, send button, banner actions) enforces `>= 48×48dp` touch targets. `FlexHomeWidget` (`app/src/main/java/com/jdluu/flexinsight/widget/FlexHomeWidget.kt`) mirrors `Color.kt` `Day` and `Night` `ColorProvider` tokens.
+
+## Elevation & Depth
+
+Zero drop shadows and zero tonal surface tint (`tonalElevation = 0.dp`). Depth comes strictly from ground to card to recessed track step contrast framed by `1dp` hairlines (`FlexTheme.colors.hairline`).
+
+**The Single-Boundary Rule.** Frame cards once with `BorderStroke(1.dp, FlexTheme.colors.hairline)` at `tonalElevation = 0.dp`. Separate subsections via `HorizontalDivider(1.dp, hairline)` or unbordered tonal `surfaceContainerLow` fills, never nested bordered cards.
+
+**The Scrim-Free Chrome Rule.** `TopAppBar`, `LiveRestTimerStrip`, and `FlexBottomNavigation` sit flush on the ground-and-surface plane behind `1dp` dividers with zero blur or gradient scrims.
+
+## Shapes
+
+Corner tokens live in `app/src/main/java/com/jdluu/flexinsight/ui/theme/Shape.kt` (`FlexShapes`): `extraSmall` (`PlateStatusPill`, tags; `3dp` cells in `CalibratedPlateBar`), `small` (buttons, `FilterChip`, `StepButton`, tabs, exercise tiles), `medium` (`ErrorBanner`, `ChatInput`, `BarbellSleeveDiagram`, `EmptyState`), `large` (`PlateCard`, workout rows, `ChatBubble`), `extraLarge` (dialogs).
+
+## Components
+
+Shared primitives live in `app/src/main/java/com/jdluu/flexinsight/ui/components/` and screen sections live in `app/src/main/java/com/jdluu/flexinsight/ui/screens/` (such as `app/src/main/java/com/jdluu/flexinsight/ui/screens/platerack/parts/`).
+
+- **Buttons**: `small` radius, `>= 48dp` height, `0dp` shadow; `Button` (`primary` on `onPrimary`), `OutlinedButton` (`1dp` `outline`), inline `TextButton` (`primary`).
+- **Chips**: `PlateStatusPill` (`extraSmall`, `8×4dp` padding, paired `*Container` colors) and M3 `FilterChip` (`small`, `surfaceContainerLow` with `hairline` unselected; `primaryContainer` with `1.5dp` `primary` border selected).
+- **Cards**: `PlateCard` (`large` radius, `surface`, `0dp` elevation, `1dp` `hairline` stroke, `16dp` padding).
+- **Inputs**: `OutlinedTextField` (`small` radius) for Onboarding, Recovery, and PlateRack; hairline-framed `TextField` (`medium` radius) plus `48dp` send button in `ChatInput`.
+- **Navigation**: `FlexBottomNavigation` (`1dp` top divider, `tonalElevation = 0.dp`, `navigationBars` insets, `Filled` active and `Outlined` inactive Material icons).
+- **Signature**: `CalibratedPlateBar` (3–12 `3dp` segments on `chalkTrack`), `BarbellSleeveDiagram` (38–96dp scaled competition plates), `MuscleHeatmap` (`220×380` bilateral front-and-back Canvas silhouette), and `FlexHomeWidget`.
+
+## Do's and Don'ts
+
+### Do:
+- **Do** route every color through `MaterialTheme.colorScheme` or `FlexTheme.colors` (`Color.kt`) and verify Light + Dark contrast.
+- **Do** format numeric telemetry with `PlateNumeral*` (`Barlow Condensed`, `tnum`) or `MonoMetric*` (`Chivo Mono`, `tnum`).
+- **Do** enforce `>= 48×48dp` touch targets on every clickable pill, chip, tab, stepper, and icon button.
+- **Do** separate subsections inside `PlateCard` using `1dp` `HorizontalDivider` or unbordered `surfaceContainerLow` fills.
+- **Do** apply `navigationBarsPadding()` and `imePadding()` on full-screen detail destinations.
+
+### Don't:
+- **Don't** nest bordered `Surface` cards or bordered tiles inside `PlateCard` or `ExpandableExerciseCard`.
+- **Don't** add drop shadows (`tonalElevation > 0.dp`, `.shadow()`), glass blur, or decorative gradient washes.
+- **Don't** add uppercase eyebrow kickers above section or screen headings.
+- **Don't** hardcode `Color(0x...)` inside screen or component composables (only `Color.kt` and `FlexHomeWidget.kt`).
+- **Don't** use Unicode emojis in place of Material `Icons.Outlined` or `Icons.Filled` vectors.
