@@ -205,8 +205,8 @@ fun VolumeBar(
     label: String,
     percentage: Float,
     color: Color,
-    isHighlighted: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isHighlighted: Boolean = false
 ) {
     val clamped = percentage.coerceIn(0f, 1f)
     Column(

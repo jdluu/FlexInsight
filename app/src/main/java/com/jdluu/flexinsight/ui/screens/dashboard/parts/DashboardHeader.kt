@@ -28,8 +28,8 @@ fun DashboardHeader(
     isSyncing: Boolean,
     onSyncClick: () -> Unit,
     onProfileClick: () -> Unit,
-    onOpenPlateRack: () -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onOpenPlateRack: () -> Unit = {}
 ) {
     val calendar = Calendar.getInstance()
     val hour = calendar.get(Calendar.HOUR_OF_DAY)

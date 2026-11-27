@@ -1,7 +1,7 @@
 package com.jdluu.flexinsight.ui.screens
 
 import android.content.Intent
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,7 +56,7 @@ fun SettingsScreen(
     val syncSuccessMessage = stringResource(R.string.settings_sync_success)
     val syncStateFeedback: String? = when (val state = uiState.syncState) {
         is LoadingState.Success -> syncSuccessMessage
-        is LoadingState.Error -> stringResource(R.string.settings_sync_failed, state.error.message ?: "")
+        is LoadingState.Error -> stringResource(R.string.settings_sync_failed, state.error.message)
         else -> null
     }
     val exportSubject = stringResource(R.string.settings_export_subject)
@@ -70,9 +71,9 @@ fun SettingsScreen(
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = PermissionController.createRequestPermissionResultContract()
     ) { granted ->
-        val allGranted = viewModel.getHealthConnectPermissions().all { it in granted }
-        viewModel.setHealthConnectEnabled(allGranted)
-        if (!allGranted) {
+        val readGranted = viewModel.getHealthConnectReadPermissions().all { it in granted }
+        viewModel.setHealthConnectEnabled(readGranted)
+        if (!readGranted) {
             scope.launch {
                 snackbarHostState.showSnackbar(healthPermissionsDeniedMessage)
             }
@@ -228,7 +229,11 @@ fun SettingsScreen(
                     PreferenceItem(
                         title = stringResource(id = R.string.settings_item_weekly_goal),
                         icon = Icons.Default.EmojiEvents,
-                        value = stringResource(id = R.string.settings_item_weekly_goal_value, uiState.weeklyGoal),
+                        value = pluralStringResource(
+                            id = R.plurals.settings_item_weekly_goal_value,
+                            count = uiState.weeklyGoal,
+                            uiState.weeklyGoal
+                        ),
                         isHighlighted = true,
                         onClick = { showWeeklyGoalDialog = true }
                     )
@@ -290,7 +295,7 @@ fun SettingsScreen(
                         value = null,
                         onClick = {
                             val intent = Intent(Intent.ACTION_SENDTO).apply {
-                                data = Uri.parse("mailto:")
+                                data = "mailto:".toUri()
                                 putExtra(Intent.EXTRA_EMAIL, arrayOf(supportEmail))
                                 putExtra(Intent.EXTRA_SUBJECT, supportSubject)
                             }
@@ -306,7 +311,7 @@ fun SettingsScreen(
                         icon = Icons.Default.Description,
                         value = null,
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/jdluu/FlexInsight"))
+                            val intent = Intent(Intent.ACTION_VIEW, "https://github.com/jdluu/FlexInsight".toUri())
                             try {
                                 context.startActivity(intent)
                             } catch (_: Exception) {

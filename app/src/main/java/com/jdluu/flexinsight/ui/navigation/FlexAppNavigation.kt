@@ -3,6 +3,7 @@ package com.jdluu.flexinsight.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -108,8 +109,12 @@ fun FlexAppNavigation(
                 }
             )
         }
-        composable(Screen.HistoryAnalysis.route) {
-            val viewModel = hiltViewModel<HistoryViewModel>()
+        composable(Screen.HistoryAnalysis.route) { backStackEntry ->
+            val parentEntry = remember(backStackEntry) {
+                runCatching { navController.getBackStackEntry(Screen.History.route) }
+                    .getOrDefault(backStackEntry)
+            }
+            val viewModel = hiltViewModel<HistoryViewModel>(parentEntry)
             HistoryAnalysisScreen(
                 viewModel = viewModel,
                 onNavigateBack = { navController.popBackStack() }

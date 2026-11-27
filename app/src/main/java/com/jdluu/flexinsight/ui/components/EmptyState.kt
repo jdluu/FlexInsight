@@ -15,8 +15,8 @@ fun EmptyStateIllustration(
     icon: ImageVector,
     title: String,
     description: String,
-    action: (@Composable () -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    action: (@Composable () -> Unit)? = null
 ) {
     PlateCard(
         modifier = modifier,

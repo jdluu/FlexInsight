@@ -48,8 +48,8 @@ fun OnboardingScreen(
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = PermissionController.createRequestPermissionResultContract()
     ) { granted ->
-        val allGranted = viewModel.getHealthConnectPermissions().all { it in granted }
-        viewModel.setHealthConnectEnabled(allGranted)
+        val readGranted = viewModel.getHealthConnectReadPermissions().all { it in granted }
+        viewModel.setHealthConnectEnabled(readGranted)
         step = 3
         scope.launch { viewModel.setOnboardingStep(3) }
     }

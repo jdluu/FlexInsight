@@ -373,6 +373,8 @@ class SettingsViewModel @Inject constructor(
 
     fun getHealthConnectPermissions(): Set<String> = healthConnectRepository.requiredPermissions
 
+    fun getHealthConnectReadPermissions(): Set<String> = healthConnectRepository.readPermissions
+
     suspend fun exportCoachReport(): String = exportCoachReportUseCase()
 
     fun completeOnboarding() {

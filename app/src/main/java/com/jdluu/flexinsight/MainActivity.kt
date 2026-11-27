@@ -41,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -156,10 +157,10 @@ fun MainScreen(
 
     val doneLabel = stringResource(R.string.done)
     val newWorkoutsMessage = pendingNewWorkouts?.takeIf { it > 0 }?.let {
-        stringResource(R.string.sync_snackbar_new_workouts, it)
+        pluralStringResource(R.plurals.sync_snackbar_new_workouts, it, it)
     }
     val deletedWorkoutsMessage = pendingDeletedWorkouts?.takeIf { it > 0 }?.let {
-        stringResource(R.string.sync_snackbar_deleted_workouts, it)
+        pluralStringResource(R.plurals.sync_snackbar_deleted_workouts, it, it)
     }
 
     LaunchedEffect(newWorkoutsMessage) {

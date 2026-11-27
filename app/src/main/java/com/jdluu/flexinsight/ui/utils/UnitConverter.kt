@@ -1,5 +1,7 @@
 package com.jdluu.flexinsight.ui.utils
 
+import java.util.Locale
+
 object UnitConverter {
     private const val KG_TO_LBS = 2.20462
 
@@ -30,11 +32,7 @@ object UnitConverter {
      */
     fun formatWeight(weightKg: Double?, useMetric: Boolean): String {
         val weight = convertWeight(weightKg, useMetric) ?: return "-"
-        return if (useMetric) {
-            String.format("%.0f", weight)
-        } else {
-            String.format("%.0f", weight)
-        }
+        return String.format(Locale.US, "%.0f", weight)
     }
 
     /**
@@ -48,13 +46,13 @@ object UnitConverter {
             return if (thousands % 1.0 == 0.0) {
                 "${thousands.toInt()}k"
             } else {
-                String.format("%.1fk", thousands)
+                String.format(Locale.US, "%.1fk", thousands)
             }
         }
         return if (volume % 1.0 == 0.0) {
             volume.toInt().toString()
         } else {
-            String.format("%.1f", volume)
+            String.format(Locale.US, "%.1f", volume)
         }
     }
 
