@@ -1,6 +1,7 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
@@ -40,10 +41,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-        freeCompilerArgs = freeCompilerArgs + listOf("-Xskip-metadata-version-check")
-    }
     buildFeatures {
         compose = true
         buildConfig = true
@@ -51,8 +48,18 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+    testCoverage {
+        jacocoVersion = "0.8.15"
+    }
     sourceSets {
-        getByName("androidTest").assets.srcDir("$projectDir/schemas")
+        getByName("androidTest").assets.directories.add("$projectDir/schemas")
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+        freeCompilerArgs.add("-Xskip-metadata-version-check")
     }
 }
 
@@ -142,22 +149,26 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         xml.required.set(true)
         html.required.set(true)
     }
-    val classDirs = fileTree(layout.buildDirectory.dir("tmp/kotlin-classes/debug")) {
-        exclude(
-            "**/ui/**",
-            "**/di/**",
-            "**/databinding/**",
-            "**/*Binding*",
-            "**/R$*",
-            "**/R.class",
-            "**/*_HiltModules*",
-            "**/Hilt_*",
-            "**/*_Factory*",
-            "**/*_Impl*",
-            "**/*MembersInjector*"
-        )
+    val excludes = listOf(
+        "**/ui/**",
+        "**/di/**",
+        "**/databinding/**",
+        "**/*Binding*",
+        "**/R$*",
+        "**/R.class",
+        "**/*_HiltModules*",
+        "**/Hilt_*",
+        "**/*_Factory*",
+        "**/*_Impl*",
+        "**/*MembersInjector*"
+    )
+    val kotlinClasses = fileTree(layout.buildDirectory.dir("intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes")) {
+        exclude(excludes)
     }
-    classDirectories.setFrom(classDirs)
+    val javaClasses = fileTree(layout.buildDirectory.dir("intermediates/javac/debug/compileDebugJavaWithJavac/classes")) {
+        exclude(excludes)
+    }
+    classDirectories.setFrom(files(kotlinClasses, javaClasses))
     sourceDirectories.setFrom(files("src/main/java"))
     executionData.setFrom(fileTree(layout.buildDirectory) {
         include("jacoco/testDebugUnitTest.exec")
@@ -165,6 +176,19 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 }
 
 tasks.withType<Test>().configureEach {
+    jvmArgs(
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--add-opens=java.base/java.util=ALL-UNNAMED",
+        "--add-opens=java.base/java.io=ALL-UNNAMED",
+        "--add-opens=java.base/java.net=ALL-UNNAMED",
+        "--add-opens=java.base/java.security=ALL-UNNAMED",
+        "--add-opens=java.base/java.text=ALL-UNNAMED",
+        "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED"
+    )
+    extensions.configure(JacocoTaskExtension::class) {
+        isIncludeNoLocationClasses = true
+        excludes = listOf("jdk.internal.*")
+    }
     finalizedBy(tasks.named("jacocoTestReport"))
 }
 
