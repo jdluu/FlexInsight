@@ -22,8 +22,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import com.jdluu.flexinsight.ui.utils.safeLaunch
 import com.jdluu.flexinsight.ui.utils.toApiError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -83,7 +83,7 @@ class HistoryViewModel @Inject constructor(
     fun loadRoutineComparison(routineId: String?, routineName: String) {
         viewModelScope.launch {
             val comparison = compareRoutineSessionsUseCase(routineId, routineName)
-            _uiState.value = _uiState.value.copy(routineComparison = comparison)
+            _uiState.update { it.copy(routineComparison = comparison) }
         }
     }
 
@@ -94,22 +94,23 @@ class HistoryViewModel @Inject constructor(
         // Collect units preference
         viewModelScope.launch {
             userPreferencesManager.unitsFlow.collect { units ->
-                _uiState.value = _uiState.value.copy(units = units)
+                _uiState.update { it.copy(units = units) }
             }
         }
 
-        // Delay initialization slightly to ensure database is ready
         loadHistoryData()
     }
 
     private fun loadHistoryData() {
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(
-                loadingState = LoadingState.Error(apiError),
-                error = UiError.fromApiError(apiError)
-            )
+            _uiState.update {
+                it.copy(
+                    loadingState = LoadingState.Error(apiError),
+                    error = UiError.fromApiError(apiError)
+                )
+            }
         }) {
-            _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
+            _uiState.update { it.copy(loadingState = LoadingState.Loading, error = null) }
 
             // Critical data: Workouts
             // If this fails, safeLaunch handles it as a critical error
@@ -163,31 +164,33 @@ class HistoryViewModel @Inject constructor(
                 )
             }
 
-            _uiState.value = _uiState.value.copy(
-                loadingState = LoadingState.Success,
-                allWorkouts = workouts,
-                workouts = workouts,
-                workoutStats = stats,
-                recentPRs = prs,
-                workoutCount = count,
-                volumeTrend = volumeTrend,
-                weeklyVolumeData = weeklyVolumeData,
-                durationTrend = durationTrend,
-                muscleGroupProgress = muscleGroupProgress,
-                volumeBalance = volumeBalance,
-                consistencyData = consistencyData,
-                prsWithDetails = prsWithDetails,
-                exercises = exercises,
-                compareData = comparisonData,
-                error = null
-            )
+            _uiState.update {
+                it.copy(
+                    loadingState = LoadingState.Success,
+                    allWorkouts = workouts,
+                    workouts = workouts,
+                    workoutStats = stats,
+                    recentPRs = prs,
+                    workoutCount = count,
+                    volumeTrend = volumeTrend,
+                    weeklyVolumeData = weeklyVolumeData,
+                    durationTrend = durationTrend,
+                    muscleGroupProgress = muscleGroupProgress,
+                    volumeBalance = volumeBalance,
+                    consistencyData = consistencyData,
+                    prsWithDetails = prsWithDetails,
+                    exercises = exercises,
+                    compareData = comparisonData,
+                    error = null
+                )
+            }
 
             val latestRoutine = workouts.firstOrNull { it.routineId != null && !it.isDeleted }
             val routineComparison = latestRoutine?.let {
                 compareRoutineSessionsUseCase(it.routineId, it.name ?: "Routine")
             }
 
-            _uiState.value = _uiState.value.copy(routineComparison = routineComparison)
+            _uiState.update { it.copy(routineComparison = routineComparison) }
 
             generateTrendAnalysis(stats, count)
         }
@@ -197,7 +200,7 @@ class HistoryViewModel @Inject constructor(
         if (!aiClient.isAvailable()) return
         if (_uiState.value.aiTrendAnalysis != null) return
 
-        _uiState.value = _uiState.value.copy(isGeneratingTrend = true)
+        _uiState.update { it.copy(isGeneratingTrend = true) }
 
         val prompt = "Analyze my gym progress. " +
                 "Total workouts: $count. " +
@@ -207,13 +210,13 @@ class HistoryViewModel @Inject constructor(
 
         val result = aiClient.generateResponse(prompt)
 
-        _uiState.value = _uiState.value.copy(isGeneratingTrend = false)
+        _uiState.update { it.copy(isGeneratingTrend = false) }
 
         if (result is com.jdluu.flexinsight.core.errors.Result.Success) {
-            _uiState.value = _uiState.value.copy(aiTrendAnalysis = result.data)
+            _uiState.update { it.copy(aiTrendAnalysis = result.data) }
         }
     }
-    
+
     fun refresh() {
         loadHistoryData()
     }
@@ -231,16 +234,17 @@ class HistoryViewModel @Inject constructor(
             else -> 0L
         }
 
-        val filtered = if (cutoff > 0L) {
-            _uiState.value.allWorkouts.filter { it.startTime >= cutoff }
-        } else {
-            _uiState.value.allWorkouts
+        _uiState.update { state ->
+            val filtered = if (cutoff > 0L) {
+                state.allWorkouts.filter { it.startTime >= cutoff }
+            } else {
+                state.allWorkouts
+            }
+            state.copy(
+                dateFilter = filter,
+                workouts = applyMuscleGroupFilter(filtered, state.muscleGroupFilter)
+            )
         }
-
-        _uiState.value = _uiState.value.copy(
-            dateFilter = filter,
-            workouts = applyMuscleGroupFilter(filtered, _uiState.value.muscleGroupFilter)
-        )
     }
 
     /**
@@ -248,15 +252,13 @@ class HistoryViewModel @Inject constructor(
      * Null clears the filter.
      */
     fun setMuscleGroupFilter(muscleGroup: String?) {
-        val dateFiltered = applyDateFilter(
-            _uiState.value.allWorkouts,
-            _uiState.value.dateFilter
-        )
-
-        _uiState.value = _uiState.value.copy(
-            muscleGroupFilter = muscleGroup,
-            workouts = applyMuscleGroupFilter(dateFiltered, muscleGroup)
-        )
+        _uiState.update { state ->
+            val dateFiltered = applyDateFilter(state.allWorkouts, state.dateFilter)
+            state.copy(
+                muscleGroupFilter = muscleGroup,
+                workouts = applyMuscleGroupFilter(dateFiltered, muscleGroup)
+            )
+        }
     }
 
     private fun applyDateFilter(workouts: List<Workout>, filter: String): List<Workout> {

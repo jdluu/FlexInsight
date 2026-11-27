@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,7 +36,7 @@ class PRListViewModel @Inject constructor(
         // Collect units preference
         viewModelScope.launch {
             userPreferencesManager.unitsFlow.collect { units ->
-                _uiState.value = _uiState.value.copy(units = units)
+                _uiState.update { it.copy(units = units) }
             }
         }
         loadPRs()
@@ -43,21 +44,25 @@ class PRListViewModel @Inject constructor(
 
     fun loadPRs() {
         safeLaunch(onError = { apiError ->
-             _uiState.value = _uiState.value.copy(
-                loadingState = LoadingState.Error(apiError),
-                error = UiError.fromApiError(apiError)
-            )
+            _uiState.update {
+                it.copy(
+                    loadingState = LoadingState.Error(apiError),
+                    error = UiError.fromApiError(apiError)
+                )
+            }
         }) {
-            _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
+            _uiState.update { it.copy(loadingState = LoadingState.Loading, error = null) }
             
             // Fetch all PRs (up to 100 for now)
             val prs = repository.getAllPRsWithDetails()
             
-            _uiState.value = _uiState.value.copy(
-                loadingState = LoadingState.Success,
-                prs = prs,
-                error = null
-            )
+            _uiState.update {
+                it.copy(
+                    loadingState = LoadingState.Success,
+                    prs = prs,
+                    error = null
+                )
+            }
         }
     }
 }

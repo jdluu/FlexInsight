@@ -26,7 +26,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import com.jdluu.flexinsight.ui.utils.safeLaunch
 import com.jdluu.flexinsight.data.ai.FlexAIClient
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
@@ -87,10 +86,7 @@ class PlannerViewModel @Inject constructor(
     val uiState: StateFlow<PlannerUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            delay(100)
-            loadPlannerData()
-        }
+        loadPlannerData()
         viewModelScope.launch {
             userPreferencesManager.viewOnlyModeFlow.collect { viewOnly ->
                 _uiState.update { it.copy(viewOnlyMode = viewOnly) }
@@ -180,17 +176,19 @@ class PlannerViewModel @Inject constructor(
 
     fun selectDay(dayIndex: Int) {
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+            _uiState.update { it.copy(error = UiError.fromApiError(apiError)) }
         }) {
             val weekCalendarData = _uiState.value.weekCalendarData
             if (dayIndex in weekCalendarData.indices) {
                 val selectedDay = weekCalendarData[dayIndex]
                 val workouts = repository.getPlannedWorkoutsForDay(selectedDay.timestamp)
 
-                _uiState.value = _uiState.value.copy(
-                    selectedDayIndex = dayIndex,
-                    selectedDayWorkouts = workouts
-                )
+                _uiState.update {
+                    it.copy(
+                        selectedDayIndex = dayIndex,
+                        selectedDayWorkouts = workouts
+                    )
+                }
             }
         }
     }
@@ -202,23 +200,27 @@ class PlannerViewModel @Inject constructor(
     fun markWorkoutAsComplete(workoutId: String, isCompleted: Boolean) {
         if (blockHevyEdit()) return
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+            _uiState.update { it.copy(error = UiError.fromApiError(apiError)) }
         }) {
-            val updatedWorkouts = _uiState.value.selectedDayWorkouts.map {
-                if (it.id == workoutId) it.copy(isCompleted = isCompleted) else it
+            _uiState.update { state ->
+                val updatedWorkouts = state.selectedDayWorkouts.map {
+                    if (it.id == workoutId) it.copy(isCompleted = isCompleted) else it
+                }
+                state.copy(selectedDayWorkouts = updatedWorkouts)
             }
-            _uiState.value = _uiState.value.copy(selectedDayWorkouts = updatedWorkouts)
 
             val result = repository.updateWorkoutStatus(workoutId, isCompleted)
 
             if (result is Result.Error) {
-                val revertedWorkouts = _uiState.value.selectedDayWorkouts.map {
-                    if (it.id == workoutId) it.copy(isCompleted = !isCompleted) else it
+                _uiState.update { state ->
+                    val revertedWorkouts = state.selectedDayWorkouts.map {
+                        if (it.id == workoutId) it.copy(isCompleted = !isCompleted) else it
+                    }
+                    state.copy(
+                        selectedDayWorkouts = revertedWorkouts,
+                        error = UiError.fromApiError(result.error)
+                    )
                 }
-                _uiState.value = _uiState.value.copy(
-                    selectedDayWorkouts = revertedWorkouts,
-                    error = UiError.fromApiError(result.error)
-                )
             } else {
                 loadPlannerData()
             }
@@ -228,15 +230,17 @@ class PlannerViewModel @Inject constructor(
     fun rescheduleWorkout(workoutId: String, newDate: Long) {
         if (blockHevyEdit()) return
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+            _uiState.update { it.copy(error = UiError.fromApiError(apiError)) }
         }) {
             val result = repository.rescheduleWorkout(workoutId, newDate)
             if (result is Result.Success) {
                 loadPlannerData()
             } else if (result is Result.Error) {
-                _uiState.value = _uiState.value.copy(
-                    error = UiError.fromApiError(result.error)
-                )
+                _uiState.update {
+                    it.copy(
+                        error = UiError.fromApiError(result.error)
+                    )
+                }
             }
         }
     }
@@ -247,13 +251,13 @@ class PlannerViewModel @Inject constructor(
     fun generateAIWorkout() {
         viewModelScope.launch {
             if (!aiClient.isAvailable()) {
-                _uiState.value = _uiState.value.copy(
-                    aiPlan = "AI features are not available on this device."
-                )
+                _uiState.update {
+                    it.copy(aiPlan = "AI features are not available on this device.")
+                }
                 return@launch
             }
 
-            _uiState.value = _uiState.value.copy(isGeneratingPlan = true, aiPlan = null)
+            _uiState.update { it.copy(isGeneratingPlan = true, aiPlan = null) }
 
             val balance = _uiState.value.volumeBalance
             val focus = if (balance != null) {
@@ -271,16 +275,16 @@ class PlannerViewModel @Inject constructor(
 
             val result = aiClient.generateWorkoutPlan(prompt)
 
-            _uiState.value = _uiState.value.copy(isGeneratingPlan = false)
+            _uiState.update { it.copy(isGeneratingPlan = false) }
 
             when (result) {
                 is Result.Success -> {
-                    _uiState.value = _uiState.value.copy(aiPlan = result.data)
+                    _uiState.update { it.copy(aiPlan = result.data) }
                 }
                 is Result.Error -> {
-                    _uiState.value = _uiState.value.copy(
-                        aiPlan = "Failed to generate plan. Please try again."
-                    )
+                    _uiState.update {
+                        it.copy(aiPlan = "Failed to generate plan. Please try again.")
+                    }
                 }
             }
         }
@@ -295,13 +299,13 @@ class PlannerViewModel @Inject constructor(
      * @param title The user-provided title for the routine.
      */
     fun pushRoutineToHevy(title: String) {
-        if (_uiState.value.aiPlan == null) return
+        val planText = _uiState.value.aiPlan ?: return
         if (blockHevyEdit()) return
 
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(
-                saveToHevyStatus = SaveToHevyStatus.Saving
-            )
+            _uiState.update {
+                it.copy(saveToHevyStatus = SaveToHevyStatus.Saving)
+            }
 
             val templateNames = when (val mapping = exerciseRepository.getExerciseTemplateNameMapping()) {
                 is Result.Success -> mapping.data
@@ -311,41 +315,43 @@ class PlannerViewModel @Inject constructor(
                 ExerciseTemplateMatcher.resolveTemplateId(name, templateNames)
             }
             val parseResult = AiRoutineParser.parse(
-                planText = _uiState.value.aiPlan!!,
+                planText = planText,
                 title = title,
                 templateIdResolver = resolver
             )
 
             val result = routineRepository.createRoutine(parseResult.request)
 
-            _uiState.value = when (result) {
-                is Result.Success -> _uiState.value.copy(
-                    saveToHevyStatus = SaveToHevyStatus.Success(
-                        routineId = result.data,
-                        matchedCount = parseResult.matchedExercises.size,
-                        unmatchedNames = parseResult.unmatchedExercises,
-                        usedPlaceholder = parseResult.usedPlaceholder
+            _uiState.update { state ->
+                when (result) {
+                    is Result.Success -> state.copy(
+                        saveToHevyStatus = SaveToHevyStatus.Success(
+                            routineId = result.data,
+                            matchedCount = parseResult.matchedExercises.size,
+                            unmatchedNames = parseResult.unmatchedExercises,
+                            usedPlaceholder = parseResult.usedPlaceholder
+                        )
                     )
-                )
-                is Result.Error -> _uiState.value.copy(
-                    saveToHevyStatus = SaveToHevyStatus.Error(
-                        result.error.message ?: "Failed to save routine"
+                    is Result.Error -> state.copy(
+                        saveToHevyStatus = SaveToHevyStatus.Error(result.error.message)
                     )
-                )
+                }
             }
         }
     }
 
     fun clearAIPlan() {
-        _uiState.value = _uiState.value.copy(
-            aiPlan = null,
-            saveToHevyStatus = SaveToHevyStatus.Idle
-        )
+        _uiState.update {
+            it.copy(
+                aiPlan = null,
+                saveToHevyStatus = SaveToHevyStatus.Idle
+            )
+        }
     }
 
     fun clearSaveStatus() {
-        _uiState.value = _uiState.value.copy(
-            saveToHevyStatus = SaveToHevyStatus.Idle
-        )
+        _uiState.update {
+            it.copy(saveToHevyStatus = SaveToHevyStatus.Idle)
+        }
     }
 }

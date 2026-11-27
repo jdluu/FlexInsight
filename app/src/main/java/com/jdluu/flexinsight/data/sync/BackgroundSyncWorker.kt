@@ -1,12 +1,12 @@
 package com.jdluu.flexinsight.data.sync
 
 import android.content.Context
-import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import com.jdluu.flexinsight.core.errors.ApiError
+import com.jdluu.flexinsight.core.logger.AppLogger
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -22,11 +22,11 @@ class BackgroundSyncWorker @AssistedInject constructor(
         val syncResult = syncSource.syncAll()
         return if (syncResult.isSuccess) {
             syncCoordinator.onSyncComplete()
-            Log.d(TAG, "Periodic sync worker success")
+            AppLogger.d("Periodic sync worker success", TAG)
             ListenableWorker.Result.success()
         } else {
             val error = (syncResult as com.jdluu.flexinsight.core.errors.Result.Error).error
-            Log.e(TAG, "Periodic sync worker failed: ${error.message}")
+            AppLogger.e("Periodic sync worker failed: ${error.message}", tag = TAG)
             when {
                 error.isAuthError -> ListenableWorker.Result.failure()
                 error.isRetryable -> ListenableWorker.Result.retry()

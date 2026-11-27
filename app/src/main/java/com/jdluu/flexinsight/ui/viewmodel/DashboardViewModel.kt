@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.jdluu.flexinsight.data.ai.FlexAIClient
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.ErrorHandler
+import com.jdluu.flexinsight.core.logger.AppLogger
 import com.jdluu.flexinsight.data.model.Workout
 import com.jdluu.flexinsight.data.model.WorkoutStats
 import com.jdluu.flexinsight.data.model.WeeklyProgress
@@ -28,8 +29,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -86,44 +87,42 @@ class DashboardViewModel @Inject constructor(
         // Collect network state
         viewModelScope.launch {
             networkMonitor.networkState.collect { state ->
-                _uiState.value = _uiState.value.copy(networkState = state)
+                _uiState.update { it.copy(networkState = state) }
             }
         }
 
         // Collect units preference
         viewModelScope.launch {
             userPreferencesManager.unitsFlow.collect { units ->
-                _uiState.value = _uiState.value.copy(units = units)
+                _uiState.update { it.copy(units = units) }
             }
         }
 
         viewModelScope.launch {
             syncPreferencesManager.lastSyncAtFlow.collect { lastSync ->
-                _uiState.value = _uiState.value.copy(lastSyncAt = lastSync)
+                _uiState.update { it.copy(lastSyncAt = lastSync) }
             }
         }
 
-        // Delay initialization slightly to ensure database is ready
-        viewModelScope.launch {
-            delay(100) // Small delay to ensure database is initialized
-            loadDashboardData()
-        }
+        loadDashboardData()
     }
 
     private fun loadDashboardData() {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
+                _uiState.update { it.copy(loadingState = LoadingState.Loading, error = null) }
 
                 // Load latest workout - use first() to get initial value instead of continuous collection
                 val workouts = try {
                     repository.getRecentWorkouts(limit = 1).first()
                 } catch (e: Exception) {
                     val apiError = ErrorHandler.handleError(e)
-                    _uiState.value = _uiState.value.copy(
-                        error = UiError.fromApiError(apiError),
-                        loadingState = LoadingState.Error(apiError)
-                    )
+                    _uiState.update {
+                        it.copy(
+                            error = UiError.fromApiError(apiError),
+                            loadingState = LoadingState.Error(apiError)
+                        )
+                    }
                     return@launch
                 }
 
@@ -133,24 +132,24 @@ class DashboardViewModel @Inject constructor(
                     // Execute independent fetches concurrently using async
                     coroutineScope {
                         val profileInfoDeferred = async {
-                            try { repository.getProfileInfo() } catch (e: Exception) { 
-                                android.util.Log.e("DashboardViewModel", "Failed to load profile info", e)
-                                null 
+                            try { repository.getProfileInfo() } catch (e: Exception) {
+                                AppLogger.e("Failed to load profile info", e, TAG)
+                                null
                             }
                         }
-                        
+
                         val latestWorkoutStatsDeferred = async {
                             latestWorkout?.let {
-                                try { repository.calculateWorkoutStats(it) } catch (e: Exception) { 
-                                    android.util.Log.e("DashboardViewModel", "Failed to calculate latest workout stats", e)
-                                    null 
+                                try { repository.calculateWorkoutStats(it) } catch (e: Exception) {
+                                    AppLogger.e("Failed to calculate latest workout stats", e, TAG)
+                                    null
                                 }
                             }
                         }
-                        
+
                         val statsDeferred = async {
                             try { getWorkoutStatsUseCase() } catch (e: Exception) {
-                                android.util.Log.e("DashboardViewModel", "Failed to calculate overall workout stats", e)
+                                AppLogger.e("Failed to calculate overall workout stats", e, TAG)
                                 WorkoutStats(
                                     totalWorkouts = 0, totalVolume = 0.0, averageVolume = 0.0,
                                     totalSets = 0, totalDuration = 0L, averageDuration = 0L,
@@ -159,25 +158,25 @@ class DashboardViewModel @Inject constructor(
                                 )
                             }
                         }
-                        
+
                         val weeklyProgressDeferred = async {
-                            try { getWeeklyProgressUseCase(weeks = 4) } catch (e: Exception) { 
-                                android.util.Log.e("DashboardViewModel", "Failed to get weekly progress", e)
-                                emptyList() 
+                            try { getWeeklyProgressUseCase(weeks = 4) } catch (e: Exception) {
+                                AppLogger.e("Failed to get weekly progress", e, TAG)
+                                emptyList()
                             }
                         }
-                        
+
                         val muscleGroupProgressDeferred = async {
-                            try { repository.getMuscleGroupProgress(weeks = 4) } catch (e: Exception) { 
-                                android.util.Log.e("DashboardViewModel", "Failed to get muscle group progress", e)
-                                emptyList() 
+                            try { repository.getMuscleGroupProgress(weeks = 4) } catch (e: Exception) {
+                                AppLogger.e("Failed to get muscle group progress", e, TAG)
+                                emptyList()
                             }
                         }
-                        
+
                         val muscleRecoveryDeferred = async {
-                            try { getMuscleRecoveryUseCase() } catch (e: Exception) { 
-                                android.util.Log.e("DashboardViewModel", "Failed to get muscle recovery", e)
-                                emptyMap() 
+                            try { getMuscleRecoveryUseCase() } catch (e: Exception) {
+                                AppLogger.e("Failed to get muscle recovery", e, TAG)
+                                emptyMap()
                             }
                         }
 
@@ -215,22 +214,24 @@ class DashboardViewModel @Inject constructor(
                         val todayPlannedWorkout = todayPlannedDeferred.await()
                         val weeklyGoalProgress = weeklyGoalDeferred.await()
 
-                        _uiState.value = _uiState.value.copy(
-                            loadingState = LoadingState.Success,
-                            profileInfo = profileInfo,
-                            latestWorkout = latestWorkout,
-                            latestWorkoutStats = latestWorkoutStats,
-                            workoutStats = stats,
-                            weeklyProgress = weeklyProgress,
-                            currentStreak = stats.currentStreak,
-                            muscleGroupProgress = muscleGroupProgress,
-                            muscleRecovery = muscleRecovery,
-                            trainingLoad = trainingLoad,
-                            deloadAlert = deloadAlert,
-                            todayPlannedWorkout = todayPlannedWorkout,
-                            weeklyGoalProgress = weeklyGoalProgress,
-                            error = null
-                        )
+                        _uiState.update {
+                            it.copy(
+                                loadingState = LoadingState.Success,
+                                profileInfo = profileInfo,
+                                latestWorkout = latestWorkout,
+                                latestWorkoutStats = latestWorkoutStats,
+                                workoutStats = stats,
+                                weeklyProgress = weeklyProgress,
+                                currentStreak = stats.currentStreak,
+                                muscleGroupProgress = muscleGroupProgress,
+                                muscleRecovery = muscleRecovery,
+                                trainingLoad = trainingLoad,
+                                deloadAlert = deloadAlert,
+                                todayPlannedWorkout = todayPlannedWorkout,
+                                weeklyGoalProgress = weeklyGoalProgress,
+                                error = null
+                            )
+                        }
 
                         widgetUpdater.updateFromDashboard(
                             streak = stats.currentStreak,
@@ -243,34 +244,38 @@ class DashboardViewModel @Inject constructor(
 
                 } catch (e: Exception) {
                     val apiError = ErrorHandler.handleError(e)
-                    _uiState.value = _uiState.value.copy(
+                    _uiState.update {
+                        it.copy(
+                            loadingState = LoadingState.Error(apiError),
+                            error = UiError.fromApiError(apiError)
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                val apiError = ErrorHandler.handleError(e)
+                _uiState.update {
+                    it.copy(
                         loadingState = LoadingState.Error(apiError),
                         error = UiError.fromApiError(apiError)
                     )
                 }
-            } catch (e: Exception) {
-                val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(
-                    loadingState = LoadingState.Error(apiError),
-                    error = UiError.fromApiError(apiError)
-                )
             }
         }
     }
-    
+
     private suspend fun generateDailyInsight(userName: String, streak: Int) {
         if (!aiClient.isAvailable()) return
         if (_uiState.value.dailyInsight != null) return
 
-        _uiState.value = _uiState.value.copy(isGeneratingInsight = true)
+        _uiState.update { it.copy(isGeneratingInsight = true) }
 
         val prompt = "Give a 1-sentence fitness tip for $userName who has a $streak day streak. Be brief and witty."
         val result = aiClient.generateResponse(prompt)
 
-        _uiState.value = _uiState.value.copy(isGeneratingInsight = false)
-        
+        _uiState.update { it.copy(isGeneratingInsight = false) }
+
         if (result is com.jdluu.flexinsight.core.errors.Result.Success) {
-            _uiState.value = _uiState.value.copy(dailyInsight = result.data)
+            _uiState.update { it.copy(dailyInsight = result.data) }
         }
     }
 
@@ -281,11 +286,13 @@ class DashboardViewModel @Inject constructor(
     fun sync() {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(
-                    loadingState = LoadingState.Loading,
-                    isSyncing = true,
-                    error = null
-                )
+                _uiState.update {
+                    it.copy(
+                        loadingState = LoadingState.Loading,
+                        isSyncing = true,
+                        error = null
+                    )
+                }
                 when (val result = repository.syncAllData()) {
                     is com.jdluu.flexinsight.core.errors.Result.Success -> {
                         syncCoordinator.onSyncComplete()
@@ -293,22 +300,30 @@ class DashboardViewModel @Inject constructor(
                     }
                     is com.jdluu.flexinsight.core.errors.Result.Error -> {
                         val apiError = result.error
-                        _uiState.value = _uiState.value.copy(
-                            loadingState = LoadingState.Error(apiError),
-                            error = UiError.fromApiError(apiError)
-                        )
+                        _uiState.update {
+                            it.copy(
+                                loadingState = LoadingState.Error(apiError),
+                                error = UiError.fromApiError(apiError)
+                            )
+                        }
                     }
                 }
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(
-                    loadingState = LoadingState.Error(apiError),
-                    error = UiError.fromApiError(apiError)
-                )
+                _uiState.update {
+                    it.copy(
+                        loadingState = LoadingState.Error(apiError),
+                        error = UiError.fromApiError(apiError)
+                    )
+                }
             } finally {
-                _uiState.value = _uiState.value.copy(isSyncing = false)
+                _uiState.update { it.copy(isSyncing = false) }
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "DashboardViewModel"
     }
 }
 

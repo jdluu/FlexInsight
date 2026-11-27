@@ -1,6 +1,5 @@
 package com.jdluu.flexinsight.core.errors
 
-import android.util.Log
 import com.jdluu.flexinsight.core.logger.AppLogger
 import java.io.IOException
 import java.net.SocketTimeoutException

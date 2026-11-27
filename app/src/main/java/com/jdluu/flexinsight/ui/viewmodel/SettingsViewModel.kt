@@ -3,6 +3,7 @@ package com.jdluu.flexinsight.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jdluu.flexinsight.core.errors.ErrorHandler
+import com.jdluu.flexinsight.core.logger.AppLogger
 import com.jdluu.flexinsight.data.model.ProfileInfo
 import com.jdluu.flexinsight.data.health.HealthConnectRepository
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
@@ -17,8 +18,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import com.jdluu.flexinsight.ui.utils.safeLaunch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -68,35 +69,34 @@ class SettingsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             networkMonitor.networkState.collect { state ->
-                _uiState.value = _uiState.value.copy(networkState = state)
+                _uiState.update { it.copy(networkState = state) }
             }
         }
 
         viewModelScope.launch {
-            delay(100) // Small delay to ensure database is initialized
             loadSettingsData()
-            
+
             // Observe API key changes
             apiKeyManager.apiKeyFlow.collect { key ->
-                _uiState.value = _uiState.value.copy(apiKey = key)
+                _uiState.update { it.copy(apiKey = key) }
             }
         }
-        
+
         viewModelScope.launch {
             userPreferencesManager.forceAiEnableFlow.collect { enabled ->
-                _uiState.value = _uiState.value.copy(forceAiEnable = enabled)
+                _uiState.update { it.copy(forceAiEnable = enabled) }
             }
         }
 
         viewModelScope.launch {
             userPreferencesManager.viewOnlyModeFlow.collect { enabled ->
-                _uiState.value = _uiState.value.copy(viewOnlyMode = enabled)
+                _uiState.update { it.copy(viewOnlyMode = enabled) }
             }
         }
 
         viewModelScope.launch {
             userPreferencesManager.healthConnectEnabledFlow.collect { enabled ->
-                _uiState.value = _uiState.value.copy(healthConnectEnabled = enabled)
+                _uiState.update { it.copy(healthConnectEnabled = enabled) }
             }
         }
     }
@@ -105,14 +105,14 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 if (!isRefresh) {
-                    _uiState.value = _uiState.value.copy(loadingState = LoadingState.Loading, error = null)
+                    _uiState.update { it.copy(loadingState = LoadingState.Loading, error = null) }
                 }
 
                 // Load profile info
                 val profileInfo = try {
                     repository.getProfileInfo()
                 } catch (e: Exception) {
-                    android.util.Log.e("SettingsViewModel", "Failed to load profile info", e)
+                    AppLogger.e("Failed to load profile info", e, TAG)
                     null
                 }
 
@@ -120,42 +120,42 @@ class SettingsViewModel @Inject constructor(
                 val weeklyGoal = try {
                     userPreferencesManager.getWeeklyGoal()
                 } catch (e: Exception) {
-                    android.util.Log.e("SettingsViewModel", "Failed to load weekly goal", e)
+                    AppLogger.e("Failed to load weekly goal", e, TAG)
                     5
                 }
 
                 val theme = try {
                     userPreferencesManager.getTheme()
                 } catch (e: Exception) {
-                    android.util.Log.e("SettingsViewModel", "Failed to load theme preference", e)
+                    AppLogger.e("Failed to load theme preference", e, TAG)
                     "System"
                 }
 
                 val units = try {
                     userPreferencesManager.getUnits()
                 } catch (e: Exception) {
-                    android.util.Log.e("SettingsViewModel", "Failed to load units preference", e)
+                    AppLogger.e("Failed to load units preference", e, TAG)
                     "Imperial"
                 }
-                
+
                 val forceAi = try {
                     userPreferencesManager.getForceAiEnable()
                 } catch (e: Exception) {
-                    android.util.Log.e("SettingsViewModel", "Failed to load force AI preference", e)
+                    AppLogger.e("Failed to load force AI preference", e, TAG)
                     false
                 }
-                
+
                 val notifications = try {
                     userPreferencesManager.getNotificationsEnabled()
                 } catch (e: Exception) {
-                    android.util.Log.e("SettingsViewModel", "Failed to load notifications preference", e)
+                    AppLogger.e("Failed to load notifications preference", e, TAG)
                     true
                 }
 
                 val viewOnlyMode = try {
                     userPreferencesManager.getViewOnlyMode()
                 } catch (e: Exception) {
-                    android.util.Log.e("SettingsViewModel", "Failed to load view-only preference", e)
+                    AppLogger.e("Failed to load view-only preference", e, TAG)
                     true
                 }
 
@@ -165,7 +165,7 @@ class SettingsViewModel @Inject constructor(
                 val displayName = try {
                     userPreferencesManager.getDisplayName()
                 } catch (e: Exception) {
-                    android.util.Log.e("SettingsViewModel", "Failed to load display name", e)
+                    AppLogger.e("Failed to load display name", e, TAG)
                     null
                 }
 
@@ -176,26 +176,30 @@ class SettingsViewModel @Inject constructor(
                     profileInfo
                 }
 
-                _uiState.value = _uiState.value.copy(
-                    loadingState = LoadingState.Success,
-                    profileInfo = finalProfileInfo,
-                    weeklyGoal = weeklyGoal,
-                    theme = theme,
-                    units = units,
-                    forceAiEnable = forceAi,
-                    notificationsEnabled = notifications,
-                    viewOnlyMode = viewOnlyMode,
-                    healthConnectEnabled = healthEnabled,
-                    healthConnectWriteEnabled = healthWrite,
-                    healthConnectAvailable = healthConnectRepository.isSdkAvailable(),
-                    error = null
-                )
+                _uiState.update {
+                    it.copy(
+                        loadingState = LoadingState.Success,
+                        profileInfo = finalProfileInfo,
+                        weeklyGoal = weeklyGoal,
+                        theme = theme,
+                        units = units,
+                        forceAiEnable = forceAi,
+                        notificationsEnabled = notifications,
+                        viewOnlyMode = viewOnlyMode,
+                        healthConnectEnabled = healthEnabled,
+                        healthConnectWriteEnabled = healthWrite,
+                        healthConnectAvailable = healthConnectRepository.isSdkAvailable(),
+                        error = null
+                    )
+                }
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(
-                    loadingState = LoadingState.Error(apiError),
-                    error = UiError.fromApiError(apiError)
-                )
+                _uiState.update {
+                    it.copy(
+                        loadingState = LoadingState.Error(apiError),
+                        error = UiError.fromApiError(apiError)
+                    )
+                }
             }
         }
     }
@@ -203,17 +207,19 @@ class SettingsViewModel @Inject constructor(
     fun syncData() {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(syncState = LoadingState.Loading, syncError = null)
+                _uiState.update { it.copy(syncState = LoadingState.Loading, syncError = null) }
                 when (val result = repository.syncAllData()) {
                     is com.jdluu.flexinsight.core.errors.Result.Success -> {
                         syncCoordinator.onSyncComplete()
-                        _uiState.value = _uiState.value.copy(syncState = LoadingState.Success, syncError = null)
+                        _uiState.update { it.copy(syncState = LoadingState.Success, syncError = null) }
                     }
                     is com.jdluu.flexinsight.core.errors.Result.Error -> {
-                        _uiState.value = _uiState.value.copy(
-                            syncState = LoadingState.Error(result.error),
-                            syncError = UiError.fromApiError(result.error)
-                        )
+                        _uiState.update {
+                            it.copy(
+                                syncState = LoadingState.Error(result.error),
+                                syncError = UiError.fromApiError(result.error)
+                            )
+                        }
                         return@launch
                     }
                 }
@@ -221,10 +227,12 @@ class SettingsViewModel @Inject constructor(
                 loadSettingsData(isRefresh = true)
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(
-                    syncState = LoadingState.Error(apiError),
-                    syncError = UiError.fromApiError(apiError)
-                )
+                _uiState.update {
+                    it.copy(
+                        syncState = LoadingState.Error(apiError),
+                        syncError = UiError.fromApiError(apiError)
+                    )
+                }
             }
         }
     }
@@ -233,49 +241,51 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 userPreferencesManager.setWeeklyGoal(goal)
-                _uiState.value = _uiState.value.copy(weeklyGoal = goal)
+                _uiState.update { it.copy(weeklyGoal = goal) }
             } catch (e: Exception) {
                 val apiError = ErrorHandler.handleError(e)
-                _uiState.value = _uiState.value.copy(
-                    error = UiError.fromApiError(apiError)
-                )
+                _uiState.update {
+                    it.copy(
+                        error = UiError.fromApiError(apiError)
+                    )
+                }
             }
         }
     }
 
     fun updateTheme(theme: String) {
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+            _uiState.update { it.copy(error = UiError.fromApiError(apiError)) }
         }) {
             userPreferencesManager.setTheme(theme)
-            _uiState.value = _uiState.value.copy(theme = theme)
+            _uiState.update { it.copy(theme = theme) }
         }
     }
 
     fun updateUnits(units: String) {
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+            _uiState.update { it.copy(error = UiError.fromApiError(apiError)) }
         }) {
             userPreferencesManager.setUnits(units)
-            _uiState.value = _uiState.value.copy(units = units)
+            _uiState.update { it.copy(units = units) }
         }
     }
 
     fun updateForceAiEnable(enabled: Boolean) {
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+            _uiState.update { it.copy(error = UiError.fromApiError(apiError)) }
         }) {
             userPreferencesManager.setForceAiEnable(enabled)
-            _uiState.value = _uiState.value.copy(forceAiEnable = enabled)
+            _uiState.update { it.copy(forceAiEnable = enabled) }
         }
     }
 
     fun updateNotificationsEnabled(enabled: Boolean) {
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+            _uiState.update { it.copy(error = UiError.fromApiError(apiError)) }
         }) {
             userPreferencesManager.setNotificationsEnabled(enabled)
-            _uiState.value = _uiState.value.copy(notificationsEnabled = enabled)
+            _uiState.update { it.copy(notificationsEnabled = enabled) }
         }
     }
 
@@ -284,35 +294,35 @@ class SettingsViewModel @Inject constructor(
      */
     fun updateViewOnlyMode(viewOnly: Boolean) {
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+            _uiState.update { it.copy(error = UiError.fromApiError(apiError)) }
         }) {
             userPreferencesManager.setViewOnlyMode(viewOnly)
-            _uiState.value = _uiState.value.copy(viewOnlyMode = viewOnly)
+            _uiState.update { it.copy(viewOnlyMode = viewOnly) }
         }
     }
 
-
-
     fun clearCache() {
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+            _uiState.update { it.copy(error = UiError.fromApiError(apiError)) }
         }) {
             repository.clearCache()
-            _uiState.value = _uiState.value.copy(error = null)
+            _uiState.update { it.copy(error = null) }
         }
     }
 
     fun updateDisplayName(name: String) {
         safeLaunch(onError = { apiError ->
-            _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+            _uiState.update { it.copy(error = UiError.fromApiError(apiError)) }
         }) {
             userPreferencesManager.setDisplayName(name)
             // Update local state immediately for responsiveness
-            val currentProfile = _uiState.value.profileInfo
-            if (currentProfile != null) {
-                _uiState.value = _uiState.value.copy(
-                    profileInfo = currentProfile.copy(displayName = name)
-                )
+            _uiState.update { state ->
+                val currentProfile = state.profileInfo
+                if (currentProfile != null) {
+                    state.copy(profileInfo = currentProfile.copy(displayName = name))
+                } else {
+                    state
+                }
             }
         }
     }
@@ -322,7 +332,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
+        _uiState.update { it.copy(error = null) }
     }
 
     fun validateAndSaveApiKey(key: String, onSuccess: () -> Unit = {}) {
@@ -330,34 +340,34 @@ class SettingsViewModel @Inject constructor(
             viewModelScope.launch {
                 try {
                     apiKeyManager.saveApiKey(key)
-                    _uiState.value = _uiState.value.copy(apiKey = key, apiKeyError = null)
+                    _uiState.update { it.copy(apiKey = key, apiKeyError = null) }
                     refresh()
                     onSuccess()
                 } catch (e: Exception) {
                     val apiError = ErrorHandler.handleError(e)
-                    _uiState.value = _uiState.value.copy(error = UiError.fromApiError(apiError))
+                    _uiState.update { it.copy(error = UiError.fromApiError(apiError)) }
                 }
             }
         } else {
-            _uiState.value = _uiState.value.copy(apiKeyError = "API key must be at least 10 characters")
+            _uiState.update { it.copy(apiKeyError = "API key must be at least 10 characters") }
         }
     }
 
     fun clearApiKeyError() {
-        _uiState.value = _uiState.value.copy(apiKeyError = null)
+        _uiState.update { it.copy(apiKeyError = null) }
     }
 
     fun setHealthConnectEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesManager.setHealthConnectEnabled(enabled)
-            _uiState.value = _uiState.value.copy(healthConnectEnabled = enabled)
+            _uiState.update { it.copy(healthConnectEnabled = enabled) }
         }
     }
 
     fun setHealthConnectWriteEnabled(enabled: Boolean) {
         viewModelScope.launch {
             userPreferencesManager.setHealthConnectWriteEnabled(enabled)
-            _uiState.value = _uiState.value.copy(healthConnectWriteEnabled = enabled)
+            _uiState.update { it.copy(healthConnectWriteEnabled = enabled) }
         }
     }
 
@@ -380,4 +390,8 @@ class SettingsViewModel @Inject constructor(
 
     suspend fun isOnboardingComplete(): Boolean =
         userPreferencesManager.onboardingCompleteFlow.first()
+
+    companion object {
+        private const val TAG = "SettingsViewModel"
+    }
 }
