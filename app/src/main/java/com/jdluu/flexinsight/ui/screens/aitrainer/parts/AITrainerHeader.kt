@@ -7,6 +7,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -28,7 +29,11 @@ fun AITrainerHeader(
     val statusText = when {
         isSyncingHevy -> stringResource(id = R.string.ai_trainer_syncing_hevy)
         usesLiveExerciseHistory -> stringResource(id = R.string.ai_trainer_live_history)
-        hevyWorkoutCount > 0 -> stringResource(id = R.string.ai_trainer_hevy_connected, hevyWorkoutCount)
+        hevyWorkoutCount > 0 -> pluralStringResource(
+            id = R.plurals.ai_trainer_hevy_connected,
+            count = hevyWorkoutCount,
+            hevyWorkoutCount
+        )
         else -> stringResource(id = R.string.ai_trainer_hevy_no_data)
     }
 

@@ -32,14 +32,19 @@ class HealthConnectRepository @Inject constructor(
     private val userPreferencesManager: UserPreferencesManager,
     private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 ) : HealthConnectDataSource {
-    override val requiredPermissions: Set<String> = setOf(
+    override val readPermissions: Set<String> = setOf(
         HealthPermission.getReadPermission(SleepSessionRecord::class),
         HealthPermission.getReadPermission(HeartRateRecord::class),
         HealthPermission.getReadPermission(StepsRecord::class),
         HealthPermission.getReadPermission(ActiveCaloriesBurnedRecord::class),
-        HealthPermission.getReadPermission(ExerciseSessionRecord::class),
+        HealthPermission.getReadPermission(ExerciseSessionRecord::class)
+    )
+
+    override val writePermissions: Set<String> = setOf(
         HealthPermission.getWritePermission(ExerciseSessionRecord::class)
     )
+
+    override val requiredPermissions: Set<String> = readPermissions + writePermissions
 
     fun getSdkStatus(): Int = HealthConnectClient.getSdkStatus(context)
 
@@ -56,11 +61,17 @@ class HealthConnectRepository @Inject constructor(
         }
     }
 
-    suspend fun hasAllPermissions(): Boolean {
+    suspend fun hasReadPermissions(): Boolean = hasPermissions(readPermissions)
+
+    suspend fun hasWritePermissions(): Boolean = hasPermissions(writePermissions)
+
+    suspend fun hasAllPermissions(): Boolean = hasPermissions(requiredPermissions)
+
+    private suspend fun hasPermissions(permissions: Set<String>): Boolean {
         val client = getClientOrNull() ?: return false
         return try {
             val granted = client.permissionController.getGrantedPermissions()
-            requiredPermissions.all { it in granted }
+            permissions.all { it in granted }
         } catch (e: Exception) {
             false
         }
@@ -73,7 +84,7 @@ class HealthConnectRepository @Inject constructor(
         val client = getClientOrNull()
             ?: return@withContext HealthConnectSnapshot(isAvailable = false)
 
-        if (!hasAllPermissions()) {
+        if (!hasReadPermissions()) {
             return@withContext HealthConnectSnapshot(
                 isAvailable = true,
                 isPermissionGranted = false
@@ -168,7 +179,7 @@ class HealthConnectRepository @Inject constructor(
         if (userPreferencesManager.getViewOnlyMode()) return@withContext 0
 
         val client = getClientOrNull() ?: return@withContext 0
-        if (!hasAllPermissions()) return@withContext 0
+        if (!hasWritePermissions()) return@withContext 0
 
         var written = 0
         workouts.filter { !it.isDeleted && it.endTime != null }.take(5).forEach { workout ->

@@ -7,6 +7,10 @@ import com.jdluu.flexinsight.domain.model.Workout
  */
 interface HealthConnectDataSource {
     val requiredPermissions: kotlin.collections.Set<String>
+    val readPermissions: kotlin.collections.Set<String>
+        get() = requiredPermissions
+    val writePermissions: kotlin.collections.Set<String>
+        get() = emptySet()
 
     fun isSdkAvailable(): Boolean
 

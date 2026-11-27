@@ -138,8 +138,8 @@ private fun SilhouetteView(
     headColor: Color,
     borderColor: Color,
     selectedBorderColor: Color,
-    onGroupSelected: ((MuscleGroup) -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onGroupSelected: ((MuscleGroup) -> Unit)? = null
 ) {
     Column(
         modifier = modifier,

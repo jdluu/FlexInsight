@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -55,11 +56,11 @@ fun WorkoutListSection(
                 modifier = Modifier.weight(1f)
             )
             if (selectedDayWorkouts.isNotEmpty()) {
-                val countLabel = if (selectedDayWorkouts.size == 1) {
-                    stringResource(id = R.string.planner_list_session_singular, selectedDayWorkouts.size)
-                } else {
-                    stringResource(id = R.string.planner_list_session_plural, selectedDayWorkouts.size)
-                }
+                val countLabel = pluralStringResource(
+                    id = R.plurals.planner_list_sessions,
+                    count = selectedDayWorkouts.size,
+                    selectedDayWorkouts.size
+                )
                 PlateStatusPill(
                     label = countLabel,
                     containerColor = MaterialTheme.colorScheme.surfaceContainerLow,

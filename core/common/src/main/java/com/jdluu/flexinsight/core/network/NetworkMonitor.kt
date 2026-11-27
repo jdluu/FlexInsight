@@ -75,18 +75,11 @@ class NetworkMonitor(private val context: Context) {
     /**
      * Checks if network is currently available
      */
-    @Suppress("DEPRECATION")
     fun isNetworkAvailable(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val network = connectivityManager.activeNetwork ?: return false
-            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-        } else {
-            // Use deprecated API for Android versions below M (API 23)
-            val networkInfo: android.net.NetworkInfo? = connectivityManager.activeNetworkInfo
-            networkInfo?.state == android.net.NetworkInfo.State.CONNECTED
-        }
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
     /**

@@ -296,6 +296,8 @@ fun healthConnectRepositoryStub(
     snapshot: HealthConnectSnapshot = HealthConnectSnapshot()
 ): HealthConnectDataSource = mockk {
     every { requiredPermissions } returns emptySet()
+    every { readPermissions } returns emptySet()
+    every { writePermissions } returns emptySet()
     every { isSdkAvailable() } returns sdkAvailable
     coEvery { readSnapshot() } returns snapshot
     coEvery { writeWorkoutsToHealthConnect(any()) } returns 0

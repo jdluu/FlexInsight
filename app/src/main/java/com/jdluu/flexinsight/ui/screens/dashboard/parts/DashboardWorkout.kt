@@ -135,9 +135,9 @@ fun NextSessionCard(
 fun LastSessionAnalysisCard(
     workout: Workout?,
     stats: SingleWorkoutStats?,
+    modifier: Modifier = Modifier,
     useMetric: Boolean = false,
-    onClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onClick: () -> Unit = {}
 ) {
     val dateFormatter = remember { SimpleDateFormat("EEE, MMM d", Locale.getDefault()) }
 

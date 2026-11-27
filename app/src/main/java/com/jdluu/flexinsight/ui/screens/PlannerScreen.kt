@@ -8,6 +8,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -172,15 +173,20 @@ fun PlannerScreen(
             status.usedPlaceholder ->
                 stringResource(R.string.planner_save_success_placeholder)
             status.unmatchedNames.isEmpty() ->
-                stringResource(R.string.planner_save_success_matched, status.matchedCount)
+                pluralStringResource(
+                    R.plurals.planner_save_success_matched,
+                    status.matchedCount,
+                    status.matchedCount
+                )
             status.matchedCount == 0 ->
                 stringResource(
                     R.string.planner_save_success_unmatched,
                     status.unmatchedNames.joinToString(", ")
                 )
             else ->
-                stringResource(
-                    R.string.planner_save_success_matched_and_unmatched,
+                pluralStringResource(
+                    R.plurals.planner_save_success_matched_and_unmatched,
+                    status.matchedCount,
                     status.matchedCount,
                     status.unmatchedNames.joinToString(", ")
                 )
