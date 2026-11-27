@@ -45,7 +45,7 @@ jobs:
       - name: Verify coverage floors (domain >= 95%, data/mapper >= 90%)
         run: ./gradlew verifyCoverage --no-daemon
       - name: Publish test report
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v6
         if: always()
         with:
           report_paths: '**/build/test-results/testDebugUnitTest/TEST-*.xml'
