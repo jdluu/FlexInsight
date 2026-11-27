@@ -1,6 +1,7 @@
 package com.jdluu.flexinsight.di
 
 import android.content.Context
+import com.jdluu.flexinsight.core.dispatchers.DispatcherProvider
 import com.jdluu.flexinsight.core.network.NetworkMonitor
 import com.jdluu.flexinsight.data.api.FlexApiClient
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
@@ -18,8 +19,14 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideApiKeyManager(@ApplicationContext context: Context): ApiKeyManager {
-        return ApiKeyManager(context)
+    fun provideApiKeyManager(
+        @ApplicationContext context: Context,
+        dispatcherProvider: DispatcherProvider
+    ): ApiKeyManager {
+        return ApiKeyManager(
+            context = context,
+            dispatcherProvider = dispatcherProvider
+        )
     }
 
     @Provides

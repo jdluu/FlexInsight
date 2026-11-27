@@ -93,11 +93,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    // DataStore (user preferences; API key uses encrypted prefs)
+    // DataStore (user preferences and Keystore-encrypted API key)
     implementation(libs.androidx.datastore.preferences)
-
-    // Security
-    implementation(libs.androidx.security.crypto)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)

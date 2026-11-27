@@ -303,8 +303,8 @@ fun healthConnectRepositoryStub(
 }
 
 /**
- * ApiKeyManager is final and backed by EncryptedSharedPreferences (no keystore under
- * Robolectric); tests stub it while mirroring the real format-validation rule.
+ * ApiKeyManager is backed by Android Keystore AES-GCM + DataStore; tests stub it while
+ * mirroring the real format-validation rule.
  */
 class ScriptableApiKeyManager {
     val keyFlow = MutableStateFlow<String?>(null)
