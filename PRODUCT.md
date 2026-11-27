@@ -21,7 +21,7 @@ Local-first, privacy-respecting companion backed by Room persistence, optional H
 ## Operating Context
 
 - **Hardware target**: Android phones (`minSdk = 26`, `targetSdk = 36`, Jetpack Compose + Material 3) plus a Glance home-screen widget; tablets/foldables and Wear OS are out of scope.
-- **Core surfaces**: Onboarding, Dashboard, History (+ History Analysis & PR List), Workout Detail, Planner, dedicated Recovery (surfacing composite recovery score, soreness/mood logging, and muscle heatmap), AI Trainer, Settings/Profile, and Home Widget.
+- **Core surfaces**: Onboarding, Dashboard, History (+ History Analysis & PR List), Workout Detail, Planner, dedicated Recovery (surfacing composite recovery score, soreness/mood logging, and muscle heatmap), Plate Rack & Rest Timer (`PlateRackScreen` + persistent `LiveRestTimerStrip`), AI Trainer, Settings/Profile, and Home Widget.
 - **Gym-floor & offline usage**: Works offline against cached Room data when gym reception drops; syncs incrementally with `https://api.hevyapp.com` in the background via WorkManager.
 
 ## Capabilities and Constraints
@@ -42,7 +42,7 @@ Local-first, privacy-respecting companion backed by Room persistence, optional H
 ## Evidence on Hand
 
 - Existing app screenshots in `screenshots/dashboard.png`, `screenshots/planner.png`, and `screenshots/profile.png`.
-- Endpoint surface documented in `docs/HevyAPI.md` and `app/src/main/java/com/jdluu/flexinsight/data/api/FlexApiService.kt`.
+- Endpoint surface documented in `docs/HevyAPI.md` and `core/data/src/main/java/com/jdluu/flexinsight/data/api/FlexApiService.kt`.
 - Recovery mood/notes preferences already persisted in `UserPreferencesManager` (`recoveryMoodFlow`, `recoveryNotesFlow`) and localized strings in `app/src/main/res/values/strings.xml`.
 - Undecided / unimplemented gaps tracked outside `PRODUCT.md`: whether local workout completion/rescheduling (`needsSync`) should push via `PUT /v1/workouts/{workoutId}` or remain strictly local.
 
