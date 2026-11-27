@@ -12,11 +12,17 @@ interface ExerciseDao {
     @Query("SELECT * FROM exercises WHERE workoutId = :workoutId ORDER BY id")
     suspend fun getExercisesByWorkoutId(workoutId: String): List<ExerciseEntity>
 
+    @Query("SELECT * FROM exercises WHERE workoutId IN (:workoutIds) ORDER BY id")
+    suspend fun getExercisesByWorkoutIds(workoutIds: List<String>): List<ExerciseEntity>
+
     @Query("SELECT * FROM exercises ORDER BY id DESC LIMIT 100")
     fun getAllExercises(): Flow<List<ExerciseEntity>>
 
     @Query("SELECT * FROM exercises WHERE id = :exerciseId LIMIT 1")
     suspend fun getExerciseById(exerciseId: String): ExerciseEntity?
+
+    @Query("SELECT * FROM exercises WHERE id IN (:exerciseIds)")
+    suspend fun getExercisesByIds(exerciseIds: List<String>): List<ExerciseEntity>
 
     @Query("SELECT * FROM exercises WHERE exerciseTemplateId = :exerciseTemplateId ORDER BY id")
     fun getExercisesByTemplateIdFlow(exerciseTemplateId: String): Flow<List<ExerciseEntity>>

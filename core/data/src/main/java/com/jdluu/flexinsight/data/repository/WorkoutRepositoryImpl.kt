@@ -34,8 +34,14 @@ class WorkoutRepositoryImpl(
     override suspend fun getExercisesByWorkoutId(workoutId: String): List<Exercise> =
         queryRepository.getExercisesByWorkoutId(workoutId)
 
+    override suspend fun getExercisesByWorkoutIds(workoutIds: List<String>): List<Exercise> =
+        queryRepository.getExercisesByWorkoutIds(workoutIds)
+
     override suspend fun getSetsByExerciseId(exerciseId: String): List<Set> =
         queryRepository.getSetsByExerciseId(exerciseId)
+
+    override suspend fun getSetsByExerciseIds(exerciseIds: List<String>): List<Set> =
+        queryRepository.getSetsByExerciseIds(exerciseIds)
 
     override suspend fun getRemoteWorkoutCount(): Result<Int> = queryRepository.getRemoteWorkoutCount()
 

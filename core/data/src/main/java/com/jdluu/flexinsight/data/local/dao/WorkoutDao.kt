@@ -22,6 +22,9 @@ interface WorkoutDao {
     @Query("SELECT * FROM workouts WHERE id = :workoutId")
     suspend fun getWorkoutById(workoutId: String): WorkoutEntity?
 
+    @Query("SELECT * FROM workouts WHERE id IN (:workoutIds)")
+    suspend fun getWorkoutsByIds(workoutIds: List<String>): List<WorkoutEntity>
+
     @Query("SELECT id FROM workouts WHERE id IN (:ids)")
     suspend fun getExistingWorkoutIds(ids: List<String>): List<String>
 

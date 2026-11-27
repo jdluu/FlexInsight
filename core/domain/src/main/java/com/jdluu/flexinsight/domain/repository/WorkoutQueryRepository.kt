@@ -25,7 +25,13 @@ interface WorkoutQueryRepository {
 
     suspend fun getExercisesByWorkoutId(workoutId: String): List<Exercise>
 
+    suspend fun getExercisesByWorkoutIds(workoutIds: List<String>): List<Exercise> =
+        workoutIds.flatMap { getExercisesByWorkoutId(it) }
+
     suspend fun getSetsByExerciseId(exerciseId: String): List<Set>
+
+    suspend fun getSetsByExerciseIds(exerciseIds: List<String>): List<Set> =
+        exerciseIds.flatMap { getSetsByExerciseId(it) }
 
     suspend fun getRemoteWorkoutCount(): Result<Int>
 

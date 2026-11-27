@@ -3,8 +3,8 @@ package com.jdluu.flexinsight.domain.usecase
 import com.jdluu.flexinsight.core.errors.Result
 import com.jdluu.flexinsight.domain.ai.FlexAIClient
 import com.jdluu.flexinsight.domain.repository.FlexRepository
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
@@ -15,10 +15,10 @@ class ExportCoachReportUseCase @Inject constructor(
     private val calculateTrainingLoadUseCase: CalculateTrainingLoadUseCase
 ) {
     suspend operator fun invoke(): String {
-        val dateFmt = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dateFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
         val sb = StringBuilder()
         sb.appendLine("# FlexInsight Weekly Coach Report")
-        sb.appendLine("Generated: ${dateFmt.format(Date())}")
+        sb.appendLine("Generated: ${LocalDate.now().format(dateFmt)}")
         sb.appendLine()
 
         val stats = runCatching { flexRepository.calculateStats() }.getOrNull()

@@ -102,14 +102,21 @@ class HevyAiDataAccessor @Inject constructor(
         }
 
         val recentWorkouts = try {
-            workoutRepository.getRecentWorkouts(RECENT_WORKOUT_LIMIT).first().map { workout ->
+            val workouts = workoutRepository.getRecentWorkouts(RECENT_WORKOUT_LIMIT).first()
+            val workoutIds = workouts.map { it.id }
+            val exercises = workoutRepository.getExercisesByWorkoutIds(workoutIds)
+            val exercisesByWorkout = exercises.groupBy { it.workoutId }
+            val setsByExercise = workoutRepository.getSetsByExerciseIds(exercises.map { it.id })
+                .groupBy { it.exerciseId }
+
+            workouts.map { workout ->
                 PromptBuilder.RecentWorkout(
                     startTimeMillis = workout.startTime,
                     name = workout.name,
-                    exercises = workoutRepository.getExercisesByWorkoutId(workout.id).map { exercise ->
+                    exercises = (exercisesByWorkout[workout.id] ?: emptyList()).map { exercise ->
                         PromptBuilder.ExerciseSets(
                             name = exercise.name,
-                            sets = workoutRepository.getSetsByExerciseId(exercise.id).map { set ->
+                            sets = (setsByExercise[exercise.id] ?: emptyList()).map { set ->
                                 PromptBuilder.SetData(weightKg = set.weight, reps = set.reps, rpe = set.rpe)
                             }
                         )

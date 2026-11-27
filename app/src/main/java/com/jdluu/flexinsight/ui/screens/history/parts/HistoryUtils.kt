@@ -1,8 +1,12 @@
 package com.jdluu.flexinsight.ui.screens.history.parts
 
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
+
+private val SHORT_DATE_FORMATTER: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("MMM d", Locale.US).withZone(ZoneId.systemDefault())
 
 /**
  * Format volume with commas (e.g., "124,500")
@@ -23,6 +27,5 @@ fun formatPercentageChange(change: Double): String {
  * Format date as "MMM d" (e.g., "Oct 14")
  */
 fun formatDateShort(timestamp: Long): String {
-    val sdf = SimpleDateFormat("MMM d", Locale.US)
-    return sdf.format(Date(timestamp))
+    return SHORT_DATE_FORMATTER.format(Instant.ofEpochMilli(timestamp))
 }

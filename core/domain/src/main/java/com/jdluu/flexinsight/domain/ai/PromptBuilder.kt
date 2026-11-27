@@ -1,7 +1,8 @@
 package com.jdluu.flexinsight.domain.ai
 
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import javax.inject.Inject
 
@@ -211,8 +212,9 @@ class PromptBuilder @Inject constructor() {
         sb.appendLine("- Preferred units: ${profile.units}")
         sb.appendLine("- Weekly frequency goal: ${profile.weeklyGoalSessions} sessions")
         profile.memberSinceMillis?.let {
-            val fmt = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            sb.appendLine("- Member since: ${fmt.format(Date(it))}")
+            val fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
+                .withZone(ZoneId.systemDefault())
+            sb.appendLine("- Member since: ${fmt.format(Instant.ofEpochMilli(it))}")
         }
     }
 
@@ -240,10 +242,11 @@ class PromptBuilder @Inject constructor() {
 
         sb.appendLine()
         sb.appendLine("Recently completed workouts (last 7 sessions):")
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
+            .withZone(ZoneId.systemDefault())
 
         recent.forEachIndexed { index, workout ->
-            sb.appendLine("${index + 1}. ${dateFormat.format(Date(workout.startTimeMillis))}: ${workout.name}")
+            sb.appendLine("${index + 1}. ${dateFormat.format(Instant.ofEpochMilli(workout.startTimeMillis))}: ${workout.name}")
             workout.exercises.forEach { exercise ->
                 sb.append("   * ${exercise.name}: ")
                 sb.appendLine(formatSets(exercise.sets, weightUnit))
@@ -262,8 +265,10 @@ class PromptBuilder @Inject constructor() {
 
         sb.appendLine()
         sb.appendLine("Personal records:")
+        val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault())
+            .withZone(ZoneId.systemDefault())
         prs.forEach { pr ->
-            val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(pr.dateMillis))
+            val date = dateFormat.format(Instant.ofEpochMilli(pr.dateMillis))
             sb.appendLine("- ${pr.exerciseName} (${pr.muscleGroup}): ${formatWeight(pr.weightKg, weightUnit)} on $date")
         }
     }
@@ -318,9 +323,10 @@ class PromptBuilder @Inject constructor() {
     private fun appendProgressiveOverloadNote(sb: StringBuilder, latest: LatestSession?) {
         latest ?: return
 
-        val fmt = SimpleDateFormat("MMM dd", Locale.getDefault())
+        val fmt = DateTimeFormatter.ofPattern("MMM dd", Locale.getDefault())
+            .withZone(ZoneId.systemDefault())
         sb.appendLine()
-        sb.appendLine("Latest session (${fmt.format(Date(latest.startTimeMillis))} — ${latest.name}):")
+        sb.appendLine("Latest session (${fmt.format(Instant.ofEpochMilli(latest.startTimeMillis))} — ${latest.name}):")
         sb.appendLine("- Coach note: suggest +2.5% weight or +1 rep on main lifts vs that session when programming progress.")
     }
 

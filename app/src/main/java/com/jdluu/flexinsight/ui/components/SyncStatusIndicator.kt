@@ -19,8 +19,9 @@ import com.jdluu.flexinsight.R
 import com.jdluu.flexinsight.data.sync.SyncState
 import com.jdluu.flexinsight.ui.theme.FlexTheme
 import com.jdluu.flexinsight.ui.theme.MonoMetricSmall
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
@@ -108,8 +109,11 @@ private fun formatTimeAgo(timestamp: Long): String? {
         diff < 3600_000 -> stringResource(id = R.string.sync_status_mins_ago, diff / 60_000)
         diff < 86400_000 -> stringResource(id = R.string.sync_status_hours_ago, diff / 3600_000)
         else -> {
-            val formatter = remember { SimpleDateFormat("MMM d", Locale.getDefault()) }
-            formatter.format(Date(timestamp))
+            val formatter = remember {
+                DateTimeFormatter.ofPattern("MMM d", Locale.getDefault())
+                    .withZone(ZoneId.systemDefault())
+            }
+            formatter.format(Instant.ofEpochMilli(timestamp))
         }
     }
 }

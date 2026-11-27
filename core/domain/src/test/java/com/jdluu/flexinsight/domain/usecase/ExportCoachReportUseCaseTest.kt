@@ -20,8 +20,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 class ExportCoachReportUseCaseTest {
@@ -56,7 +56,7 @@ class ExportCoachReportUseCaseTest {
     }
 
     private fun today(): String =
-        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.getDefault()))
 
     @Test
     fun `full report includes summary load prs and ai notes sections`() = runTest {

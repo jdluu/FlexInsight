@@ -154,8 +154,22 @@ class WorkoutQueryRepositoryImpl(
         return exerciseDao.getExercisesByWorkoutId(workoutId).map(EntityMapper::toDomain)
     }
 
+    override suspend fun getExercisesByWorkoutIds(workoutIds: List<String>): List<Exercise> {
+        if (workoutIds.isEmpty()) return emptyList()
+        return workoutIds.distinct().chunked(SQLITE_MAX_BIND_PARAMS).flatMap { chunk ->
+            exerciseDao.getExercisesByWorkoutIds(chunk).map(EntityMapper::toDomain)
+        }
+    }
+
     override suspend fun getSetsByExerciseId(exerciseId: String): List<Set> {
         return setDao.getSetsByExerciseId(exerciseId).map(EntityMapper::toDomain)
+    }
+
+    override suspend fun getSetsByExerciseIds(exerciseIds: List<String>): List<Set> {
+        if (exerciseIds.isEmpty()) return emptyList()
+        return exerciseIds.distinct().chunked(SQLITE_MAX_BIND_PARAMS).flatMap { chunk ->
+            setDao.getSetsByExerciseIds(chunk).map(EntityMapper::toDomain)
+        }
     }
 
     override fun getWorkoutsByDateRange(startTimestamp: Long, endTimestamp: Long): Flow<List<Workout>> {
@@ -166,5 +180,9 @@ class WorkoutQueryRepositoryImpl(
 
     override suspend fun getMostRecentSyncedTimestamp(): Long? {
         return workoutDao.getMostRecentSyncedTimestamp()
+    }
+
+    companion object {
+        private const val SQLITE_MAX_BIND_PARAMS = 500
     }
 }
