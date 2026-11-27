@@ -23,4 +23,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "FlexInsight"
+include(":core:common")
+include(":core:domain")
+include(":core:data")
 include(":app")

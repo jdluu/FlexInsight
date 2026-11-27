@@ -1,6 +1,6 @@
 package com.jdluu.flexinsight.data.api
 
-import com.jdluu.flexinsight.BuildConfig
+import com.jdluu.flexinsight.data.BuildConfig
 import com.jdluu.flexinsight.core.logger.AppLogger
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
