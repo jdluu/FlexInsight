@@ -1,0 +1,468 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-27T08:42:00Z",
+  "title": "Design System: FlexInsight — Calibrated Plate Rack",
+  "extensions": {
+    "colorMeta": {
+      "chalk-ground": {
+        "role": "neutral",
+        "displayName": "Magnesium Chalk Ground",
+        "canonical": "#F3F2EE",
+        "tonalRamp": ["#262522", "#474540", "#6B6860", "#918D83", "#B7B3A8", "#D6D3CB", "#EAE8E1", "#F3F2EE"]
+      },
+      "chalk-surface": {
+        "role": "neutral",
+        "displayName": "Chalk Plate Surface",
+        "canonical": "#FFFFFF",
+        "tonalRamp": ["#262626", "#4A4A4A", "#6E6E6E", "#949494", "#B8B8B8", "#D9D9D9", "#F2F2F2", "#FFFFFF"]
+      },
+      "chalk-surface-alt": {
+        "role": "neutral",
+        "displayName": "Chalk Secondary Tile",
+        "canonical": "#EAE8E1",
+        "tonalRamp": ["#262521", "#47453F", "#6B685F", "#8F8B80", "#B5B1A4", "#D4D0C5", "#E2DFD6", "#EAE8E1"]
+      },
+      "chalk-surface-highest": {
+        "role": "neutral",
+        "displayName": "Chalk Track Fill",
+        "canonical": "#E0DDD4",
+        "tonalRamp": ["#242320", "#45433D", "#66635B", "#8A867B", "#ADA99C", "#CCC8BD", "#D6D3C9", "#E0DDD4"]
+      },
+      "chalk-hairline": {
+        "role": "neutral",
+        "displayName": "Machined Chalk Hairline",
+        "canonical": "#D6D3CB",
+        "tonalRamp": ["#242320", "#42403B", "#615E57", "#827E75", "#A39F94", "#C2BEB4", "#CCC9C0", "#D6D3CB"]
+      },
+      "chalk-outline": {
+        "role": "neutral",
+        "displayName": "Chalk Control Outline",
+        "canonical": "#B3AFA4",
+        "tonalRamp": ["#22211E", "#3D3B36", "#595750", "#76736A", "#949085", "#B3AFA4", "#CFCBC2", "#EAE8E1"]
+      },
+      "ink-primary": {
+        "role": "neutral",
+        "displayName": "Stamped Ink Primary",
+        "canonical": "#13151A",
+        "tonalRamp": ["#13151A", "#262A33", "#3D4352", "#596175", "#7B8499", "#A3ABC0", "#CBD1E0", "#EBEEF5"]
+      },
+      "ink-secondary": {
+        "role": "neutral",
+        "displayName": "Stamped Ink Secondary",
+        "canonical": "#4B505C",
+        "tonalRamp": ["#17191D", "#2E3138", "#4B505C", "#686E7E", "#878E9E", "#A9AFBD", "#CCD0DB", "#ECEEF2"]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted Caption",
+        "canonical": "#6B7180",
+        "tonalRamp": ["#1A1C20", "#343740", "#4F5461", "#6B7180", "#8990A0", "#ABB1BF", "#CFD3DD", "#EEF0F4"]
+      },
+      "iron-ground": {
+        "role": "neutral",
+        "displayName": "Cast Iron Ground",
+        "canonical": "#121316",
+        "tonalRamp": ["#121316", "#23252B", "#383B45", "#515563", "#6F7485", "#9398A8", "#BDC1CE", "#E6E8EE"]
+      },
+      "iron-surface": {
+        "role": "neutral",
+        "displayName": "Cast Iron Card",
+        "canonical": "#1B1D22",
+        "tonalRamp": ["#1B1D22", "#2C2F37", "#414551", "#5A5F6E", "#777D8F", "#9AA0B0", "#C2C6D2", "#E8EAEF"]
+      },
+      "iron-surface-alt": {
+        "role": "neutral",
+        "displayName": "Iron Secondary Tile",
+        "canonical": "#252830",
+        "tonalRamp": ["#181A1F", "#252830", "#3B3F4C", "#545A6B", "#72798D", "#959BAE", "#BEC2CF", "#E7E9EF"]
+      },
+      "iron-surface-highest": {
+        "role": "neutral",
+        "displayName": "Iron Track Fill",
+        "canonical": "#2F333D",
+        "tonalRamp": ["#1A1C22", "#2F333D", "#444957", "#5E6476", "#7B8296", "#9DA3B5", "#C4C8D4", "#E9EBF0"]
+      },
+      "iron-hairline": {
+        "role": "neutral",
+        "displayName": "Machined Iron Hairline",
+        "canonical": "#2D313B",
+        "tonalRamp": ["#191B20", "#2D313B", "#424856", "#5B6376", "#788196", "#9AA2B4", "#C2C7D4", "#E8EAF0"]
+      },
+      "iron-outline": {
+        "role": "neutral",
+        "displayName": "Iron Control Outline",
+        "canonical": "#484E5C",
+        "tonalRamp": ["#1B1D22", "#31353F", "#484E5C", "#646B7D", "#828A9E", "#A4ABB9", "#C9CED9", "#ECEEF2"]
+      },
+      "chalk-ink": {
+        "role": "neutral",
+        "displayName": "Chalk Ink on Iron",
+        "canonical": "#F3F2EE",
+        "tonalRamp": ["#262522", "#474540", "#6B6860", "#918D83", "#B7B3A8", "#D6D3CB", "#EAE8E1", "#F3F2EE"]
+      },
+      "steel-secondary": {
+        "role": "neutral",
+        "displayName": "Brushed Steel Secondary",
+        "canonical": "#A8AFBD",
+        "tonalRamp": ["#1D1F24", "#363A43", "#525764", "#717787", "#9298A8", "#A8AFBD", "#CED3DC", "#EEF0F4"]
+      },
+      "steel-muted": {
+        "role": "neutral",
+        "displayName": "Steel Muted Label",
+        "canonical": "#818999",
+        "tonalRamp": ["#1B1D21", "#333740", "#4E5461", "#6C7383", "#818999", "#A5ACBA", "#C9CED8", "#ECEEF2"]
+      },
+      "cobalt-plate-light": {
+        "role": "primary",
+        "displayName": "Cobalt Plate (Light)",
+        "canonical": "#1E4EC7",
+        "tonalRamp": ["#0D1D47", "#14307A", "#1E4EC7", "#3667DB", "#5B8BFF", "#88ACFF", "#B9D0FF", "#E5EEFF"]
+      },
+      "on-cobalt-light": {
+        "role": "primary",
+        "displayName": "On Cobalt (Light)",
+        "canonical": "#FFFFFF",
+        "tonalRamp": ["#262626", "#4A4A4A", "#6E6E6E", "#949494", "#B8B8B8", "#D9D9D9", "#F2F2F2", "#FFFFFF"]
+      },
+      "cobalt-container-light": {
+        "role": "primary",
+        "displayName": "Cobalt Container (Light)",
+        "canonical": "#DCE5FF",
+        "tonalRamp": ["#142042", "#263D78", "#3D5BA6", "#5E7CC4", "#89A3DE", "#B2C4F0", "#C9D7FA", "#DCE5FF"]
+      },
+      "on-cobalt-container-light": {
+        "role": "primary",
+        "displayName": "On Cobalt Container (Light)",
+        "canonical": "#0C2464",
+        "tonalRamp": ["#0C2464", "#1B3A8C", "#2E54B5", "#4D73D1", "#7898E3", "#A4BBEE", "#CEDBF7", "#EBF0FC"]
+      },
+      "cobalt-plate-dark": {
+        "role": "primary",
+        "displayName": "Cobalt Plate (Dark)",
+        "canonical": "#5B8BFF",
+        "tonalRamp": ["#0D1C42", "#183375", "#2750B5", "#3C6CE0", "#5B8BFF", "#86AAFF", "#B5CCFF", "#E3ECFF"]
+      },
+      "on-cobalt-dark": {
+        "role": "primary",
+        "displayName": "On Cobalt (Dark)",
+        "canonical": "#08122B",
+        "tonalRamp": ["#08122B", "#162652", "#283F7D", "#425DA6", "#6681C7", "#93A9E0", "#C2D0F2", "#E9EEFA"]
+      },
+      "cobalt-container-dark": {
+        "role": "primary",
+        "displayName": "Cobalt Container (Dark)",
+        "canonical": "#1A2C59",
+        "tonalRamp": ["#111C38", "#1A2C59", "#294280", "#3F5DA6", "#607EC4", "#8AA3DB", "#B8C8ED", "#E3E9F8"]
+      },
+      "on-cobalt-container-dark": {
+        "role": "primary",
+        "displayName": "On Cobalt Container (Dark)",
+        "canonical": "#DCE5FF",
+        "tonalRamp": ["#142042", "#263D78", "#3D5BA6", "#5E7CC4", "#89A3DE", "#B2C4F0", "#C9D7FA", "#DCE5FF"]
+      },
+      "green-plate-light": {
+        "role": "secondary",
+        "displayName": "Green Competition Plate (Light)",
+        "canonical": "#19734B",
+        "tonalRamp": ["#0A2E1E", "#114F33", "#19734B", "#249664", "#34D399", "#69E3B5", "#A4F0D3", "#DCF9ED"]
+      },
+      "on-green-light": {
+        "role": "secondary",
+        "displayName": "On Green Plate (Light)",
+        "canonical": "#FFFFFF",
+        "tonalRamp": ["#262626", "#4A4A4A", "#6E6E6E", "#949494", "#B8B8B8", "#D9D9D9", "#F2F2F2", "#FFFFFF"]
+      },
+      "green-container-light": {
+        "role": "secondary",
+        "displayName": "Green Container (Light)",
+        "canonical": "#D8F2E4",
+        "tonalRamp": ["#112E1E", "#1F5236", "#317852", "#4C9E72", "#75BD96", "#A1D6B9", "#C0E8D2", "#D8F2E4"]
+      },
+      "on-green-container-light": {
+        "role": "secondary",
+        "displayName": "On Green Container (Light)",
+        "canonical": "#0B3823",
+        "tonalRamp": ["#0B3823", "#16593A", "#247D54", "#3BA373", "#62C296", "#94DBBA", "#C2EDE0", "#E8F9F1"]
+      },
+      "green-plate-dark": {
+        "role": "secondary",
+        "displayName": "Green Competition Plate (Dark)",
+        "canonical": "#34D399",
+        "tonalRamp": ["#0B2E21", "#14543D", "#1E7D5B", "#28A87A", "#34D399", "#6BE0B5", "#A3EDD2", "#DCF9EE"]
+      },
+      "on-green-dark": {
+        "role": "secondary",
+        "displayName": "On Green Plate (Dark)",
+        "canonical": "#06281B",
+        "tonalRamp": ["#06281B", "#114531", "#1F664B", "#358C6B", "#56B08E", "#84CEB2", "#B8E5D4", "#E6F6F0"]
+      },
+      "green-container-dark": {
+        "role": "secondary",
+        "displayName": "Green Container (Dark)",
+        "canonical": "#12382B",
+        "tonalRamp": ["#0C241C", "#12382B", "#1E5442", "#2F7860", "#4A9E82", "#73BF9F", "#A6DBC4", "#DCF2E8"]
+      },
+      "on-green-container-dark": {
+        "role": "secondary",
+        "displayName": "On Green Container (Dark)",
+        "canonical": "#C7F7E3",
+        "tonalRamp": ["#0E3022", "#1A543D", "#2B7A5B", "#44A17D", "#6AC2A0", "#95DBBF", "#B3ECD5", "#C7F7E3"]
+      },
+      "amber-plate-light": {
+        "role": "tertiary",
+        "displayName": "Amber Warning Plate (Light)",
+        "canonical": "#B45309",
+        "tonalRamp": ["#401D03", "#733406", "#B45309", "#D67013", "#F59E0B", "#F9BA4B", "#FCD58E", "#FEF0D6"]
+      },
+      "on-amber-light": {
+        "role": "tertiary",
+        "displayName": "On Amber Plate (Light)",
+        "canonical": "#FFFFFF",
+        "tonalRamp": ["#262626", "#4A4A4A", "#6E6E6E", "#949494", "#B8B8B8", "#D9D9D9", "#F2F2F2", "#FFFFFF"]
+      },
+      "amber-container-light": {
+        "role": "tertiary",
+        "displayName": "Amber Container (Light)",
+        "canonical": "#FEF0D6",
+        "tonalRamp": ["#3D2709", "#694412", "#96651F", "#BA8538", "#D9AB62", "#ECCB8D", "#F7E0B7", "#FEF0D6"]
+      },
+      "on-amber-container-light": {
+        "role": "tertiary",
+        "displayName": "On Amber Container (Light)",
+        "canonical": "#4F2203",
+        "tonalRamp": ["#4F2203", "#783709", "#A34F12", "#C96D26", "#E3914B", "#F0B680", "#F8D7B8", "#FDF2E6"]
+      },
+      "amber-plate-dark": {
+        "role": "tertiary",
+        "displayName": "Amber Warning Plate (Dark)",
+        "canonical": "#F59E0B",
+        "tonalRamp": ["#3B2403", "#6B4206", "#A36609", "#CF830A", "#F59E0B", "#F8B94A", "#FBD48B", "#FEF0D2"]
+      },
+      "on-amber-dark": {
+        "role": "tertiary",
+        "displayName": "On Amber Plate (Dark)",
+        "canonical": "#291802",
+        "tonalRamp": ["#291802", "#4A2D07", "#704610", "#99641F", "#BE863B", "#D9AC6A", "#ECD0A4", "#F9EFE0"]
+      },
+      "amber-container-dark": {
+        "role": "tertiary",
+        "displayName": "Amber Container (Dark)",
+        "canonical": "#3E290A",
+        "tonalRamp": ["#261906", "#3E290A", "#5E3F13", "#855C22", "#AB7E3E", "#CCA469", "#E5C99E", "#F7ECDC"]
+      },
+      "on-amber-container-dark": {
+        "role": "tertiary",
+        "displayName": "On Amber Container (Dark)",
+        "canonical": "#FDE3B0",
+        "tonalRamp": ["#3D2808", "#664512", "#916520", "#B8863B", "#D6AB65", "#EAC98D", "#F5D9A0", "#FDE3B0"]
+      },
+      "crimson-plate-light": {
+        "role": "tertiary",
+        "displayName": "Crimson Strain Plate (Light)",
+        "canonical": "#C62828",
+        "tonalRamp": ["#4A0E0E", "#851A1A", "#C62828", "#E04444", "#F87171", "#FA9999", "#FCC4C4", "#FEEAEA"]
+      },
+      "on-crimson-light": {
+        "role": "tertiary",
+        "displayName": "On Crimson Plate (Light)",
+        "canonical": "#FFFFFF",
+        "tonalRamp": ["#262626", "#4A4A4A", "#6E6E6E", "#949494", "#B8B8B8", "#D9D9D9", "#F2F2F2", "#FFFFFF"]
+      },
+      "crimson-container-light": {
+        "role": "tertiary",
+        "displayName": "Crimson Container (Light)",
+        "canonical": "#FCE2E2",
+        "tonalRamp": ["#421313", "#702424", "#9E3B3B", "#C25B5B", "#DC8484", "#EEAEAE", "#F7CACA", "#FCE2E2"]
+      },
+      "on-crimson-container-light": {
+        "role": "tertiary",
+        "displayName": "On Crimson Container (Light)",
+        "canonical": "#5F0E0E",
+        "tonalRamp": ["#5F0E0E", "#8A1919", "#B52B2B", "#D64949", "#EA7373", "#F4A1A1", "#FACBCC", "#FDEBEB"]
+      },
+      "crimson-plate-dark": {
+        "role": "tertiary",
+        "displayName": "Crimson Strain Plate (Dark)",
+        "canonical": "#F87171",
+        "tonalRamp": ["#471212", "#7D2121", "#B53535", "#DB5252", "#F87171", "#FA9999", "#FCC3C3", "#FEE9E9"]
+      },
+      "on-crimson-dark": {
+        "role": "tertiary",
+        "displayName": "On Crimson Plate (Dark)",
+        "canonical": "#340B0B",
+        "tonalRamp": ["#340B0B", "#591818", "#822A2A", "#AB4444", "#CF6868", "#E39494", "#F0BFBF", "#FAE8E8"]
+      },
+      "crimson-container-dark": {
+        "role": "tertiary",
+        "displayName": "Crimson Container (Dark)",
+        "canonical": "#48191B",
+        "tonalRamp": ["#2B0F10", "#48191B", "#6E282B", "#963E42", "#BD5D62", "#D6878B", "#EAB5B8", "#F8E3E4"]
+      },
+      "on-crimson-container-dark": {
+        "role": "tertiary",
+        "displayName": "On Crimson Container (Dark)",
+        "canonical": "#FCD6D6",
+        "tonalRamp": ["#451414", "#732525", "#A13B3B", "#C45B5B", "#DE8484", "#EEACAC", "#F6C2C2", "#FCD6D6"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Barlow Condensed Plate Numerals",
+        "purpose": "Composite recovery hero percentages, PR lifts, weekly volume totals, and compact screen headlines."
+      },
+      "headline": {
+        "displayName": "Barlow Condensed Screen Headers",
+        "purpose": "TopAppBar titles and primary screen section titles."
+      },
+      "title": {
+        "displayName": "Schibsted Grotesk Card Titles",
+        "purpose": "Card headings, exercise names, and bottom navigation section headers."
+      },
+      "body": {
+        "displayName": "Schibsted Grotesk Body Copy",
+        "purpose": "AI coach responses, workout summaries, onboarding copy, and recovery notes."
+      },
+      "label": {
+        "displayName": "Schibsted Grotesk Controls",
+        "purpose": "Buttons, navigation labels, status pills, and filter chips."
+      },
+      "mono-metric": {
+        "displayName": "Chivo Mono Tabular Telemetry",
+        "purpose": "Set weight/rep figures, timestamps, percentages, and exercise index badges with tnum alignment."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "state-transition",
+        "value": "cubic-bezier(0.2, 0, 0, 1)",
+        "purpose": "Material 3 standard easing for chip selection, accordion expansion, and tab switches."
+      },
+      {
+        "name": "shimmer-sweep",
+        "value": "linear 1100ms infinite",
+        "purpose": "Indeterminate skeleton loading sweep across PlateCard placeholders."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-phone",
+        "value": "360px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "PlateCard",
+      "kind": "card",
+      "refersTo": "plate-card",
+      "description": "Flat cast-iron or chalk surface card framed by a 1dp machined hairline border without drop shadows.",
+      "html": "<article class=\"ds-plate-card\"><div class=\"ds-plate-card-head\"><h3>Readiness &amp; Muscle Recovery</h3><span class=\"ds-pill-ready\">Ready</span></div><div class=\"ds-plate-card-metric\">86%</div><div class=\"ds-plate-divider\"></div><p class=\"ds-plate-card-meta\">72-hour rolling tissue recovery window</p></article>",
+      "css": ".ds-plate-card { background: #1B1D22; color: #F3F2EE; border: 1px solid #2D313B; border-radius: 16px; padding: 16px; font-family: 'Schibsted Grotesk', sans-serif; transition: border-color 0.16s ease; } .ds-plate-card:hover { border-color: #484E5C; } .ds-plate-card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; } .ds-plate-card-head h3 { margin: 0; font-size: 16px; font-weight: 700; } .ds-pill-ready { background: #12382B; color: #C7F7E3; border-radius: 6px; padding: 4px 8px; font-size: 11px; font-weight: 600; } .ds-plate-card-metric { margin-top: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; } .ds-plate-divider { height: 1px; background: #2D313B; margin: 12px 0; } .ds-plate-card-meta { margin: 0; font-size: 12px; color: #A8AFBD; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "High-emphasis cobalt plate CTA meeting 48dp touch height.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Sync Hevy Workouts</button>",
+      "css": ".ds-btn-primary { min-height: 48px; padding: 12px 20px; border-radius: 10px; border: none; background: #5B8BFF; color: #08122B; font-family: 'Schibsted Grotesk', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: filter 0.15s ease, transform 0.12s ease; } .ds-btn-primary:hover { filter: brightness(1.08); } .ds-btn-primary:focus-visible { outline: 2px solid #DCE5FF; outline-offset: 2px; } .ds-btn-primary:active { transform: scale(0.985); }"
+    },
+    {
+      "name": "Outlined Button",
+      "kind": "button",
+      "refersTo": "button-outlined",
+      "description": "Secondary action button framed with a 1px outline border and transparent fill.",
+      "html": "<button class=\"ds-btn-outlined\" type=\"button\">Check On-Device AI</button>",
+      "css": ".ds-btn-outlined { min-height: 48px; padding: 12px 20px; border-radius: 10px; border: 1px solid #484E5C; background: transparent; color: #F3F2EE; font-family: 'Schibsted Grotesk', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease; } .ds-btn-outlined:hover { background: #252830; border-color: #5B8BFF; } .ds-btn-outlined:focus-visible { outline: 2px solid #5B8BFF; outline-offset: 2px; }"
+    },
+    {
+      "name": "PlateStatusPill",
+      "kind": "chip",
+      "refersTo": "status-pill",
+      "description": "Compact 6px-radius semantic status badge with optional leading vector icon.",
+      "html": "<span class=\"ds-status-pill\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z\"/></svg><span>On-Device AI</span></span>",
+      "css": ".ds-status-pill { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; background: #1A2C59; color: #DCE5FF; font-family: 'Schibsted Grotesk', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }"
+    },
+    {
+      "name": "CalibratedPlateBar",
+      "kind": "custom",
+      "refersTo": "plate-bar",
+      "description": "Segmented IPF plate-band capacity meter showing discrete filled cells over a recessed track.",
+      "html": "<div class=\"ds-plate-bar\" role=\"progressbar\" aria-valuenow=\"70\" aria-valuemin=\"0\" aria-valuemax=\"100\"><span class=\"ds-plate-cell ds-filled\"></span><span class=\"ds-plate-cell ds-filled\"></span><span class=\"ds-plate-cell ds-filled\"></span><span class=\"ds-plate-cell ds-filled\"></span><span class=\"ds-plate-cell\"></span></div>",
+      "css": ".ds-plate-bar { display: flex; gap: 3px; width: 100%; height: 10px; } .ds-plate-cell { flex: 1; height: 100%; border-radius: 3px; background: #2F333D; } .ds-plate-cell.ds-filled { background: #34D399; }"
+    },
+    {
+      "name": "ChatInput",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Hairline-framed AI Coach prompt composer paired with a 48dp cobalt send button.",
+      "html": "<div class=\"ds-chat-bar\"><input class=\"ds-chat-input\" type=\"text\" placeholder=\"Ask your on-device coach...\" /><button class=\"ds-chat-send\" type=\"button\" aria-label=\"Send\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M2.01 21L23 12 2.01 3 2 10l15 2-15 2z\"/></svg></button></div>",
+      "css": ".ds-chat-bar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #121316; border-top: 1px solid #2D313B; } .ds-chat-input { flex: 1; min-height: 44px; padding: 10px 14px; border-radius: 14px; border: 1px solid #2D313B; background: #1B1D22; color: #F3F2EE; font-family: 'Schibsted Grotesk', sans-serif; font-size: 15px; } .ds-chat-input::placeholder { color: #A8AFBD; } .ds-chat-input:focus-visible { outline: none; border-color: #5B8BFF; } .ds-chat-send { width: 48px; height: 48px; border-radius: 14px; border: none; background: #5B8BFF; color: #08122B; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; } .ds-chat-send:hover { filter: brightness(1.08); } .ds-chat-send:focus-visible { outline: 2px solid #DCE5FF; outline-offset: 2px; }"
+    },
+    {
+      "name": "FlexBottomNavigation",
+      "kind": "nav",
+      "refersTo": "bottom-nav",
+      "description": "4-destination Material 3 NavigationBar separated by a 1dp top hairline divider.",
+      "html": "<nav class=\"ds-bottom-nav\" aria-label=\"Primary\"><a class=\"ds-nav-item ds-active\" href=\"#today\"><span class=\"ds-nav-pill\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z\"/></svg></span><span>Today</span></a><a class=\"ds-nav-item\" href=\"#history\"><span class=\"ds-nav-pill\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z\"/></svg></span><span>History</span></a><a class=\"ds-nav-item\" href=\"#planner\"><span class=\"ds-nav-pill\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z\"/></svg></span><span>Planner</span></a><a class=\"ds-nav-item\" href=\"#coach\"><span class=\"ds-nav-pill\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M13 2a8 8 0 0 0-8 8c0 2.7 1.3 5.1 3.4 6.5V20h7v-2h2a2 2 0 0 0 2-2v-3l1.6-.8-.6-1.8L19 9a7 7 0 0 0-6-7z\"/></svg></span><span>Coach</span></a></nav>",
+      "css": ".ds-bottom-nav { display: grid; grid-template-columns: repeat(4, 1fr); background: #1B1D22; border-top: 1px solid #2D313B; padding: 8px 4px; font-family: 'Schibsted Grotesk', sans-serif; } .ds-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 48px; justify-content: center; text-decoration: none; color: #A8AFBD; font-size: 12px; font-weight: 500; } .ds-nav-pill { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 32px; border-radius: 16px; transition: background 0.15s ease; } .ds-nav-item.ds-active { color: #5B8BFF; font-weight: 700; } .ds-nav-item.ds-active .ds-nav-pill { background: #1A2C59; color: #DCE5FF; } .ds-nav-item:hover .ds-nav-pill { background: #252830; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Calibrated Plate Rack",
+    "overview": "FlexInsight is built for strength and resistance-training athletes checking composite readiness, next planned sessions, training load, PR history, and private on-device AI coaching between sets on Android phones. The visual system draws directly from calibrated IPF competition barbell plates and stamped gym iron: flat, matte surfaces anchored by crisp 1dp machined hairlines, tabular competition numerals, and color bands restricted to functional status.\n\nBoth Magnesium Chalk light (ChalkGround / ChalkSurface) and Cast Iron dark (IronGround / IronSurface) are first-class operating themes selectable via System, Light, or Dark preferences. Light mode stays crisp under bright gym skylights; dark mode reduces glare in dim garage or evening sessions. Generic glowing gradients, drop-shadow glass cards, decorative rainbow accents, and uppercase eyebrow kickers above headings are explicitly rejected across every surface.",
+    "keyCharacteristics": [
+      "Dual first-class chalk-light and cast-iron-dark material grounds tuned to WCAG 2.1 AA contrast (>= 4.5:1 body text, >= 3:1 large display).",
+      "Flat tonal containers framed by 1dp machined hairline borders (ChalkHairline / IronHairline), zero drop shadows, and zero nested bordered cards.",
+      "Strictly semantic IPF plate accents: Cobalt for primary interactive controls and AI coaching surfaces; Emerald Green, Warm Amber, and Crimson reserved solely for recovery readiness, moderate fatigue/deload alerts, and strain/error states.",
+      "Three-voice bundled typography (Barlow Condensed for heavy lift numerals and screen titles, Schibsted Grotesk for UI copy, Chivo Mono with tnum for weights, timestamps, and set telemetry)."
+    ],
+    "rules": [
+      {
+        "name": "The Plate Color Law",
+        "body": "Plate hues (Green, Amber, Crimson) carry strictly diagnostic recovery, fatigue, or error meaning; never use semantic plate colors as decorative card accents, and never hardcode hex literals inside screen composables (the sole exception is the Glance FlexHomeWidget, which mirrors the exact Light/Dark ColorProvider pairs from Color.kt).",
+        "section": "colors"
+      },
+      {
+        "name": "The Contrast-Paired Container Rule",
+        "body": "Every light-mode status banner, pill, and icon container pairs dark ink (on*Container) on a high-lightness container (*ContainerLight) rather than raw white text on saturated amber or crimson, preserving >= 4.5:1 readability in bright light.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Lock Rule",
+        "body": "Every numeric telemetry value—lift weights, volume totals, sync timestamps, recovery percentages, and exercise indices—uses fontFeatureSettings = \"tnum\" via PlateNumeral* or MonoMetric* so columns never jitter as values update.",
+        "section": "typography"
+      },
+      {
+        "name": "The No-Kicker Rule",
+        "body": "Screen headers and cards never stack small uppercase eyebrow kickers above titles. Headings carry their own weight via scale, bold contrast, and a 1dp bottom divider (TopAppBar hairline).",
+        "section": "typography"
+      },
+      {
+        "name": "The Single-Boundary Rule",
+        "body": "Cards frame content once with BorderStroke(1.dp, FlexTheme.colors.hairline) at tonalElevation = 0.dp. Sub-regions inside a PlateCard separate using HorizontalDivider(1.dp, FlexTheme.colors.hairline) or unbordered tonal fills (surfaceContainerLow), never nested bordered cards.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Scrim-Free Chrome Rule",
+        "body": "TopAppBar and FlexBottomNavigation sit flush on the background/surface plane separated by a single 1.dp hairline divider instead of blurred glass or gradient fades.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do route every color through MaterialTheme.colorScheme or FlexTheme.colors (Color.kt) and verify contrast in both Light and Dark themes.",
+      "Do format every numeric telemetry string with PlateNumeral* (Barlow Condensed, tnum) or MonoMetric* (Chivo Mono, tnum).",
+      "Do enforce 48x48dp minimum touch targets on every clickable pill, chip, tab, icon button, and banner action.",
+      "Do separate subsections inside a PlateCard with 1.dp HorizontalDivider or unbordered tonal Box fills (surfaceContainerLow).",
+      "Do preserve navigationBarsPadding() and imePadding() on detail/full-screen destinations (Recovery, WorkoutDetail, AITrainer)."
+    ],
+    "donts": [
+      "Don't nest bordered Surface cards or bordered tiles inside a PlateCard or ExpandableExerciseCard.",
+      "Don't add drop shadows (tonalElevation > 0.dp, .shadow()), glass blur, or decorative gradient washes behind text or icons.",
+      "Don't add uppercase eyebrow kickers above section or screen headings.",
+      "Don't hardcode Color(0x...) inside screen or component composables (only Color.kt and Glance FlexHomeWidget.kt define day/night palette literals).",
+      "Don't use Unicode emojis or ad-hoc glyphs in place of Material Icons.Outlined / Icons.Filled vectors."
+    ]
+  }
+}

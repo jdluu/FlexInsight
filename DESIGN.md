@@ -1,261 +1,283 @@
-# DESIGN.md
+---
+name: "FlexInsight — Calibrated Plate Rack"
+description: "Tactile, daylight- and gym-legible Android training console inspired by calibrated IPF competition barbell plates and stamped gym iron."
+colors:
+  chalk-ground: "#F3F2EE"
+  chalk-surface: "#FFFFFF"
+  chalk-surface-alt: "#EAE8E1"
+  chalk-surface-highest: "#E0DDD4"
+  chalk-hairline: "#D6D3CB"
+  chalk-outline: "#B3AFA4"
+  ink-primary: "#13151A"
+  ink-secondary: "#4B505C"
+  ink-muted: "#6B7180"
+  iron-ground: "#121316"
+  iron-surface: "#1B1D22"
+  iron-surface-alt: "#252830"
+  iron-surface-highest: "#2F333D"
+  iron-hairline: "#2D313B"
+  iron-outline: "#484E5C"
+  chalk-ink: "#F3F2EE"
+  steel-secondary: "#A8AFBD"
+  steel-muted: "#818999"
+  cobalt-plate-light: "#1E4EC7"
+  on-cobalt-light: "#FFFFFF"
+  cobalt-container-light: "#DCE5FF"
+  on-cobalt-container-light: "#0C2464"
+  cobalt-plate-dark: "#5B8BFF"
+  on-cobalt-dark: "#08122B"
+  cobalt-container-dark: "#1A2C59"
+  on-cobalt-container-dark: "#DCE5FF"
+  green-plate-light: "#19734B"
+  on-green-light: "#FFFFFF"
+  green-container-light: "#D8F2E4"
+  on-green-container-light: "#0B3823"
+  green-plate-dark: "#34D399"
+  on-green-dark: "#06281B"
+  green-container-dark: "#12382B"
+  on-green-container-dark: "#C7F7E3"
+  amber-plate-light: "#B45309"
+  on-amber-light: "#FFFFFF"
+  amber-container-light: "#FEF0D6"
+  on-amber-container-light: "#4F2203"
+  amber-plate-dark: "#F59E0B"
+  on-amber-dark: "#291802"
+  amber-container-dark: "#3E290A"
+  on-amber-container-dark: "#FDE3B0"
+  crimson-plate-light: "#C62828"
+  on-crimson-light: "#FFFFFF"
+  crimson-container-light: "#FCE2E2"
+  on-crimson-container-light: "#5F0E0E"
+  crimson-plate-dark: "#F87171"
+  on-crimson-dark: "#340B0B"
+  crimson-container-dark: "#48191B"
+  on-crimson-container-dark: "#FCD6D6"
+typography:
+  display:
+    fontFamily: "Barlow Condensed, sans-serif"
+    fontSize: "44px"
+    fontWeight: 700
+    lineHeight: 1.05
+    letterSpacing: "-0.01em"
+    fontFeature: "tnum"
+  headline:
+    fontFamily: "Barlow Condensed, sans-serif"
+    fontSize: "24px"
+    fontWeight: 600
+    lineHeight: 1.17
+    letterSpacing: "0em"
+  title:
+    fontFamily: "Schibsted Grotesk, sans-serif"
+    fontSize: "16px"
+    fontWeight: 600
+    lineHeight: 1.38
+    letterSpacing: "0em"
+  body:
+    fontFamily: "Schibsted Grotesk, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: 1.47
+    letterSpacing: "0.007em"
+  label:
+    fontFamily: "Schibsted Grotesk, sans-serif"
+    fontSize: "12px"
+    fontWeight: 500
+    lineHeight: 1.33
+    letterSpacing: "0.02em"
+  mono-metric:
+    fontFamily: "Chivo Mono, monospace"
+    fontSize: "14px"
+    fontWeight: 500
+    lineHeight: 1.29
+    letterSpacing: "0em"
+    fontFeature: "tnum"
+rounded:
+  extra-small: "6px"
+  small: "10px"
+  medium: "14px"
+  large: "16px"
+  extra-large: "22px"
+spacing:
+  xs: "4px"
+  sm: "8px"
+  md: "12px"
+  base: "16px"
+  lg: "20px"
+  xl: "24px"
+components:
+  plate-card:
+    backgroundColor: "{colors.iron-surface}"
+    textColor: "{colors.chalk-ink}"
+    rounded: "{rounded.large}"
+    padding: "16px"
+  button-primary:
+    backgroundColor: "{colors.cobalt-plate-dark}"
+    textColor: "{colors.on-cobalt-dark}"
+    typography: "{typography.label}"
+    rounded: "{rounded.small}"
+    padding: "12px 16px"
+    height: "48px"
+  button-outlined:
+    backgroundColor: "{colors.iron-surface}"
+    textColor: "{colors.chalk-ink}"
+    typography: "{typography.label}"
+    rounded: "{rounded.small}"
+    padding: "12px 16px"
+    height: "48px"
+  status-pill:
+    backgroundColor: "{colors.cobalt-container-dark}"
+    textColor: "{colors.on-cobalt-container-dark}"
+    typography: "{typography.label}"
+    rounded: "{rounded.extra-small}"
+    padding: "4px 8px"
+  plate-bar:
+    backgroundColor: "{colors.iron-surface-highest}"
+    rounded: "{rounded.extra-small}"
+    height: "10px"
+  input-field:
+    backgroundColor: "{colors.iron-surface}"
+    textColor: "{colors.chalk-ink}"
+    typography: "{typography.body}"
+    rounded: "{rounded.medium}"
+    padding: "12px 16px"
+  bottom-nav:
+    backgroundColor: "{colors.iron-surface}"
+    textColor: "{colors.steel-secondary}"
+    height: "80px"
+---
 
-Visual design system for FlexInsight — color, typography, spacing, shape, and component
-conventions. Source of truth is `app/src/main/java/com/jdluu/flexinsight/ui/theme/` plus
-`ui/components/`. For build/test rules see [AGENTS.md](AGENTS.md); for features and setup see
-[README.md](README.md).
+# Design System: FlexInsight — Calibrated Plate Rack
 
-## Design direction
+## Overview
 
-A dark, data-dense training console: near-black backgrounds, one saturated electric-blue accent,
-generous corner radii, and numbers given visual weight through a geometric display face. Reference
-screenshots are in [`screenshots/`](screenshots/).
+**Creative North Star: "Calibrated Plate Rack"**
 
-Three principles hold across the app:
+FlexInsight is built for strength and resistance-training athletes checking composite readiness, next planned sessions, training load, PR history, and private on-device AI coaching between sets on Android phones. The visual system draws directly from calibrated IPF competition barbell plates and stamped gym iron: flat, matte surfaces anchored by crisp 1dp machined hairlines, tabular competition numerals, and color bands restricted to functional status.
 
-1. **Dark-first, light-supported.** Dark is the default and the design's home; light mode is a
-   supported alternative, not an afterthought.
-2. **Color carries meaning.** Blue is the app, amber and red are attention, green means recovered.
-   Never decorative color.
-3. **Stat-first hierarchy.** The number a user came for is the largest thing on screen.
+Both Magnesium Chalk light (`ChalkGround` / `ChalkSurface`) and Cast Iron dark (`IronGround` / `IronSurface`) are first-class operating themes selectable via System, Light, or Dark preferences. Light mode stays crisp under bright gym skylights; dark mode reduces glare in dim garage or evening sessions. Generic glowing gradients, drop-shadow glass cards, decorative rainbow accents, and uppercase eyebrow kickers above headings are explicitly rejected across every surface.
 
-## Color
+**Key Characteristics:**
+- Dual first-class chalk-light and cast-iron-dark material grounds tuned to WCAG 2.1 AA contrast (`>= 4.5:1` body text, `>= 3:1` large display).
+- Flat tonal containers framed by 1dp machined hairline borders (`ChalkHairline` / `IronHairline`), zero drop shadows, and zero nested bordered cards.
+- Strictly semantic IPF plate accents: Cobalt for primary interactive controls and AI coaching surfaces; Emerald Green, Warm Amber, and Crimson reserved solely for recovery readiness, moderate fatigue/deload alerts, and strain/error states.
+- Three-voice bundled typography (`Barlow Condensed` for heavy lift numerals and screen titles, `Schibsted Grotesk` for UI copy, `Chivo Mono` with `tnum` for weights, timestamps, and set telemetry).
 
-Defined in `ui/theme/Color.kt`. The dark palette is a slate scale (`#030712` → `#384459`) with an
-electric-blue primary; the light palette inverts to white surfaces with near-black text.
+## Colors
 
-### Brand
+All color tokens live in `app/src/main/java/com/jdluu/flexinsight/ui/theme/Color.kt` and resolve dynamically through `MaterialTheme.colorScheme` and `FlexTheme.colors` (`Theme.kt`), with dynamic wallpaper color disabled (`dynamicColor = false`) so plate-color meaning never shifts unpredictably.
 
-| Token | Hex | Role |
-| --- | --- | --- |
-| `Primary` | `#2E5BFF` | Electric blue. Primary actions, active nav, data accents |
-| `PrimaryDark` | `#0043CE` | Primary container (dark) |
-| `PrimaryLight` | `#78A9FF` | Primary container (light), secondary |
+### Primary
+- **Cobalt Plate Light** (`#1E4EC7`) / **Cobalt Plate Dark** (`#5B8BFF`): Primary actions, active bottom navigation text, sync action icon, active filter highlights, and AI coaching indicators.
+- **Cobalt Container Light** (`#DCE5FF`, on `#0C2464`) / **Cobalt Container Dark** (`#1A2C59`, on `#DCE5FF`): Active navigation indicator pill, on-device AI status pills, and primary-highlighted badges.
 
-`Primary` is the most-referenced color in the UI (52 uses) — the default accent for anything
-interactive or highlighted.
+### Secondary
+- **Green Plate Light** (`#19734B`, container `#D8F2E4` / `#0B3823`) / **Green Plate Dark** (`#34D399`, container `#12382B` / `#C7F7E3`): Recovered muscle readiness (`>= 70%`), PR markers, and sync success confirmation.
 
-### Surfaces
+### Tertiary
+- **Amber Plate Light** (`#B45309`, container `#FEF0D6` / `#4F2203`) / **Amber Plate Dark** (`#F59E0B`, container `#3E290A` / `#FDE3B0`): Moderate recovery (`35%–69%`), deload advisories, and view-only lock reminders.
+- **Crimson Plate Light** (`#C62828`, container `#FCE2E2` / `#5F0E0E`) / **Crimson Plate Dark** (`#F87171`, container `#48191B` / `#FCD6D6`): High muscle strain (`< 35%`), offline/network banners, API/sync errors, and destructive clear-cache actions.
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| `BackgroundDark` | `#030712` | App background, dark |
-| `BackgroundDarkAlt` / `SurfaceDark` | `#0F172A` | Secondary background |
-| `BackgroundLight` | `#F8FAFC` | App background, light |
-| `SurfaceCard` / `SurfaceVariant` | `#1E293B` | Card fill (dark) |
-| `SurfaceCardAlt` | `#334155` | Secondary container, selected rows |
-| `SurfaceHighlight` | `#384459` | Elevated / hover surface |
-| `SurfaceCardAltLight` | `#F1F5F9` | Light-theme container fill |
+### Neutral
+- **Magnesium Chalk Light Ground & Surfaces**: `ChalkGround` (`#F3F2EE`) screen background, `ChalkSurface` (`#FFFFFF`) elevated cards, `ChalkSurfaceAlt` (`#EAE8E1`) secondary tiles/pills, `ChalkSurfaceHighest` (`#E0DDD4`) calibrated bar tracks, `ChalkHairline` (`#D6D3CB`) 1dp dividers and card strokes, `ChalkOutline` (`#B3AFA4`) control outlines.
+- **Cast Iron Dark Ground & Surfaces**: `IronGround` (`#121316`) screen background, `IronSurface` (`#1B1D22`) elevated cards, `IronSurfaceAlt` (`#252830`) secondary tiles/pills, `IronSurfaceHighest` (`#2F333D`) calibrated bar tracks, `IronHairline` (`#2D313B`) 1dp dividers and card strokes, `IronOutline` (`#484E5C`) control outlines.
+- **Ink & Steel Typography**: `InkPrimary` (`#13151A`) / `InkSecondary` (`#4B505C`) / `InkMuted` (`#6B7180`) on light; `ChalkInk` (`#F3F2EE`) / `SteelSecondary` (`#A8AFBD`) / `SteelMuted` (`#818999`) on dark.
 
-### Text
+### Named Rules
+**The Plate Color Law.** Plate hues (`Green`, `Amber`, `Crimson`) carry strictly diagnostic recovery, fatigue, or error meaning; never use semantic plate colors as decorative card accents, and never hardcode hex literals inside screen composables (the sole exception is the Glance `FlexHomeWidget`, which mirrors the exact Light/Dark `ColorProvider` pairs from `Color.kt`).
 
-| Token | Hex | Use |
-| --- | --- | --- |
-| `onSurface` | `#FFFFFF` dark / `#0F172A` light | Primary text |
-| `TextSecondary` | `#94A3B8` | Labels, captions, supporting copy |
-| `TextTertiary` | `#64748B` | Least-important text, timestamps |
-
-### Semantic accents
-
-| Token | Hex | Meaning | Uses |
-| --- | --- | --- | --- |
-| `RedAccent` | `#EF4444` | Error, destructive, PR, failure | 23 |
-| `OrangeAccent` | `#FFA100` | Warning, deload alert, attention | 5 |
-| `PurpleAccent` | `#8B5CF6` | Secondary highlight | 1 |
-| `BlueAccent` | `#3B82F6` | Informational | 1 |
-
-`PurpleAccent` and `BlueAccent` are barely used — a gap rather than a palette hole, so don't reach
-for them by default. `Purple80`/`Pink80`/`Purple40` and friends in `Color.kt` are marked legacy;
-don't use them in new UI.
-
-### Status semantics
-
-- **Error / destructive / personal record** → `RedAccent`
-- **Warning, deload recommendation, sync failure** → `OrangeAccent`
-- **AI and insight surfaces** → `Primary` gradients at low alpha
-
-### Data-visualization scale
-
-Charts, heatmaps, and progress rings use a fixed three-stop scale, not the brand accents —
-green → amber → red maps to recovery state (`ui/components/MuscleHeatmap.kt:146`):
-
-| Recovery | Color | Meaning |
-| --- | --- | --- |
-| `>= 0.66` | `#66BB6A` | Recovered |
-| `0.33–0.66` | `#FFCA28` | Moderate |
-| `< 0.33` | `#EF5350` | Fatigued |
-
-These three are declared inline in `MuscleHeatmap.kt`, not in `Color.kt`. If another screen needs
-the same scale, promote them to `Color.kt` rather than re-declaring the hexes.
-
-### Theme wiring
-
-`FlexInsightTheme` (`ui/theme/Theme.kt`) supplies both schemes to `MaterialTheme`. Dynamic color is
-explicitly disabled (`dynamicColor = false`, and the parameter is ignored) so the brand palette
-survives on Android 12+. Theme is user-selectable in Settings as System / Light / Dark, stored via
-`UserPreferencesManager.themeFlow` and resolved in `MainActivity`.
+**The Contrast-Paired Container Rule.** Every light-mode status banner, pill, and icon container pairs dark ink (`on*Container`) on a high-lightness container (`*ContainerLight`) rather than raw white text on saturated amber or crimson, preserving `>= 4.5:1` readability in bright light.
 
 ## Typography
 
-Defined in `ui/theme/Type.kt`. Two Google fonts loaded through Play Services
-(`com.google.android.gms.fonts`) with a bundled certificate list.
+**Display Font:** `Barlow Condensed` (bundled `.ttf` weights `500`, `600`, `700` in `res/font/`)
+**Body Font:** `Schibsted Grotesk` (bundled variable font weights `400`, `500`, `600`, `700`)
+**Label/Mono Font:** `Chivo Mono` (bundled variable font weights `400`, `500`, `600`, `700` with `tnum`)
 
-| Family | Use |
-| --- | --- |
-| **Outfit** — geometric sans | Display and headline roles. Anything large or numeric |
-| **Inter** — neutral sans | Title, body, and label roles. Anything read in running text |
+**Character:** Compressed competition-plate display lettering creates dense, unmistakable telemetry readouts (`44sp` readiness percentage, `30sp` weekly volume totals) while neutral neo-grotesque body copy and tabular monospace figures keep set logs, rep counts, and timestamps vertically aligned under `1.3x` system font scaling.
 
-The split is the core typographic idea: **Outfit carries emphasis, Inter carries information.**
+### Hierarchy
+- **Display & Plate Numerals**: Material `displayLarge`–`displaySmall` (`52sp` / `40sp` / `32sp`, `Barlow Condensed Bold`, `tnum`) plus custom `PlateNumeralLarge` (`44sp`, `lineHeight = 46sp`), `PlateNumeralMedium` (`30sp`, `lineHeight = 32sp`), and `PlateNumeralSmall` (`22sp`, `SemiBold`, `lineHeight = 24sp`) for readiness hero percentages, PR weights, and summary metrics.
+- **Headline**: `headlineLarge` (`28sp Bold`) and `headlineMedium` (`24sp SemiBold`) in `Barlow Condensed` for `TopAppBar` screen headers; `headlineSmall` (`20sp Bold`) in `Schibsted Grotesk` for modal/subsection headings.
+- **Title**: `titleLarge` (`19sp Bold`), `titleMedium` (`16sp SemiBold`), and `titleSmall` (`14sp SemiBold`) in `Schibsted Grotesk` for card titles (`PlateCard`), section headers (`PlateSectionHeader`), and exercise rows.
+- **Body**: `bodyLarge` (`15sp Normal`, `lineHeight = 22sp`), `bodyMedium` (`14sp Normal`, `lineHeight = 20sp`), and `bodySmall` (`12sp Normal`, `lineHeight = 16sp`) in `Schibsted Grotesk` for coach responses, descriptions, and workout notes.
+- **Label & Mono Telemetry**: `labelLarge` (`14sp SemiBold`), `labelMedium` (`12sp Medium`), and `labelSmall` (`11sp SemiBold`) in `Schibsted Grotesk` for navigation tabs, chips, and buttons; `MonoMetricLarge` (`16sp SemiBold`), `MonoMetricMedium` (`14sp Medium`), and `MonoMetricSmall` (`12sp Medium`) in `Chivo Mono` (`tnum`) for set weights, dates, sync times, and percentages.
 
-| Material role | Font | Weight | Size / line height |
-| --- | --- | --- | --- |
-| `displayLarge` | Outfit | Bold | 57 / 64 |
-| `displayMedium` | Outfit | Bold | 45 / 52 |
-| `displaySmall` | Outfit | Bold | 36 / 44 |
-| `headlineLarge` | Outfit | SemiBold | 32 / 40 |
-| `headlineMedium` | Outfit | SemiBold | 28 / 36 |
-| `headlineSmall` | Outfit | Medium | 24 / 32 |
-| `titleLarge` | Outfit | Medium | 22 / 28 |
-| `titleMedium` | Inter | Medium | 16 / 24 |
-| `titleSmall` | Inter | Medium | 14 / 20 |
-| `bodyLarge` | Inter | Normal | 16 / 24 |
-| `bodyMedium` | Inter | Normal | 14 / 20 |
-| `bodySmall` | Inter | Normal | 12 / 16 |
-| `labelLarge` | Inter | Medium | 14 / 20 |
-| `labelMedium` | Inter | Medium | 12 / 16 |
-| `labelSmall` | Inter | Medium | 11 / 16 |
+### Named Rules
+**The Tabular Lock Rule.** Every numeric telemetry value—lift weights, volume totals, sync timestamps, recovery percentages, and exercise indices—uses `fontFeatureSettings = "tnum"` via `PlateNumeral*` or `MonoMetric*` so columns never jitter as values update.
 
-All sizes in `sp`. Outfit is loaded at Bold, SemiBold, and Medium; Inter at Medium and Normal.
+**The No-Kicker Rule.** Screen headers and cards never stack small uppercase eyebrow kickers above titles. Headings carry their own weight via scale, bold contrast, and a `1dp` bottom divider (`TopAppBar` hairline).
 
-## Spacing
+## Layout
 
-A 4 dp base grid. Measured usage across `ui/`:
+FlexInsight is a compact phone-first (`minSdk = 26`, `targetSdk = 36`) edge-to-edge Compose application wrapped in `MainActivity` (`enableEdgeToEdge()`) with a 4-destination Material 3 `NavigationBar`: **Today** (`Dashboard`), **History**, **Planner**, and **Coach** (`AITrainer`). Top-level destinations do not show a Back button; secondary flows (`Recovery`, `WorkoutDetail`, `HistoryAnalysis`, `PRList`, `Settings`) push above the bottom bar with a top-bar `ArrowBack` navigation icon that respects Android system Back and applies `.navigationBarsPadding()` and `.imePadding()`.
 
-| Value | Uses | Role |
-| --- | --- | --- |
-| `16.dp` | 162 | Default screen and card padding — the workhorse |
-| `8.dp` | 89 | Tight internal gaps, list item padding |
-| `12.dp` | 78 | Element-to-element spacing |
-| `4.dp` | 65 | Hairline gaps, icon-to-label |
-| `20.dp` | 54 | Section separation |
-| `24.dp` | 47 | Screen horizontal padding, major section breaks |
-| `1.dp` | 39 | Dividers and borders |
-| `2.dp` | 28 | Sub-pixel borders, progress track insets |
-| `6.dp` | 26 | Badge and chip padding |
-| `32.dp`+ | ~25 | Hero blocks and large empty states |
+Screen-level vertical scrolling uses `LazyColumn` on a `4dp` base grid: `16.dp` outer horizontal margins on `PlateCard` items, `14.dp`–`20.dp` vertical spacing between top-level cards, `16.dp` internal card padding (`14.dp`–`20.dp` for dense list rows or onboarding cards), and `24.dp` horizontal margins for onboarding/hero padding. Every interactive element—including the Dashboard sync pill, `FilterChip` muscle selectors, `History` tab selector (`48.dp`), `ChatInput` send button (`48.dp`), and `ErrorBanner` dismiss/retry controls—meets Android's `48×48dp` minimum interactive touch target.
 
-`1.dp` and `2.dp` are legitimate — dividers and borders, not spacing. Prefer `16.dp` as the default;
-`24.dp` at screen edges, `8.dp` inside a card.
+`FlexHomeWidget` (`widget/FlexHomeWidget.kt`) targets Android Home Screen Glance widgets (`14.dp` outer padding, `12dp×10dp` inner metric card) using synced `Day`/`Night` `ColorProvider` values identical to `Color.kt`.
 
-## Shape
+## Elevation & Depth
 
-Corner radii cluster on four values. There is no `Shapes` object — radii are passed inline to
-`RoundedCornerShape`.
+FlexInsight uses **zero drop shadows and zero tonal surface tint elevation** (`tonalElevation = 0.dp` on `PlateCard` and `NavigationBar`). Depth comes strictly from step contrast between the screen ground (`ChalkGround` / `IronGround`), card surface (`ChalkSurface` / `IronSurface`), and recessed track containers (`ChalkSurfaceAlt` / `IronSurfaceAlt`), bounded by `1.dp` machined hairline strokes (`FlexTheme.colors.hairline`).
 
-| Radius | Uses | Role |
-| --- | --- | --- |
-| `16.dp` | 24 | Cards and large containers — the default |
-| `12.dp` | 24 | Inner elements, chips, list rows |
-| `24.dp` | 16 | Hero surfaces, sheets, large panels |
-| `8.dp` | 14 | Small controls, inputs, compact cards |
-| `20.dp` | 8 | Mid-size containers |
-| `4–6.dp` | 13 | Badges, tags, tiny chips |
+### Named Rules
+**The Single-Boundary Rule.** Cards frame content once with `BorderStroke(1.dp, FlexTheme.colors.hairline)` at `tonalElevation = 0.dp`. Sub-regions inside a `PlateCard` separate using `HorizontalDivider(1.dp, FlexTheme.colors.hairline)` or unbordered tonal fills (`surfaceContainerLow`), never nested bordered cards.
 
-Cards are `16.dp`; anything smaller than a card steps down to `12.dp` or `8.dp`.
+**The Scrim-Free Chrome Rule.** `TopAppBar` and `FlexBottomNavigation` sit flush on the background/surface plane separated by a single `1.dp` hairline divider instead of blurred glass or gradient fades.
 
-## Elevation and depth
+## Shapes
 
-The dark palette builds depth through **surface lightness, not shadows** —
-`SurfaceDark` → `SurfaceCard` → `SurfaceCardAlt` → `SurfaceHighlight` is the elevation ladder.
-Shadows are not a primary depth cue; borders and tonal steps do the work.
+Corner geometry is defined centrally in `Shape.kt` (`FlexShapes`) and avoids soft oversized pill bubbles:
 
-## Gradients
-
-Gradients are used sparingly and read from `MaterialTheme.colorScheme` rather than raw hex, so they
-follow the active theme:
-
-- `Brush.verticalGradient` — onboarding and bottom-nav surfaces (scrim/fade into background)
-- `Brush.linearGradient` — AI surfaces: AI Trainer header, chat bubbles, planner insights, integration cards
-- `Brush.radialGradient` — empty states and progress rings (glow behind an icon or focal point)
-
-The radial glow behind an empty state or ring is a recurring motif — `EmptyState.kt:44`,
-`HistoryStats.kt:307`, `PlannerCalendar.kt:105`.
+- **Extra Small (`6.dp`)**: `PlateStatusPill`, status tags, and legend swatches (with `3.dp` cells inside `CalibratedPlateBar`).
+- **Small (`10.dp`)**: Primary/outlined `Button`s, `FilterChip`s, `Onboarding` text fields/icon badges, `History` tab indicator, and `WorkoutExercises` index tiles.
+- **Medium (`14.dp`)**: `ErrorBanner` alerts, `ChatInput` field, and `EmptyState` icon container.
+- **Large (`16.dp`)**: Standard `PlateCard` containers, workout rows, expandable exercise cards, and `ChatBubble` messages.
+- **Extra Large (`22.dp`)**: Dialogs and large overlay containers.
 
 ## Components
 
-Shared composables live in `ui/components/` and should be reused rather than rebuilt per screen.
+Shared primitives reside in `app/src/main/java/com/jdluu/flexinsight/ui/components/` and `ui/screens/*/parts/`:
 
-| Component | Purpose |
-| --- | --- |
-| `BottomNavigation` | Top-level nav — Dashboard, History, AI Trainer, Planner, Profile — with a vertical-gradient scrim |
-| `EmptyState` | Radially-glowed icon + title + body + optional action |
-| `ErrorBanner` | Inline error surface, red at 15% alpha with a `RedAccent` border |
-| `MuscleHeatmap` | Muscle-group recovery heatmap using the three-stop recovery scale |
-| `NetworkStatusIndicator` | Offline badge (`RedAccent` at 20% alpha) |
-| `SyncStatusIndicator` | Sync state pill; red on failure |
-| `ShimmerEffect` | Linear-gradient loading shimmer |
-| `Skeletons` | Placeholder shapes for loading states |
+### Buttons
+- **Shape:** Machined medium-tight corners (`10.dp` / `MaterialTheme.shapes.small`).
+- **Primary:** Material `Button` with `primary` fill (`#1E4EC7` light / `#5B8BFF` dark), `onPrimary` label (`labelLarge`), `heightIn(min = 48.dp)`, and `0.dp` shadow elevation.
+- **Secondary / Outlined / Ghost:** Material `OutlinedButton` with `1dp` `outline` border (`ChalkOutline` / `IronOutline`), and `TextButton` in `primary` cobalt for inline section actions (`PlateSectionHeader` trailing links, `ErrorBanner` retry).
 
-State conventions in `ui/common/State.kt`: `LoadingState` and `UiError` standardize loading and
-error presentation across every screen. `ui/utils/UnitConverter.kt` handles Imperial/Metric
-conversion, so units are a data concern, never a per-screen decision.
+### Chips
+- **Style:** `PlateStatusPill` (`extraSmall` `6.dp` radius, `8dp × 4dp` padding, semantic `*Container` fill with `on*Container` `labelSmall` text, optional `13dp` leading Material icon) and Material 3 `FilterChip` (`small` `10.dp` radius, `8dp` color dot, `Chivo Mono` percentage readout, `1.5dp` `primary` border when selected).
+- **State:** Unselected chips use `surfaceContainerLow` + `hairline` border; selected chips shift to `primaryContainer` / `onPrimaryContainer` + `1.5dp` `primary` border.
 
-## Motion
+### Cards / Containers
+- **Corner Style:** `16.dp` (`MaterialTheme.shapes.large`).
+- **Background:** `MaterialTheme.colorScheme.surface` (`#FFFFFF` light / `#1B1D22` dark); `surfaceContainerLow` for `EmptyStateIllustration`; semantic `*Container` (`moderateContainer` / `primaryContainer.copy(0.55f)`) for deload and AI insight callouts.
+- **Shadow Strategy:** `0.dp` elevation (flat-by-default).
+- **Border:** Single `BorderStroke(1.dp, FlexTheme.colors.hairline)`.
+- **Internal Padding:** `16.dp` default (`14.dp` compact list rows, `20.dp` onboarding cards), separated internally by `1.dp` `HorizontalDivider`.
 
-Motion is functional. `ShimmerEffect` animates a linear gradient for indeterminate loading;
-`MuscleHeatmap` and progress rings animate value changes. There is no shared motion spec — keep
-transitions short and purposeful rather than expressive.
+### Inputs / Fields
+- **Style:** `OutlinedTextField` (`10.dp` `small` radius) on Onboarding and Recovery notes; hairline-framed transparent `TextField` (`14.dp` `medium` radius) paired with a `48.dp` `FilledIconButton` send control in `ChatInput`.
+- **Focus / Error:** Uses Material 3 `primary` border on focus and `error` (`CrimsonPlate*`) container/supporting text on validation failure.
 
-## Widget
+### Navigation
+- **Style:** `FlexBottomNavigation` renders a `1.dp` top `HorizontalDivider` above a flat (`tonalElevation = 0.dp`) Material 3 `NavigationBar` (`Today`, `History`, `Planner`, `Coach`), honoring `WindowInsets.navigationBars`. Selected items highlight with `primaryContainer` indicator pill, `Filled` Material icon (`onPrimaryContainer`), and `Bold` `primary` label; unselected items use `Outlined` Material icons and `onSurfaceVariant`.
 
-`widget/FlexHomeWidget.kt` is Glance and **cannot use the Compose theme**. It hardcodes dark values:
-`#0F172A` background, `#94A3B8` primary text, `#64748B` secondary. The widget is therefore
-dark-only by construction. If the palette changes, update the widget in the same change.
+### Signature Components
+- **`CalibratedPlateBar`**: Segmented horizontal capacity bar (`3–10` cells, `3.dp` spacing, `3.dp` radius, `8–10dp` height) rendered over `FlexTheme.colors.chalkTrack` to visualize recovery capacity, weekly session goals, and onboarding step progress.
+- **`MuscleHeatmap`**: Fixed-scale (`220×380` virtual design space) bilateral anatomical plate silhouette (`Front` / `Back`) drawn on Compose `Canvas` using semantic recovery fills (`>= 70%` green, `35%–69%` amber, `< 35%` crimson) and `2.5dp` `onSurface` highlight strokes for selected muscle groups.
+- **`FlexHomeWidget`**: Glance app widget mirroring `ChalkGround`/`IronGround`, `ChalkSurface`/`IronSurface`, `CobaltPlate*`, and recovery plate semantics directly via `ColorProvider`.
 
-## Accessibility
+## Do's and Don'ts
 
-Measured WCAG 2.1 contrast ratios for the dark theme, computed from the token values above:
+### Do:
+- **Do** route every color through `MaterialTheme.colorScheme` or `FlexTheme.colors` (`Color.kt`) and verify contrast in both Light and Dark themes.
+- **Do** format every numeric telemetry string with `PlateNumeral*` (`Barlow Condensed`, `tnum`) or `MonoMetric*` (`Chivo Mono`, `tnum`).
+- **Do** enforce `48×48dp` minimum touch targets on every clickable pill, chip, tab, icon button, and banner action.
+- **Do** separate subsections inside a `PlateCard` with `1.dp` `HorizontalDivider` or unbordered tonal `Box` fills (`surfaceContainerLow`).
+- **Do** preserve `navigationBarsPadding()` and `imePadding()` on detail/full-screen destinations (`Recovery`, `WorkoutDetail`, `AITrainer`).
 
-| Pairing | Ratio | Result |
-| --- | --- | --- |
-| `onSurface` white on `SurfaceCard` | 15.6 | AAA |
-| `TextSecondary` on `BackgroundDark` | 7.9 | AAA |
-| Black on `PrimaryLight` | 8.9 | AAA |
-| White on `PrimaryDark` | 7.8 | AAA |
-| `TextSecondary` on `SurfaceCard` | 5.7 | AA |
-| White on `Primary` | 5.2 | AA |
-| `Primary` on white | 5.2 | AA |
-| Recovery green `#66BB6A` on `SurfaceCard` | 6.2 | AA |
-| `TextTertiary` on `BackgroundDark` | 4.2 | AA-large |
-| `RedAccent` on `SurfaceCard` | 3.9 | AA-large |
-
-Dark theme is in good shape: body text passes AA everywhere, and only `TextTertiary` and large
-accent text land in the AA-large band.
-
-### Known accessibility gaps
-
-Two measured failures, recorded not fixed.
-
-1. **`TextSecondary` in light mode — 2.56:1, fails AA.** `TextSecondary` (`#94A3B8`) is hardcoded
-   in **57 places** across `ui/` rather than read from `MaterialTheme.colorScheme`, so it does not
-   adapt when a user selects the Light theme. On light surfaces it falls well below 4.5:1. Fix by
-   routing these through `colorScheme.onSurfaceVariant` (already correctly `#64748B` in the light
-   scheme).
-2. **`onTertiary` in light mode — 2.03:1, fails AA.** `LightColorScheme` sets
-   `onTertiary = Color.White` on `tertiary = OrangeAccent` (`#FFA100`). The dark scheme uses black
-   and scores 10.4:1. Light's `onTertiary` should be black or a dark brown.
-
-Related: `RedAccent` reaches only ~3.9:1 as text on card surfaces — acceptable for large text and
-icons, not for body-size red text.
-
-## Conventions for UI changes
-
-- Reuse `ui/components/` before writing a new shared composable; if you need one twice, promote it.
-- Take colors from `MaterialTheme.colorScheme` or the tokens in `Color.kt` — never inline a raw hex
-  in a screen. Inline hexes currently exist and are the root cause of the light-mode failures above.
-- Radii come from the 16/12/8 ladder. Default card padding `16.dp`, screen padding `24.dp`.
-- A new status color means a new semantic token in `Color.kt` with a documented meaning, not a local hex.
-- Outfit for display and stat values, Inter for body and labels.
-- Check both themes. If a color is not theme-aware, say so in the PR.
-- Touch targets: use Material defaults; the current UI relies on component padding rather than
-  custom sizing.
+### Don't:
+- **Don't** nest bordered `Surface` cards or bordered tiles inside a `PlateCard` or `ExpandableExerciseCard`.
+- **Don't** add drop shadows (`tonalElevation > 0.dp`, `.shadow()`), glass blur, or decorative gradient washes behind text or icons.
+- **Don't** add uppercase eyebrow kickers above section or screen headings.
+- **Don't** hardcode `Color(0x...)` inside screen or component composables (only `Color.kt` and Glance `FlexHomeWidget.kt` define day/night palette literals).
+- **Don't** use Unicode emojis or ad-hoc glyphs in place of Material `Icons.Outlined` / `Icons.Filled` vectors.
