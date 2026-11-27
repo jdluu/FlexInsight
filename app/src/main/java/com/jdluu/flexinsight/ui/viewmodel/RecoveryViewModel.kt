@@ -2,6 +2,8 @@ package com.jdluu.flexinsight.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jdluu.flexinsight.core.dispatchers.DefaultDispatcherProvider
+import com.jdluu.flexinsight.core.dispatchers.DispatcherProvider
 import com.jdluu.flexinsight.core.errors.ErrorHandler
 import com.jdluu.flexinsight.core.errors.Result
 import com.jdluu.flexinsight.data.ai.FlexAIClient
@@ -54,7 +56,8 @@ class RecoveryViewModel @Inject constructor(
     private val detectDeloadUseCase: DetectDeloadUseCase,
     private val healthConnectRepository: HealthConnectRepository,
     private val userPreferencesManager: UserPreferencesManager,
-    private val aiClient: FlexAIClient
+    private val aiClient: FlexAIClient,
+    private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecoveryUiState())
@@ -64,7 +67,7 @@ class RecoveryViewModel @Inject constructor(
     private var notesEditedLocally = false
 
     init {
-        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+        viewModelScope.launch(dispatcherProvider.io) {
             for (write in prefsWriteChannel) {
                 write()
             }

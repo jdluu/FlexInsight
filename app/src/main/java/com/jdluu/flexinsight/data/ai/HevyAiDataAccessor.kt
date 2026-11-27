@@ -1,6 +1,7 @@
 package com.jdluu.flexinsight.data.ai
 
 import com.jdluu.flexinsight.core.errors.Result
+import com.jdluu.flexinsight.core.logger.AppLogger
 import com.jdluu.flexinsight.data.health.HealthConnectRepository
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
@@ -104,7 +105,7 @@ class HevyAiDataAccessor @Inject constructor(
                 )
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed aggregate stats", e)
+            AppLogger.e("Failed aggregate stats", e, TAG)
             PromptBuilder.TrainingSummary(base = null, fourWeekTrendPctChange = null, weeklyGoal = null)
         }
 
@@ -124,7 +125,7 @@ class HevyAiDataAccessor @Inject constructor(
                 )
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed recent workouts", e)
+            AppLogger.e("Failed recent workouts", e, TAG)
             emptyList()
         }
 

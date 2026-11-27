@@ -3,10 +3,12 @@
 package com.jdluu.flexinsight.data.ai
 
 import android.content.Context
-import android.util.Log
+import com.jdluu.flexinsight.BuildConfig
+import com.jdluu.flexinsight.core.dispatchers.DefaultDispatcherProvider
+import com.jdluu.flexinsight.core.dispatchers.DispatcherProvider
 import com.jdluu.flexinsight.core.errors.ApiError
 import com.jdluu.flexinsight.core.errors.Result
-import com.jdluu.flexinsight.BuildConfig
+import com.jdluu.flexinsight.core.logger.AppLogger
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
 import com.google.mlkit.genai.common.DownloadStatus
 import com.google.mlkit.genai.common.FeatureStatus
@@ -17,7 +19,6 @@ import com.google.mlkit.genai.prompt.PromptPrefix
 import com.google.mlkit.genai.prompt.TextPart
 import com.google.mlkit.genai.prompt.generateContentRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -35,7 +36,8 @@ import javax.inject.Singleton
 @Singleton
 class GeminiNanoClient @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val userPreferencesManager: UserPreferencesManager
+    private val userPreferencesManager: UserPreferencesManager,
+    private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 ) : FlexAIClient {
 
     private val generativeModel: GenerativeModel by lazy {
@@ -74,7 +76,7 @@ class GeminiNanoClient @Inject constructor(
         }
 
         return prepareMutex.withLock {
-            withContext(Dispatchers.IO) {
+            withContext(dispatcherProvider.io) {
                 try {
                     when (resolveFeatureStatus()) {
                         FeatureStatus.AVAILABLE -> {
@@ -95,7 +97,7 @@ class GeminiNanoClient @Inject constructor(
                                 }
                             }
                             if (failed != null) {
-                                Result.Error(ApiError.Unknown(failed?.message ?: "Model download failed"))
+                                Result.Error(ApiError.Unknown(failed.message ?: "Model download failed"))
                             } else if (resolveFeatureStatus() == FeatureStatus.AVAILABLE) {
                                 Result.Success(Unit)
                             } else {
@@ -110,10 +112,10 @@ class GeminiNanoClient @Inject constructor(
                         }
                     }
                 } catch (e: GenAiException) {
-                    Log.e(TAG, "GenAI prepare failed", e)
+                    AppLogger.e("GenAI prepare failed", e, TAG)
                     Result.Error(ApiError.Unknown(e.message ?: "AI preparation failed"))
                 } catch (e: Exception) {
-                    Log.e(TAG, "AI prepare failed", e)
+                    AppLogger.e("AI prepare failed", e, TAG)
                     Result.Error(ApiError.Unknown(e.message ?: "AI preparation failed"))
                 }
             }
@@ -124,12 +126,12 @@ class GeminiNanoClient @Inject constructor(
         prompt: String,
         history: List<Pair<String, String>>
     ): Result<String> {
-        return withContext(Dispatchers.IO) {
+        return withContext(dispatcherProvider.io) {
             if (isForceAiEnabled()) {
                 return@withContext try {
                     generateRealResponse(prompt, history)
                 } catch (e: Exception) {
-                    Log.w(TAG, "Force-AI dev fallback after real inference failed", e)
+                    AppLogger.w("Force-AI dev fallback after real inference failed", e, TAG)
                     generateDevFallbackResponse(prompt)
                 }
             }
@@ -142,10 +144,10 @@ class GeminiNanoClient @Inject constructor(
             try {
                 generateRealResponse(prompt, history)
             } catch (e: GenAiException) {
-                Log.e(TAG, "generateContent failed", e)
+                AppLogger.e("generateContent failed", e, TAG)
                 Result.Error(ApiError.Unknown(e.message ?: "AI generation failed"))
             } catch (e: Exception) {
-                Log.e(TAG, "generateContent failed", e)
+                AppLogger.e("generateContent failed", e, TAG)
                 Result.Error(ApiError.Unknown(e.message ?: "AI generation failed"))
             }
         }
@@ -194,10 +196,10 @@ class GeminiNanoClient @Inject constructor(
                 }
             }
         } catch (e: GenAiException) {
-            Log.e(TAG, "generateContentStream failed", e)
+            AppLogger.e("generateContentStream failed", e, TAG)
             emit("Error: ${e.message ?: "Streaming failed"}")
         } catch (e: Exception) {
-            Log.e(TAG, "generateContentStream failed", e)
+            AppLogger.e("generateContentStream failed", e, TAG)
             emit("Error: ${e.message ?: "Streaming failed"}")
         }
     }
@@ -249,7 +251,7 @@ class GeminiNanoClient @Inject constructor(
         if (!isWarmedUp) {
             generativeModel.warmup()
             isWarmedUp = true
-            Log.d(TAG, "Gemini Nano warmup complete for ${context.packageName}")
+            AppLogger.d("Gemini Nano warmup complete for ${context.packageName}", TAG)
         }
     }
 

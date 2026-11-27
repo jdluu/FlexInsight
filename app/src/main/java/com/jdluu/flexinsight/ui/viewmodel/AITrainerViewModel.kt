@@ -3,6 +3,7 @@ package com.jdluu.flexinsight.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jdluu.flexinsight.core.errors.Result
+import com.jdluu.flexinsight.core.logger.AppLogger
 import com.jdluu.flexinsight.data.ai.AiFeatureStatus
 import com.jdluu.flexinsight.data.ai.FlexAIClient
 import com.jdluu.flexinsight.data.ai.HevyAiDataAccessor
@@ -16,6 +17,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -60,51 +62,60 @@ class AITrainerViewModel @Inject constructor(
 
             when (status) {
                 AiFeatureStatus.Ready, AiFeatureStatus.Downloadable -> {
-                    _uiState.value = _uiState.value.copy(
-                        isPreparingModel = true,
-                        aiStatusMessage = statusMessage
-                    )
+                    _uiState.update {
+                        it.copy(
+                            isPreparingModel = true,
+                            aiStatusMessage = statusMessage
+                        )
+                    }
                     when (val prepared = aiClient.prepareModel()) {
                         is Result.Success -> {
-                            _uiState.value = _uiState.value.copy(
-                                isAiAvailable = true,
-                                isPreparingModel = false,
-                                aiStatusMessage = null
-                            )
+                            _uiState.update {
+                                it.copy(
+                                    isAiAvailable = true,
+                                    isPreparingModel = false,
+                                    aiStatusMessage = null
+                                )
+                            }
                             syncHevyDataThenGreet()
                         }
                         is Result.Error -> {
-                            _uiState.value = _uiState.value.copy(
-                                isAiAvailable = false,
-                                isPreparingModel = false,
-                                aiStatusMessage = prepared.error.message,
-                                messages = listOf(
-                                    ChatMessage(
-                                        "ai",
-                                        prepared.error.message
-                                            ?: "On-device AI is not ready. Open the app again after Gemini Nano finishes downloading.",
-                                        false
+                            _uiState.update {
+                                it.copy(
+                                    isAiAvailable = false,
+                                    isPreparingModel = false,
+                                    aiStatusMessage = prepared.error.message,
+                                    messages = listOf(
+                                        ChatMessage(
+                                            "ai",
+                                            prepared.error.message,
+                                            false
+                                        )
                                     )
                                 )
-                            )
+                            }
                         }
                     }
                 }
                 AiFeatureStatus.Downloading -> {
-                    _uiState.value = _uiState.value.copy(
-                        isAiAvailable = false,
-                        isPreparingModel = true,
-                        aiStatusMessage = statusMessage,
-                        messages = listOf(ChatMessage("ai", statusMessage, false))
-                    )
+                    _uiState.update {
+                        it.copy(
+                            isAiAvailable = false,
+                            isPreparingModel = true,
+                            aiStatusMessage = statusMessage,
+                            messages = listOf(ChatMessage("ai", statusMessage, false))
+                        )
+                    }
                 }
                 AiFeatureStatus.Unavailable -> {
-                    _uiState.value = _uiState.value.copy(
-                        isAiAvailable = false,
-                        isPreparingModel = false,
-                        aiStatusMessage = statusMessage,
-                        messages = listOf(ChatMessage("ai", statusMessage, false))
-                    )
+                    _uiState.update {
+                        it.copy(
+                            isAiAvailable = false,
+                            isPreparingModel = false,
+                            aiStatusMessage = statusMessage,
+                            messages = listOf(ChatMessage("ai", statusMessage, false))
+                        )
+                    }
                 }
             }
         }
@@ -113,22 +124,24 @@ class AITrainerViewModel @Inject constructor(
     private fun syncHevyDataThenGreet() {
         viewModelScope.launch {
             if (apiKeyManager.hasApiKey()) {
-                _uiState.value = _uiState.value.copy(
-                    isSyncingHevyData = true,
-                    aiStatusMessage = "Syncing your Hevy workouts…"
-                )
+                _uiState.update {
+                    it.copy(
+                        isSyncingHevyData = true,
+                        aiStatusMessage = "Syncing your Hevy workouts…"
+                    )
+                }
                 val syncJob = async {
                     when (val result = flexRepository.syncAllData()) {
                         is Result.Success -> syncCoordinator.onSyncComplete()
                         is Result.Error ->
-                            android.util.Log.w(
-                                "AITrainerViewModel",
-                                "Hevy sync before AI chat failed: ${result.error.message}"
+                            AppLogger.w(
+                                "Hevy sync before AI chat failed: ${result.error.message}",
+                                tag = TAG
                             )
                     }
                 }
                 syncJob.await()
-                _uiState.value = _uiState.value.copy(isSyncingHevyData = false, aiStatusMessage = null)
+                _uiState.update { it.copy(isSyncingHevyData = false, aiStatusMessage = null) }
             }
             loadDynamicContextAndGreeting()
         }
@@ -140,22 +153,25 @@ class AITrainerViewModel @Inject constructor(
     }
 
     private suspend fun loadDynamicContextAndGreeting() {
-        _uiState.value = _uiState.value.copy(isTyping = true)
+        _uiState.update { it.copy(isTyping = true) }
 
         val snapshot = try {
             refreshHevyContext()
         } catch (e: Exception) {
-            android.util.Log.e("AITrainerViewModel", "Failed to build AI context", e)
+            AppLogger.e("Failed to build AI context", e, TAG)
+            _uiState.update { it.copy(isTyping = false) }
             return@loadDynamicContextAndGreeting
         }
 
         systemContext = snapshot.text
-        _uiState.value = _uiState.value.copy(
-            hasHevyData = snapshot.hasWorkoutData,
-            hevyWorkoutCount = snapshot.workoutCount,
-            usesLiveExerciseHistory = snapshot.usesLiveExerciseHistory,
-            isOfflineAi = true
-        )
+        _uiState.update {
+            it.copy(
+                hasHevyData = snapshot.hasWorkoutData,
+                hevyWorkoutCount = snapshot.workoutCount,
+                usesLiveExerciseHistory = snapshot.usesLiveExerciseHistory,
+                isOfflineAi = true
+            )
+        }
 
         val greetingPrompt = buildString {
             append(snapshot.text)
@@ -170,7 +186,7 @@ class AITrainerViewModel @Inject constructor(
         }
 
         val result = aiClient.generateResponse(greetingPrompt)
-        _uiState.value = _uiState.value.copy(isTyping = false)
+        _uiState.update { it.copy(isTyping = false) }
 
         if (result is Result.Success) {
             addMessage(ChatMessage("ai", result.data, false))
@@ -188,23 +204,25 @@ class AITrainerViewModel @Inject constructor(
         if (text.isBlank() || !_uiState.value.isAiAvailable) return
 
         addMessage(ChatMessage("user", text, true))
-        _uiState.value = _uiState.value.copy(isTyping = true, error = null)
+        _uiState.update { it.copy(isTyping = true, error = null) }
 
         viewModelScope.launch {
             val snapshot = try {
                 refreshHevyContext(userQuery = text)
             } catch (e: Exception) {
-                android.util.Log.e("AITrainerViewModel", "Failed to refresh context", e)
+                AppLogger.e("Failed to refresh context", e, TAG)
                 null
             }
 
-            snapshot?.let {
-                systemContext = it.text
-                _uiState.value = _uiState.value.copy(
-                    hasHevyData = it.hasWorkoutData,
-                    hevyWorkoutCount = it.workoutCount,
-                    usesLiveExerciseHistory = it.usesLiveExerciseHistory
-                )
+            snapshot?.let { snap ->
+                systemContext = snap.text
+                _uiState.update {
+                    it.copy(
+                        hasHevyData = snap.hasWorkoutData,
+                        hevyWorkoutCount = snap.workoutCount,
+                        usesLiveExerciseHistory = snap.usesLiveExerciseHistory
+                    )
+                }
             }
 
             val history = mutableListOf<Pair<String, String>>()
@@ -224,13 +242,13 @@ class AITrainerViewModel @Inject constructor(
             try {
                 aiClient.generateResponseStream(text, history).collect { chunk ->
                     if (chunk.startsWith("Error:")) {
-                        _uiState.value = _uiState.value.copy(isTyping = false, error = chunk)
+                        _uiState.update { it.copy(isTyping = false, error = chunk) }
                     } else {
                         fullResponseBuilder.append(chunk)
                         val currentText = fullResponseBuilder.toString()
 
                         if (!currentMessageStarted) {
-                            _uiState.value = _uiState.value.copy(isTyping = false)
+                            _uiState.update { it.copy(isTyping = false) }
                             addMessage(ChatMessage("ai", currentText, false))
                             currentMessageStarted = true
                         } else {
@@ -239,15 +257,15 @@ class AITrainerViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e("AITrainerViewModel", "Failed to generate stream response", e)
-                _uiState.value = _uiState.value.copy(isTyping = false, error = e.message)
+                AppLogger.e("Failed to generate stream response", e, TAG)
+                _uiState.update { it.copy(isTyping = false, error = e.message) }
                 if (!currentMessageStarted) {
                     addMessage(
                         ChatMessage("ai", "I'm having trouble thinking right now. Please try again.", false)
                     )
                 }
             } finally {
-                _uiState.value = _uiState.value.copy(isTyping = false)
+                _uiState.update { it.copy(isTyping = false) }
             }
         }
     }
@@ -255,42 +273,45 @@ class AITrainerViewModel @Inject constructor(
     fun refreshHevySync() {
         viewModelScope.launch {
             if (!apiKeyManager.hasApiKey()) return@launch
-            _uiState.value = _uiState.value.copy(isSyncingHevyData = true)
+            _uiState.update { it.copy(isSyncingHevyData = true) }
             syncManager.syncNow()
             when (val result = flexRepository.syncAllData()) {
                 is Result.Success -> syncCoordinator.onSyncComplete()
                 is Result.Error ->
-                    android.util.Log.e(
-                        "AITrainerViewModel",
-                        "Manual Hevy sync failed: ${result.error.message}"
+                    AppLogger.e(
+                        "Manual Hevy sync failed: ${result.error.message}",
+                        tag = TAG
                     )
             }
             val snapshot = refreshHevyContext()
             systemContext = snapshot.text
-            _uiState.value = _uiState.value.copy(
-                isSyncingHevyData = false,
-                hasHevyData = snapshot.hasWorkoutData,
-                hevyWorkoutCount = snapshot.workoutCount,
-                usesLiveExerciseHistory = snapshot.usesLiveExerciseHistory
-            )
+            _uiState.update {
+                it.copy(
+                    isSyncingHevyData = false,
+                    hasHevyData = snapshot.hasWorkoutData,
+                    hevyWorkoutCount = snapshot.workoutCount,
+                    usesLiveExerciseHistory = snapshot.usesLiveExerciseHistory
+                )
+            }
         }
     }
 
     private fun updateLastMessage(newText: String) {
-        val currentList = _uiState.value.messages.toMutableList()
-        if (currentList.isNotEmpty()) {
-            val lastMsg = currentList.last()
-            if (lastMsg.sender == "ai") {
-                currentList[currentList.lastIndex] = lastMsg.copy(text = newText)
-                _uiState.value = _uiState.value.copy(messages = currentList)
+        _uiState.update { state ->
+            val currentList = state.messages.toMutableList()
+            if (currentList.isNotEmpty() && currentList.last().sender == "ai") {
+                currentList[currentList.lastIndex] = currentList.last().copy(text = newText)
+                state.copy(messages = currentList)
+            } else {
+                state
             }
         }
     }
 
     private fun addMessage(message: ChatMessage) {
-        val currentList = _uiState.value.messages.toMutableList()
-        currentList.add(message)
-        _uiState.value = _uiState.value.copy(messages = currentList)
+        _uiState.update { state ->
+            state.copy(messages = state.messages + message)
+        }
     }
 
     private fun AiFeatureStatus.toUserMessage(): String = when (this) {
@@ -299,5 +320,9 @@ class AITrainerViewModel @Inject constructor(
         AiFeatureStatus.Downloading -> "Gemini Nano is downloading. This may take a few minutes on first use."
         AiFeatureStatus.Unavailable ->
             "On-device AI isn't available on this device. Test on a supported physical phone with Gemini Nano (AICore). Debug builds can enable stub responses under Settings → Debug AI UI stubs — that does not validate real Nano."
+    }
+
+    companion object {
+        private const val TAG = "AITrainerViewModel"
     }
 }

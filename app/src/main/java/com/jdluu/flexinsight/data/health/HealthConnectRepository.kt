@@ -11,10 +11,12 @@ import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import com.jdluu.flexinsight.core.dispatchers.DefaultDispatcherProvider
+import com.jdluu.flexinsight.core.dispatchers.DispatcherProvider
+import com.jdluu.flexinsight.core.logger.AppLogger
 import com.jdluu.flexinsight.data.model.Workout
 import com.jdluu.flexinsight.data.preferences.UserPreferencesManager
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.ZoneId
@@ -25,7 +27,8 @@ import javax.inject.Singleton
 @Singleton
 class HealthConnectRepository @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val userPreferencesManager: UserPreferencesManager
+    private val userPreferencesManager: UserPreferencesManager,
+    private val dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 ) {
     val requiredPermissions: Set<String> = setOf(
         HealthPermission.getReadPermission(SleepSessionRecord::class),
@@ -41,12 +44,12 @@ class HealthConnectRepository @Inject constructor(
     fun isSdkAvailable(): Boolean =
         getSdkStatus() == HealthConnectClient.SDK_AVAILABLE
 
-    suspend fun getClientOrNull(): HealthConnectClient? = withContext(Dispatchers.IO) {
+    suspend fun getClientOrNull(): HealthConnectClient? = withContext(dispatcherProvider.io) {
         if (!isSdkAvailable()) return@withContext null
         try {
             HealthConnectClient.getOrCreate(context)
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Health Connect client unavailable", e)
+            AppLogger.e("Health Connect client unavailable", e, TAG)
             null
         }
     }
@@ -61,7 +64,7 @@ class HealthConnectRepository @Inject constructor(
         }
     }
 
-    suspend fun readSnapshot(): HealthConnectSnapshot = withContext(Dispatchers.IO) {
+    suspend fun readSnapshot(): HealthConnectSnapshot = withContext(dispatcherProvider.io) {
         if (!userPreferencesManager.getHealthConnectEnabled()) {
             return@withContext HealthConnectSnapshot(isAvailable = isSdkAvailable())
         }
@@ -140,7 +143,7 @@ class HealthConnectRepository @Inject constructor(
                     session.exerciseType != ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed reading Health Connect data", e)
+            AppLogger.e("Failed reading Health Connect data", e, TAG)
         }
 
         HealthConnectSnapshot(
@@ -157,7 +160,7 @@ class HealthConnectRepository @Inject constructor(
     /**
      * Writes completed Hevy strength sessions to Health Connect (when enabled and not view-only).
      */
-    suspend fun writeWorkoutsToHealthConnect(workouts: List<Workout>): Int = withContext(Dispatchers.IO) {
+    suspend fun writeWorkoutsToHealthConnect(workouts: List<Workout>): Int = withContext(dispatcherProvider.io) {
         if (!userPreferencesManager.getHealthConnectEnabled()) return@withContext 0
         if (!userPreferencesManager.getHealthConnectWriteEnabled()) return@withContext 0
         if (userPreferencesManager.getViewOnlyMode()) return@withContext 0
@@ -186,7 +189,7 @@ class HealthConnectRepository @Inject constructor(
                 client.insertRecords(listOf(record))
                 written++
             } catch (e: Exception) {
-                android.util.Log.w(TAG, "Failed to write workout ${workout.id} to Health Connect", e)
+                AppLogger.w("Failed to write workout ${workout.id} to Health Connect", e, TAG)
             }
         }
         written
