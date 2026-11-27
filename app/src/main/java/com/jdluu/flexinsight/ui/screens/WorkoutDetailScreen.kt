@@ -22,8 +22,9 @@ import com.jdluu.flexinsight.ui.components.ErrorBanner
 import com.jdluu.flexinsight.ui.screens.workoutdetail.parts.*
 import com.jdluu.flexinsight.ui.utils.UnitConverter
 import com.jdluu.flexinsight.ui.viewmodel.WorkoutDetailViewModel
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
@@ -119,7 +120,9 @@ fun WorkoutDetailScreen(
     }
 
     val dateString = remember(workout.startTime) {
-        SimpleDateFormat("EEE, MMM d, yyyy", Locale.getDefault()).format(Date(workout.startTime))
+        DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", Locale.getDefault())
+            .withZone(ZoneId.systemDefault())
+            .format(Instant.ofEpochMilli(workout.startTime))
     }
     val workoutTitle = workout.name ?: stringResource(id = R.string.workout_default_title)
     val totalReps = remember(uiState.exercisesWithSets) {

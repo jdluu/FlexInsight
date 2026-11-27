@@ -26,8 +26,9 @@ import com.jdluu.flexinsight.ui.theme.FlexTheme
 import com.jdluu.flexinsight.ui.theme.MonoMetricMedium
 import com.jdluu.flexinsight.ui.theme.PlateNumeralMedium
 import java.text.NumberFormat
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
@@ -217,8 +218,9 @@ fun ProfileSection(
 }
 
 private fun formatMemberSince(timestamp: Long): String {
-    val dateFormat = SimpleDateFormat("MMM yyyy", Locale.getDefault())
-    return dateFormat.format(Date(timestamp))
+    val dateFormat = DateTimeFormatter.ofPattern("MMM yyyy", Locale.getDefault())
+        .withZone(ZoneId.systemDefault())
+    return dateFormat.format(Instant.ofEpochMilli(timestamp))
 }
 
 private fun getDisplayName(profileInfo: ProfileInfo?): String {

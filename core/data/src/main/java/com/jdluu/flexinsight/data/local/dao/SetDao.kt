@@ -12,6 +12,9 @@ interface SetDao {
     @Query("SELECT * FROM sets WHERE exerciseId = :exerciseId ORDER BY number")
     suspend fun getSetsByExerciseId(exerciseId: String): List<SetEntity>
 
+    @Query("SELECT * FROM sets WHERE exerciseId IN (:exerciseIds) ORDER BY number")
+    suspend fun getSetsByExerciseIds(exerciseIds: List<String>): List<SetEntity>
+
     @Query("SELECT * FROM sets WHERE isPersonalRecord = 1 ORDER BY id DESC LIMIT :limit")
     fun getRecentPRsFlow(limit: Int): Flow<List<SetEntity>>
 

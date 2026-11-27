@@ -72,16 +72,14 @@ object WorkoutMapper {
             val hasTimezoneOffset = isoString.contains("+") ||
                 (isoString.length > 19 && isoString.substring(19).contains("-"))
 
-            if (hasTimezoneOffset) {
-                val cleanString = isoString.replace(Regex("[+-]\\d{2}:\\d{2}$"), "Z")
-                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
-                dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
-                dateFormat.parse(cleanString)?.time ?: System.currentTimeMillis()
+            val normalized = if (hasTimezoneOffset) {
+                isoString.replace(Regex("[+-]\\d{2}:\\d{2}$"), "Z")
             } else {
-                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
-                dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
-                dateFormat.parse(isoString)?.time ?: System.currentTimeMillis()
+                isoString
             }
+            java.time.LocalDateTime.parse(normalized, ISO_UTC_FORMATTER)
+                .toInstant(java.time.ZoneOffset.UTC)
+                .toEpochMilli()
         } catch (e: Exception) {
             try {
                 java.time.Instant.parse(isoString).toEpochMilli()
@@ -90,4 +88,8 @@ object WorkoutMapper {
             }
         }
     }
+
+    private val ISO_UTC_FORMATTER: java.time.format.DateTimeFormatter =
+        java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
+            .withZone(java.time.ZoneOffset.UTC)
 }

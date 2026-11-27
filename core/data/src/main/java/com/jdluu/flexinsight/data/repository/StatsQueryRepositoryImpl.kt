@@ -62,10 +62,7 @@ class StatsQueryRepositoryImpl(
 
     override suspend fun calculateWorkoutStats(workout: Workout): SingleWorkoutStats = withContext(dispatcherProvider.default) {
         val exercises = exerciseDao.getExercisesByWorkoutId(workout.id).map(EntityMapper::toDomain)
-        val exerciseIds = exercises.map { it.id }
-        val allSets = exerciseIds.flatMap { exerciseId ->
-            setDao.getSetsByExerciseId(exerciseId).map(EntityMapper::toDomain)
-        }
+        val allSets = fetchSetsByExerciseIds(exercises.map { it.id })
 
         val totalSets = allSets.size
         val totalVolume = VolumeCalculator.totalSetVolume(allSets)
@@ -229,14 +226,8 @@ class StatsQueryRepositoryImpl(
 
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(dayStart, dayEnd).first()
             .map(EntityMapper::toDomain)
-        val workoutIds = workouts.map { it.id }
-        val allExercises = workoutIds.flatMap { workoutId ->
-            exerciseDao.getExercisesByWorkoutId(workoutId).map(EntityMapper::toDomain)
-        }
-        val exerciseIds = allExercises.map { it.id }
-        val allSets = exerciseIds.flatMap { exerciseId ->
-            setDao.getSetsByExerciseId(exerciseId).map(EntityMapper::toDomain)
-        }
+        val allExercises = fetchExercisesByWorkoutIds(workouts.map { it.id })
+        val allSets = fetchSetsByExerciseIds(allExercises.map { it.id })
 
         val exercisesByWorkout = allExercises.groupBy { it.workoutId }
         val setsByExercise = allSets.groupBy { it.exerciseId }
@@ -303,14 +294,8 @@ class StatsQueryRepositoryImpl(
     private suspend fun calculateTotalVolumeForWorkouts(workouts: List<Workout>): Double {
         if (workouts.isEmpty()) return 0.0
 
-        val workoutIds = workouts.map { it.id }
-        val allExercises = workoutIds.flatMap { workoutId ->
-            exerciseDao.getExercisesByWorkoutId(workoutId).map(EntityMapper::toDomain)
-        }
-        val exerciseIds = allExercises.map { it.id }
-        val allSets = exerciseIds.flatMap { exerciseId ->
-            setDao.getSetsByExerciseId(exerciseId).map(EntityMapper::toDomain)
-        }
+        val allExercises = fetchExercisesByWorkoutIds(workouts.map { it.id })
+        val allSets = fetchSetsByExerciseIds(allExercises.map { it.id })
 
         return VolumeCalculator.totalVolume(workouts, allExercises, allSets)
     }
@@ -398,9 +383,8 @@ class StatsQueryRepositoryImpl(
         val workouts = workoutDao.getWorkoutsByDateRangeFlow(startDate, endDate).first()
             .map(EntityMapper::toDomain)
             .filter { !it.isDeleted }
-        val workoutIds = workouts.map { it.id }
-        val allExercises = workoutIds.flatMap { exerciseDao.getExercisesByWorkoutId(it).map(EntityMapper::toDomain) }
-        val allSets = allExercises.map { it.id }.flatMap { setDao.getSetsByExerciseId(it).map(EntityMapper::toDomain) }
+        val allExercises = fetchExercisesByWorkoutIds(workouts.map { it.id })
+        val allSets = fetchSetsByExerciseIds(allExercises.map { it.id })
         val weekFields = java.time.temporal.WeekFields.of(java.util.Locale.getDefault())
         return workouts.groupBy { workout ->
             Instant.ofEpochMilli(workout.startTime)
@@ -421,14 +405,11 @@ class StatsQueryRepositoryImpl(
     private suspend fun computePRDetails(limit: Int): List<PRDetails> {
         val prSets = setDao.getRecentPRsFlow(limit).first().map(EntityMapper::toDomain)
         if (prSets.isEmpty()) return emptyList()
-        val exerciseIds = prSets.map { it.exerciseId }.distinct()
-        val exercises = exerciseIds.mapNotNull { exerciseDao.getExerciseById(it)?.let(EntityMapper::toDomain) }
-        val workouts = exercises.map { it.workoutId }.distinct().associateWith {
-            workoutDao.getWorkoutById(it)?.let(EntityMapper::toDomain)
-        }
+        val exercisesById = fetchExercisesByIds(prSets.map { it.exerciseId }).associateBy { it.id }
+        val workoutsById = fetchWorkoutsByIds(exercisesById.values.map { it.workoutId }).associateBy { it.id }
         return prSets.mapNotNull { set ->
-            val exercise = exercises.find { it.id == set.exerciseId } ?: return@mapNotNull null
-            val workout = workouts[exercise.workoutId] ?: return@mapNotNull null
+            val exercise = exercisesById[set.exerciseId] ?: return@mapNotNull null
+            val workout = workoutsById[exercise.workoutId] ?: return@mapNotNull null
             val weight = set.weight ?: return@mapNotNull null
             PRDetails(
                 exerciseName = exercise.name,
@@ -448,13 +429,12 @@ class StatsQueryRepositoryImpl(
             .map(EntityMapper::toDomain)
             .filter { !it.isDeleted }
         if (workouts.isEmpty()) return emptyList()
-        val workoutIds = workouts.map { it.id }
-        val allExercises = workoutIds.flatMap { exerciseDao.getExercisesByWorkoutId(it).map(EntityMapper::toDomain) }
-        val allSets = allExercises.associate { it.id to setDao.getSetsByExerciseId(it.id).map(EntityMapper::toDomain) }
+        val allExercises = fetchExercisesByWorkoutIds(workouts.map { it.id })
+        val allSetsByExercise = fetchSetsByExerciseIds(allExercises.map { it.id }).groupBy { it.exerciseId }
         val muscleGroupData = mutableMapOf<String, Pair<Double, Int>>()
         allExercises.forEach { exercise ->
             val muscleGroup = exerciseRepository.getMuscleGroupForExercise(exercise) ?: return@forEach
-            val sets = allSets[exercise.id] ?: emptyList()
+            val sets = allSetsByExercise[exercise.id] ?: emptyList()
             val exerciseVolume = VolumeCalculator.totalSetVolume(sets)
             val current = muscleGroupData[muscleGroup] ?: (0.0 to 0)
             muscleGroupData[muscleGroup] = (current.first + exerciseVolume) to (current.second + sets.size)
@@ -478,10 +458,10 @@ class StatsQueryRepositoryImpl(
         val workouts = workoutDao.getWorkoutsSinceFlow(sevenDaysAgo).first()
             .map(EntityMapper::toDomain)
             .filter { !it.isDeleted }
+        val exercisesByWorkout = fetchExercisesByWorkoutIds(workouts.map { it.id }).groupBy { it.workoutId }
         val lastTrainedMap = mutableMapOf<MuscleGroup, Long>()
         workouts.sortedByDescending { it.startTime }.forEach { workout ->
-            exerciseDao.getExercisesByWorkoutId(workout.id)
-                .map(EntityMapper::toDomain)
+            (exercisesByWorkout[workout.id] ?: emptyList())
                 .mapNotNull { MuscleGroup.fromString(exerciseRepository.getMuscleGroupForExercise(it)) }
                 .distinct()
                 .forEach { group ->
@@ -491,5 +471,33 @@ class StatsQueryRepositoryImpl(
                 }
         }
         RecoveryScoreCalculator.muscleRecoveryStatus(now, lastTrainedMap)
+    }
+
+    private suspend fun fetchExercisesByWorkoutIds(workoutIds: List<String>) =
+        if (workoutIds.isEmpty()) emptyList()
+        else workoutIds.distinct().chunked(SQLITE_MAX_BIND_PARAMS).flatMap { chunk ->
+            exerciseDao.getExercisesByWorkoutIds(chunk).map(EntityMapper::toDomain)
+        }
+
+    private suspend fun fetchExercisesByIds(exerciseIds: List<String>) =
+        if (exerciseIds.isEmpty()) emptyList()
+        else exerciseIds.distinct().chunked(SQLITE_MAX_BIND_PARAMS).flatMap { chunk ->
+            exerciseDao.getExercisesByIds(chunk).map(EntityMapper::toDomain)
+        }
+
+    private suspend fun fetchSetsByExerciseIds(exerciseIds: List<String>) =
+        if (exerciseIds.isEmpty()) emptyList()
+        else exerciseIds.distinct().chunked(SQLITE_MAX_BIND_PARAMS).flatMap { chunk ->
+            setDao.getSetsByExerciseIds(chunk).map(EntityMapper::toDomain)
+        }
+
+    private suspend fun fetchWorkoutsByIds(workoutIds: List<String>) =
+        if (workoutIds.isEmpty()) emptyList()
+        else workoutIds.distinct().chunked(SQLITE_MAX_BIND_PARAMS).flatMap { chunk ->
+            workoutDao.getWorkoutsByIds(chunk).map(EntityMapper::toDomain)
+        }
+
+    companion object {
+        private const val SQLITE_MAX_BIND_PARAMS = 500
     }
 }

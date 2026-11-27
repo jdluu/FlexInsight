@@ -189,9 +189,7 @@ class WorkoutMutationRepositoryImpl(
     }
 
     private fun timestampToIso8601(timestampMillis: Long): String {
-        val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
-        dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
-        return dateFormat.format(java.util.Date(timestampMillis))
+        return ISO_UTC_FORMATTER.format(java.time.Instant.ofEpochMilli(timestampMillis))
     }
 
     private suspend fun syncWorkoutsFromEvents(): Result<Unit> {
@@ -372,5 +370,8 @@ class WorkoutMutationRepositoryImpl(
 
     companion object {
         private const val SYNC_DETAIL_CONCURRENCY = 3
+        private val ISO_UTC_FORMATTER: java.time.format.DateTimeFormatter =
+            java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US)
+                .withZone(java.time.ZoneOffset.UTC)
     }
 }

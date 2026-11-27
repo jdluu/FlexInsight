@@ -26,8 +26,9 @@ import com.jdluu.flexinsight.ui.theme.FlexTheme
 import com.jdluu.flexinsight.ui.theme.MonoMetricMedium
 import com.jdluu.flexinsight.ui.theme.PlateNumeralSmall
 import com.jdluu.flexinsight.ui.utils.UnitConverter
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
@@ -139,7 +140,10 @@ fun LastSessionAnalysisCard(
     useMetric: Boolean = false,
     onClick: () -> Unit = {}
 ) {
-    val dateFormatter = remember { SimpleDateFormat("EEE, MMM d", Locale.getDefault()) }
+    val dateFormatter = remember {
+        DateTimeFormatter.ofPattern("EEE, MMM d", Locale.getDefault())
+            .withZone(ZoneId.systemDefault())
+    }
 
     if (workout == null) {
         EmptyStateIllustration(
@@ -185,7 +189,7 @@ fun LastSessionAnalysisCard(
                 )
             }
             Text(
-                text = dateFormatter.format(Date(workout.startTime)),
+                text = dateFormatter.format(Instant.ofEpochMilli(workout.startTime)),
                 style = MonoMetricMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
