@@ -1,24 +1,28 @@
 package com.jdluu.flexinsight.ui.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.jdluu.flexinsight.data.sync.SyncState
-import com.jdluu.flexinsight.ui.theme.*
-import androidx.compose.ui.res.stringResource
 import com.jdluu.flexinsight.R
+import com.jdluu.flexinsight.data.sync.SyncState
+import com.jdluu.flexinsight.ui.theme.FlexTheme
+import com.jdluu.flexinsight.ui.theme.MonoMetricSmall
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * Composable for displaying sync status
- */
 @Composable
 fun SyncStatusIndicator(
     syncState: SyncState,
@@ -29,17 +33,17 @@ fun SyncStatusIndicator(
             Row(
                 modifier = modifier,
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(16.dp),
-                    color = Primary,
+                    modifier = Modifier.size(14.dp),
+                    color = MaterialTheme.colorScheme.primary,
                     strokeWidth = 2.dp
                 )
                 Text(
                     text = stringResource(id = R.string.sync_status_syncing),
-                    color = TextSecondary,
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -47,19 +51,25 @@ fun SyncStatusIndicator(
             Row(
                 modifier = modifier,
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
+                Icon(
+                    imageVector = Icons.Outlined.CheckCircle,
+                    contentDescription = null,
+                    tint = FlexTheme.colors.recovered,
+                    modifier = Modifier.size(15.dp)
+                )
                 Text(
                     text = stringResource(id = R.string.sync_status_synced),
-                    color = TextSecondary,
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 val timeAgo = formatTimeAgo(syncState.timestamp)
                 if (timeAgo != null) {
                     Text(
                         text = timeAgo,
-                        color = TextTertiary,
-                        fontSize = 11.sp
+                        style = MonoMetricSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -68,19 +78,23 @@ fun SyncStatusIndicator(
             Row(
                 modifier = modifier,
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
+                Icon(
+                    imageVector = Icons.Outlined.ErrorOutline,
+                    contentDescription = null,
+                    tint = FlexTheme.colors.strained,
+                    modifier = Modifier.size(15.dp)
+                )
                 Text(
                     text = stringResource(id = R.string.sync_status_failed),
-                    color = RedAccent,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                    style = MaterialTheme.typography.labelMedium,
+                    color = FlexTheme.colors.strained,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
-        is SyncState.Idle -> {
-            // Don't show anything when idle
-        }
+        is SyncState.Idle -> Unit
     }
 }
 
@@ -94,8 +108,8 @@ private fun formatTimeAgo(timestamp: Long): String? {
         diff < 3600_000 -> stringResource(id = R.string.sync_status_mins_ago, diff / 60_000)
         diff < 86400_000 -> stringResource(id = R.string.sync_status_hours_ago, diff / 3600_000)
         else -> {
-            val dateFormat = SimpleDateFormat("MMM d", Locale.getDefault())
-            dateFormat.format(Date(timestamp))
+            val formatter = remember { SimpleDateFormat("MMM d", Locale.getDefault()) }
+            formatter.format(Date(timestamp))
         }
     }
 }

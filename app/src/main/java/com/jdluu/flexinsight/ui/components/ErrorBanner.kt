@@ -1,98 +1,120 @@
 package com.jdluu.flexinsight.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.jdluu.flexinsight.ui.common.UiError
-import com.jdluu.flexinsight.ui.theme.*
-import androidx.compose.ui.res.stringResource
 import com.jdluu.flexinsight.R
+import com.jdluu.flexinsight.ui.common.UiError
+import com.jdluu.flexinsight.ui.theme.FlexTheme
 
 /**
- * Composable for displaying error messages with different styles based on error type
+ * Calibrated alert banner for displaying network, auth, server, or unexpected errors.
+ * Uses Material icons and guarantees a minimum 48dp dismiss touch target.
  */
 @Composable
 fun ErrorBanner(
     error: UiError,
     modifier: Modifier = Modifier,
+    onRetry: (() -> Unit)? = null,
     onDismiss: (() -> Unit)? = null
 ) {
-    val (backgroundColor, textColor, icon) = when (error) {
-        is UiError.Network -> Triple(
-            RedAccent.copy(alpha = 0.15f),
-            RedAccent,
-            "📡"
-        )
-        is UiError.Auth -> Triple(
-            RedAccent.copy(alpha = 0.15f),
-            RedAccent,
-            "🔐"
-        )
-        is UiError.Server -> Triple(
-            RedAccent.copy(alpha = 0.15f),
-            RedAccent,
-            "⚠️"
-        )
-        is UiError.Unknown -> Triple(
-            RedAccent.copy(alpha = 0.15f),
-            RedAccent,
-            "❌"
-        )
+    val icon = when (error) {
+        is UiError.Network -> Icons.Outlined.CloudOff
+        is UiError.Auth -> Icons.Outlined.Lock
+        is UiError.Server -> Icons.Outlined.WarningAmber
+        is UiError.Unknown -> Icons.Outlined.ErrorOutline
     }
 
+    val titleRes = when (error) {
+        is UiError.Network -> R.string.error_network
+        is UiError.Auth -> R.string.error_auth
+        is UiError.Server -> R.string.error_server
+        is UiError.Unknown -> R.string.error_unknown
+    }
+
+    val containerColor = FlexTheme.colors.strainedContainer
+    val contentColor = FlexTheme.colors.onStrainedContainer
+    val accentColor = FlexTheme.colors.strained
+
     Surface(
-        modifier = modifier,
-        color = backgroundColor,
-        shape = MaterialTheme.shapes.medium
+        modifier = modifier.fillMaxWidth(),
+        color = containerColor,
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(1.dp, accentColor.copy(alpha = 0.4f))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(
+                    start = 16.dp,
+                    end = if (onDismiss != null || onRetry != null) 6.dp else 16.dp,
+                    top = 12.dp,
+                    bottom = 12.dp
+                ),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(
-                text = icon,
-                fontSize = 20.sp
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = accentColor,
+                modifier = Modifier.size(22.dp)
             )
 
             Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Text(
-                    text = when (error) {
-                        is UiError.Network -> stringResource(id = R.string.error_network)
-                        is UiError.Auth -> stringResource(id = R.string.error_auth)
-                        is UiError.Server -> stringResource(id = R.string.error_server)
-                        is UiError.Unknown -> stringResource(id = R.string.error_unknown)
-                    },
-                    color = textColor,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
+                    text = stringResource(id = titleRes),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = contentColor
                 )
                 Text(
                     text = error.message,
-                    color = textColor.copy(alpha = 0.9f),
-                    fontSize = 12.sp
+                    style = MaterialTheme.typography.bodySmall,
+                    color = contentColor.copy(alpha = 0.9f)
                 )
+            }
+
+            if (onRetry != null) {
+                TextButton(
+                    onClick = onRetry,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                    colors = ButtonDefaults.textButtonColors(contentColor = accentColor)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.action_retry),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             if (onDismiss != null) {
                 IconButton(
                     onClick = onDismiss,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(48.dp)
                 ) {
-                    Text(
-                        text = "✕",
-                        color = textColor,
-                        fontSize = 16.sp
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = stringResource(id = R.string.action_close),
+                        tint = contentColor,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

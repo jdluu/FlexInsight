@@ -1,23 +1,77 @@
 package com.jdluu.flexinsight.ui.preview
 
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FitnessCenter
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.jdluu.flexinsight.data.model.MuscleGroup
 import com.jdluu.flexinsight.data.sync.SyncState
 import com.jdluu.flexinsight.domain.model.RoutineComparison
 import com.jdluu.flexinsight.domain.model.TrainingLoadScore
+import com.jdluu.flexinsight.ui.components.CalibratedPlateBar
 import com.jdluu.flexinsight.ui.components.EmptyStateIllustration
+import com.jdluu.flexinsight.ui.components.MuscleHeatmap
+import com.jdluu.flexinsight.ui.components.PlateCard
+import com.jdluu.flexinsight.ui.components.PlateStatusPill
 import com.jdluu.flexinsight.ui.components.SyncStatusIndicator
 import com.jdluu.flexinsight.ui.screens.dashboard.parts.TrainingLoadCard
 import com.jdluu.flexinsight.ui.screens.history.parts.ComparisonView
 import com.jdluu.flexinsight.ui.screens.history.parts.RoutineDiffCard
 import com.jdluu.flexinsight.ui.theme.FlexInsightTheme
+import com.jdluu.flexinsight.ui.theme.FlexTheme
+import com.jdluu.flexinsight.ui.theme.PlateNumeralLarge
 import com.jdluu.flexinsight.ui.viewmodel.ComparisonData
+
+@Preview(name = "Plate Card Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Plate Card Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun PlateCardPreview() {
+    FlexInsightTheme {
+        PlateCard(modifier = Modifier.padding(16.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                PlateStatusPill(
+                    label = "Ready",
+                    containerColor = FlexTheme.colors.recoveredContainer,
+                    contentColor = FlexTheme.colors.onRecoveredContainer
+                )
+                Text(
+                    text = "86%",
+                    style = PlateNumeralLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                CalibratedPlateBar(
+                    progress = 0.86f,
+                    activeColor = FlexTheme.colors.recovered
+                )
+            }
+        }
+    }
+}
+
+@Preview(name = "Muscle Heatmap Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Muscle Heatmap Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun MuscleHeatmapPreview() {
+    FlexInsightTheme {
+        MuscleHeatmap(
+            recoveryMap = mapOf(
+                MuscleGroup.CHEST to 0.85f,
+                MuscleGroup.BACK to 0.52f,
+                MuscleGroup.LEGS to 0.28f,
+                MuscleGroup.SHOULDERS to 0.90f
+            ),
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
 
 @Preview(name = "Empty state", showBackground = true)
 @Composable
