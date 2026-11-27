@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.*
@@ -27,6 +28,7 @@ fun DashboardHeader(
     isSyncing: Boolean,
     onSyncClick: () -> Unit,
     onProfileClick: () -> Unit,
+    onOpenPlateRack: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val calendar = Calendar.getInstance()
@@ -114,6 +116,13 @@ fun DashboardHeader(
                             )
                         }
                     }
+                }
+                IconButton(onClick = onOpenPlateRack) {
+                    Icon(
+                        imageVector = Icons.Outlined.FitnessCenter,
+                        contentDescription = stringResource(id = R.string.content_desc_plate_rack),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
                 }
                 IconButton(onClick = onProfileClick) {
                     Icon(

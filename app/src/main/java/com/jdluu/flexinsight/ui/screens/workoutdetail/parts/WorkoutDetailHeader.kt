@@ -3,6 +3,7 @@ package com.jdluu.flexinsight.ui.screens.workoutdetail.parts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import com.jdluu.flexinsight.ui.theme.MonoMetricMedium
 fun WorkoutDetailTopBar(
     onNavigateBack: () -> Unit,
     onShareClick: () -> Unit,
+    onOpenPlateRack: () -> Unit = {},
     shareEnabled: Boolean = true
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -44,6 +46,13 @@ fun WorkoutDetailTopBar(
                 }
             },
             actions = {
+                IconButton(onClick = onOpenPlateRack) {
+                    Icon(
+                        imageVector = Icons.Outlined.FitnessCenter,
+                        contentDescription = stringResource(id = R.string.content_desc_plate_rack),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
                 if (shareEnabled) {
                     IconButton(onClick = onShareClick) {
                         Icon(

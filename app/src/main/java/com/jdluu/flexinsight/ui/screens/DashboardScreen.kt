@@ -32,7 +32,8 @@ fun DashboardScreen(
     onNavigateToHistory: () -> Unit = {},
     onNavigateToAITrainer: () -> Unit = {},
     onNavigateToPlanner: () -> Unit = {},
-    onNavigateToSettings: () -> Unit = {}
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToPlateRack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val useMetric = uiState.units == "Metric"
@@ -47,7 +48,8 @@ fun DashboardScreen(
             lastSyncAt = uiState.lastSyncAt,
             isSyncing = uiState.isSyncing,
             onSyncClick = { viewModel.sync() },
-            onProfileClick = onNavigateToSettings
+            onProfileClick = onNavigateToSettings,
+            onOpenPlateRack = onNavigateToPlateRack
         )
 
         if (uiState.isLoading && uiState.workoutStats == null && uiState.latestWorkout == null) {

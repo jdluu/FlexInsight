@@ -323,4 +323,33 @@
 
     <string name="widget_name">FlexInsight</string>
     <string name="widget_description">Streak, recovery, and next workout</string>
+
+    <!-- Plate Rack & Rest Timer -->
+    <string name="plate_rack_title">Plate Rack</string>
+    <string name="content_desc_plate_rack">Plate calculator and rest timer</string>
+    <string name="plate_rack_target_weight">Target Weight</string>
+    <string name="plate_rack_decrease_weight">Decrease target weight</string>
+    <string name="plate_rack_increase_weight">Increase target weight</string>
+    <string name="plate_rack_exact_match">Exact load</string>
+    <string name="plate_rack_achievable_diff">Loads %1$s (%2$s)</string>
+    <string name="plate_rack_per_side_header">Load Per Side</string>
+    <string name="plate_rack_empty_bar">Empty bar (%1$s)</string>
+    <string name="plate_rack_bar_weight">Bar Weight</string>
+    <string name="plate_rack_available_plates">Rack Inventory</string>
+    <string name="plate_rack_warmup_title">Warm-Up Ramp</string>
+    <string name="plate_rack_warmup_hint">Tap any warm-up set to load the bar</string>
+    <string name="plate_rack_rest_timer">Rest Timer</string>
+    <string name="plate_rack_timer_ready">Ready</string>
+    <string name="plate_rack_timer_running">Resting</string>
+    <string name="plate_rack_timer_paused">Paused</string>
+    <string name="plate_rack_timer_complete">Rest Complete</string>
+    <string name="plate_rack_timer_start">Start</string>
+    <string name="plate_rack_timer_pause">Pause</string>
+    <string name="plate_rack_timer_resume">Resume</string>
+    <string name="plate_rack_timer_restart">Restart</string>
+    <string name="plate_rack_timer_add_15">+15s</string>
+    <string name="plate_rack_timer_reset">Reset</string>
+    <string name="plate_rack_banner_open">Open Plate Rack and Rest Timer</string>
+    <string name="plate_rack_banner_dismiss">Dismiss rest timer</string>
+    <string name="plate_rack_set_load_desc">Load %1$s in Plate Rack</string>
 </resources>
