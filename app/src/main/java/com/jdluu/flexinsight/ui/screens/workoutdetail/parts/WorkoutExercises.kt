@@ -1,37 +1,43 @@
 package com.jdluu.flexinsight.ui.screens.workoutdetail.parts
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.jdluu.flexinsight.ui.theme.Primary
-import com.jdluu.flexinsight.ui.theme.SurfaceCard
-import com.jdluu.flexinsight.ui.theme.TextSecondary
+import com.jdluu.flexinsight.ui.components.PlateSectionHeader
+import com.jdluu.flexinsight.ui.components.PlateStatusPill
+import com.jdluu.flexinsight.ui.components.rememberReducedMotion
+import com.jdluu.flexinsight.ui.theme.FlexTheme
+import com.jdluu.flexinsight.ui.theme.MonoMetricMedium
+import com.jdluu.flexinsight.ui.theme.MonoMetricSmall
 import com.jdluu.flexinsight.ui.utils.UnitConverter
 import com.jdluu.flexinsight.ui.viewmodel.ExerciseWithSets
+import java.util.Locale
 
 data class SetData(
     val number: Int,
@@ -50,39 +56,32 @@ fun ExercisesSection(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            text = "Exercises",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        PlateSectionHeader(title = "Exercises")
 
         exercisesWithSets.forEachIndexed { index, exerciseWithSets ->
             val exercise = exerciseWithSets.exercise
             val sets = exerciseWithSets.sets
 
-            // Convert sets to SetData format
             val setsData = remember(sets, useMetric) {
                 sets.map { set ->
                     SetData(
                         number = set.number,
                         weight = UnitConverter.formatWeight(set.weight, useMetric),
                         reps = set.reps?.toString() ?: "-",
-                        rpe = if (set.rpe != null) String.format("%.1f", set.rpe) else "-",
+                        rpe = if (set.rpe != null) String.format(Locale.getDefault(), "%.1f", set.rpe) else "-",
                         isPR = set.isPersonalRecord
                     )
                 }
             }
 
-            // Find best set (highest weight * reps)
             val bestSet = sets.maxByOrNull { (it.weight ?: 0.0) * (it.reps ?: 0) }
             val bestSetText = bestSet?.let {
                 val weight = UnitConverter.convertWeight(it.weight, useMetric) ?: 0.0
                 val reps = it.reps ?: 0
                 if (weight > 0 && reps > 0) {
-                    "Best: ${String.format("%.0f", weight)}x$reps"
+                    "Best ${String.format(Locale.getDefault(), "%.0f", weight)}×$reps"
                 } else null
             }
 
@@ -90,8 +89,8 @@ fun ExercisesSection(
                 number = index + 1,
                 exerciseName = exercise.name,
                 sets = sets.size,
-                equipment = exercise.name.split(" ").firstOrNull() ?: "Exercise", // Using parsed name convention to group equipment/type
-                isExpanded = index == 0, // Expand first exercise by default
+                equipment = exercise.name.split(" ").firstOrNull() ?: "Exercise",
+                isExpanded = index == 0,
                 setsData = setsData,
                 bestSet = bestSetText,
                 useMetric = useMetric
@@ -113,12 +112,23 @@ fun ExpandableExerciseCard(
     useMetric: Boolean = false
 ) {
     var expanded by remember { mutableStateOf(isExpanded) }
+    val reducedMotion = rememberReducedMotion()
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = if (reducedMotion) {
+            snap()
+        } else {
+            tween(durationMillis = 200, easing = FastOutSlowInEasing)
+        },
+        label = "exercise_chevron_rotation"
+    )
 
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, FlexTheme.colors.hairline),
+        tonalElevation = 0.dp
     ) {
         Column {
             Row(
@@ -126,147 +136,139 @@ fun ExpandableExerciseCard(
                     .fillMaxWidth()
                     .clickable { expanded = !expanded }
                     .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(MaterialTheme.shapes.small)
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Surface(
-                        modifier = Modifier.size(40.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = number.toString(),
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Column {
-                        Text(
-                            text = exerciseName,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = "$sets sets • $equipment",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (bestSet != null) {
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        ) {
-                            Text(
-                                text = bestSet,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
-                    Icon(
-                        imageVector = Icons.Default.ExpandMore,
-                        contentDescription = if (expanded) "Collapse" else "Expand",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .then(
-                                if (expanded) Modifier.rotate(180f)
-                                else Modifier
-                            )
+                    Text(
+                        text = number.toString(),
+                        style = MonoMetricMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = exerciseName,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "$sets sets • $equipment",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (bestSet != null) {
+                    PlateStatusPill(
+                        label = bestSet,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        borderColor = FlexTheme.colors.hairline
+                    )
+                }
+
+                Icon(
+                    imageVector = Icons.Default.ExpandMore,
+                    contentDescription = if (expanded) "Collapse" else "Expand",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .size(22.dp)
+                        .rotate(chevronRotation)
+                )
             }
 
-            if (expanded && setsData.isNotEmpty()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Header
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            AnimatedVisibility(
+                visible = expanded && setsData.isNotEmpty(),
+                enter = if (reducedMotion) {
+                    EnterTransition.None
+                } else {
+                    expandVertically(tween(220, easing = FastOutSlowInEasing)) + fadeIn(tween(180))
+                },
+                exit = if (reducedMotion) {
+                    ExitTransition.None
+                } else {
+                    shrinkVertically(tween(200, easing = FastOutSlowInEasing)) + fadeOut(tween(150))
+                }
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    HorizontalDivider(thickness = 1.dp, color = FlexTheme.colors.hairline)
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text(
-                            text = "Set",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.width(40.dp),
-                            letterSpacing = 1.sp
-                        )
-                        Text(
-                            text = UnitConverter.getWeightUnit(useMetric),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Center,
-                            letterSpacing = 1.sp
-                        )
-                        Text(
-                            text = "Reps",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Center,
-                            letterSpacing = 1.sp
-                        )
-                        Text(
-                            text = "RPE",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.width(40.dp),
-                            textAlign = TextAlign.End,
-                            letterSpacing = 1.sp
-                        )
-                    }
-
-                    setsData.forEach { set ->
-                        SetRow(set)
-                    }
-
-                    if (improvement != null) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                .padding(horizontal = 12.dp, vertical = 2.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.TrendingUp,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(14.dp)
+                            Text(
+                                text = "#",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.width(32.dp)
                             )
                             Text(
-                                text = improvement,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.primary
+                                text = UnitConverter.getWeightUnit(useMetric),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center
                             )
+                            Text(
+                                text = "Reps",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                text = "RPE",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.width(64.dp),
+                                textAlign = TextAlign.End
+                            )
+                        }
+
+                        setsData.forEach { set ->
+                            SetRow(set)
+                        }
+
+                        if (improvement != null) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.TrendingUp,
+                                    contentDescription = null,
+                                    tint = FlexTheme.colors.recovered,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = improvement,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = FlexTheme.colors.recovered
+                                )
+                            }
                         }
                     }
                 }
@@ -277,88 +279,61 @@ fun ExpandableExerciseCard(
 
 @Composable
 fun SetRow(set: SetData) {
-    val infiniteTransition = rememberInfiniteTransition(label = "PRPulse")
-    val scale by infiniteTransition.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.15f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "Scale"
-    )
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = if (set.isPR) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface,
-        border = if (set.isPR) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)) else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f))
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.small)
+            .background(
+                if (set.isPR) {
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainerLow
+                }
+            )
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(horizontal = 12.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = set.number.toString(),
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                style = MonoMetricSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.width(32.dp)
             )
             Text(
                 text = set.weight,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.ExtraBold,
+                style = MonoMetricMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center
             )
             Text(
                 text = set.reps,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.ExtraBold,
+                style = MonoMetricMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center
             )
-            
+
             Box(
-                modifier = Modifier.width(62.dp),
+                modifier = Modifier.width(64.dp),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 if (set.isPR) {
-                    Surface(
-                        modifier = Modifier.graphicsLayer(scaleX = scale, scaleY = scale),
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.primary,
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.EmojiEvents,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(10.dp)
-                            )
-                            Text(
-                                text = "PR",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
-                        }
-                    }
+                    PlateStatusPill(
+                        label = "PR",
+                        icon = Icons.Default.EmojiEvents,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 } else {
                     Text(
                         text = set.rpe,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
+                        style = MonoMetricSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.End
                     )

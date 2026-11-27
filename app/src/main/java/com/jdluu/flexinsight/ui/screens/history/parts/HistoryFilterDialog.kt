@@ -6,15 +6,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.stringResource
 import com.jdluu.flexinsight.R
-import com.jdluu.flexinsight.ui.theme.Primary
-import com.jdluu.flexinsight.ui.theme.SurfaceCardAlt
-import com.jdluu.flexinsight.ui.theme.TextSecondary
 
 @Composable
 fun HistoryFilterDialog(
@@ -22,38 +17,40 @@ fun HistoryFilterDialog(
     onFilterSelected: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val filters = listOf("All Time", "This Week", "This Month", "Last 3 Months")
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
                 text = stringResource(id = R.string.history_filter_dialog_title),
-                color = Color.White,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val filters = listOf("All Time", "Last 30 Days", "Last 3 Months", "This Year")
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 filters.forEach { filter ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                onFilterSelected(filter)
-                            }
-                            .padding(vertical = 12.dp),
+                            .clickable { onFilterSelected(filter) }
+                            .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
                             selected = currentFilter == filter,
-                            onClick = null, // Handled by Row clickable
-                            colors = RadioButtonDefaults.colors(selectedColor = Primary, unselectedColor = TextSecondary)
+                            onClick = null
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = filter,
-                            color = if (currentFilter == filter) Color.White else TextSecondary,
-                            fontSize = 16.sp
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = if (currentFilter == filter) {
+                                MaterialTheme.colorScheme.onSurface
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
                         )
                     }
                 }
@@ -61,10 +58,10 @@ fun HistoryFilterDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(id = R.string.close), color = Primary)
+                Text(text = stringResource(id = R.string.close))
             }
         },
-        containerColor = SurfaceCardAlt,
-        textContentColor = TextSecondary
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = MaterialTheme.shapes.large
     )
 }

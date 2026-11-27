@@ -8,23 +8,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jdluu.flexinsight.R
 import com.jdluu.flexinsight.ui.screens.history.parts.EmptyStateMessage
 import com.jdluu.flexinsight.ui.screens.history.parts.PRCard
 import com.jdluu.flexinsight.ui.screens.history.parts.formatDateShort
+import com.jdluu.flexinsight.ui.theme.FlexTheme
 import com.jdluu.flexinsight.ui.utils.UnitConverter
 import com.jdluu.flexinsight.ui.viewmodel.PRListViewModel
-import androidx.compose.ui.res.stringResource
-import com.jdluu.flexinsight.R
-
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,27 +34,38 @@ fun PRListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val useMetric = uiState.units == "Metric"
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(id = R.string.pr_list_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.action_back))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .navigationBarsPadding()
+    ) {
+        TopAppBar(
+            title = {
+                Text(
+                    text = stringResource(id = R.string.pr_list_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
                 )
+            },
+            navigationIcon = {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(id = R.string.action_back)
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                titleContentColor = MaterialTheme.colorScheme.onBackground
             )
-        }
-    ) { paddingValues ->
+        )
+        HorizontalDivider(thickness = 1.dp, color = FlexTheme.colors.hairline)
+
         if (uiState.loadingState.isLoading) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -65,7 +74,7 @@ fun PRListScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
+                    .padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 EmptyStateMessage(message = stringResource(id = R.string.pr_list_empty_state))
@@ -73,25 +82,21 @@ fun PRListScreen(
         } else {
             val sortedPrs = remember(uiState.prs) { uiState.prs.sortedByDescending { it.date } }
             val exercisePRs = remember(sortedPrs) { sortedPrs.groupBy { it.exerciseName } }
-            val newestPRPerExercise = remember(exercisePRs) { exercisePRs.mapValues { (_, prs) -> prs.maxByOrNull { it.date } } }
+            val newestPRPerExercise = remember(exercisePRs) {
+                exercisePRs.mapValues { (_, prs) -> prs.maxByOrNull { it.date } }
+            }
 
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .background(MaterialTheme.colorScheme.background),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-
-
                 items(
                     items = sortedPrs,
                     key = { prDetails -> prDetails.setId }
                 ) { prDetails ->
                     val isNewPR = newestPRPerExercise[prDetails.exerciseName]?.setId == prDetails.setId
                     val convertedWeight = UnitConverter.convertWeight(prDetails.weight, useMetric)
-                    
                     PRCard(
                         exercise = prDetails.exerciseName,
                         date = formatDateShort(prDetails.date),

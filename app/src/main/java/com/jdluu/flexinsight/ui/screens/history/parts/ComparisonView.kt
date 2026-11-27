@@ -1,21 +1,24 @@
 package com.jdluu.flexinsight.ui.screens.history.parts
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.stringResource
 import com.jdluu.flexinsight.R
-import com.jdluu.flexinsight.data.model.VolumeTrend
-import com.jdluu.flexinsight.ui.theme.Primary
+import com.jdluu.flexinsight.ui.components.PlateCard
+import com.jdluu.flexinsight.ui.components.PlateStatusPill
+import com.jdluu.flexinsight.ui.theme.FlexTheme
+import com.jdluu.flexinsight.ui.theme.MonoMetricMedium
+import com.jdluu.flexinsight.ui.theme.MonoMetricSmall
+import com.jdluu.flexinsight.ui.theme.PlateNumeralMedium
 import com.jdluu.flexinsight.ui.utils.UnitConverter
 import com.jdluu.flexinsight.ui.viewmodel.ComparisonData
+import java.util.Locale
 
 @Composable
 fun ComparisonView(
@@ -23,10 +26,11 @@ fun ComparisonView(
     useMetric: Boolean
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
     ) {
-        // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -35,28 +39,26 @@ fun ComparisonView(
             Text(
                 text = stringResource(id = R.string.history_comparison_period_title),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shape = MaterialTheme.shapes.small
-            ) {
-                Text(
-                    text = stringResource(id = R.string.history_comparison_period_label, data.currentPeriodLabel, data.previousPeriodLabel),
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
+            PlateStatusPill(
+                label = stringResource(
+                    id = R.string.history_comparison_period_label,
+                    data.currentPeriodLabel,
+                    data.previousPeriodLabel
+                ),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         }
 
-        // Comparison Cards
         ComparisonCard(
             title = stringResource(id = R.string.history_comparison_total_volume),
             currentValue = formatVolume(data.totalVolumeCurrent, useMetric),
             previousValue = formatVolume(data.totalVolumePrevious, useMetric),
             unit = UnitConverter.getWeightUnit(useMetric),
-            positiveIsGood = true
+            deltaPercent = percentDelta(data.totalVolumeCurrent, data.totalVolumePrevious)
         )
 
         ComparisonCard(
@@ -64,7 +66,10 @@ fun ComparisonView(
             currentValue = data.totalWorkoutsCurrent.toString(),
             previousValue = data.totalWorkoutsPrevious.toString(),
             unit = "",
-            positiveIsGood = true
+            deltaPercent = percentDelta(
+                data.totalWorkoutsCurrent.toDouble(),
+                data.totalWorkoutsPrevious.toDouble()
+            )
         )
 
         ComparisonCard(
@@ -72,7 +77,10 @@ fun ComparisonView(
             currentValue = "${data.avgDurationCurrent / 60}m",
             previousValue = "${data.avgDurationPrevious / 60}m",
             unit = "",
-            positiveIsGood = true
+            deltaPercent = percentDelta(
+                data.avgDurationCurrent.toDouble(),
+                data.avgDurationPrevious.toDouble()
+            )
         )
     }
 }
@@ -83,56 +91,89 @@ private fun ComparisonCard(
     currentValue: String,
     previousValue: String,
     unit: String,
-    positiveIsGood: Boolean
+    deltaPercent: Int?
 ) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = title, style = MaterialTheme.typography.labelMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Current
-                Column {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = currentValue,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        if (unit.isNotEmpty()) {
-                            Text(
-                                text = " $unit",
-                                style = MaterialTheme.typography.bodySmall,
-                                modifier = Modifier.padding(bottom = 4.dp)
-                            )
-                        }
-                    }
-                    Text(stringResource(id = R.string.history_comparison_current), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-
-                // Previous
-                Column(horizontalAlignment = Alignment.End) {
+    PlateCard(contentPadding = PaddingValues(16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (deltaPercent != null) {
+                val positive = deltaPercent >= 0
+                val sign = if (positive) "+" else ""
+                PlateStatusPill(
+                    label = "$sign$deltaPercent%",
+                    containerColor = if (positive) FlexTheme.colors.recoveredContainer
+                    else FlexTheme.colors.moderateContainer,
+                    contentColor = if (positive) FlexTheme.colors.onRecoveredContainer
+                    else FlexTheme.colors.onModerateContainer
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Column {
+                Row(
+                    verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     Text(
-                        text = previousValue,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = currentValue,
+                        style = PlateNumeralMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(stringResource(id = R.string.history_comparison_previous), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                    if (unit.isNotEmpty()) {
+                        Text(
+                            text = unit,
+                            style = MonoMetricSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                 }
+                Text(
+                    text = stringResource(id = R.string.history_comparison_current),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = if (unit.isNotEmpty()) "$previousValue $unit" else previousValue,
+                    style = MonoMetricMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(id = R.string.history_comparison_previous),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
 }
 
+private fun percentDelta(current: Double, previous: Double): Int? {
+    if (previous <= 0.0) return null
+    return (((current - previous) / previous) * 100.0).toInt()
+}
+
 private fun formatVolume(volume: Double, useMetric: Boolean): String {
     val converted = UnitConverter.convertVolume(volume, useMetric)
     return if (converted >= 1000) {
-        String.format("%.1fk", converted / 1000)
+        String.format(Locale.US, "%.1fk", converted / 1000.0)
     } else {
         converted.toInt().toString()
     }

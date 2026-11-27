@@ -1,39 +1,43 @@
 package com.jdluu.flexinsight.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.jdluu.flexinsight.ui.common.LocalSnackbarHostState
-import com.jdluu.flexinsight.ui.screens.*
-import com.jdluu.flexinsight.ui.screens.history.*
-import com.jdluu.flexinsight.ui.viewmodel.*
-import kotlinx.coroutines.launch
-
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import com.jdluu.flexinsight.ui.screens.OnboardingScreen
-
-import androidx.compose.runtime.LaunchedEffect
 import com.jdluu.flexinsight.ui.common.LoadingState
-
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.jdluu.flexinsight.ui.screens.AITrainerScreen
+import com.jdluu.flexinsight.ui.screens.DashboardScreen
+import com.jdluu.flexinsight.ui.screens.HistoryAnalysisScreen
+import com.jdluu.flexinsight.ui.screens.HistoryScreen
+import com.jdluu.flexinsight.ui.screens.OnboardingScreen
+import com.jdluu.flexinsight.ui.screens.PRListScreen
+import com.jdluu.flexinsight.ui.screens.PlannerScreen
+import com.jdluu.flexinsight.ui.screens.RecoveryScreen
+import com.jdluu.flexinsight.ui.screens.SettingsScreen
+import com.jdluu.flexinsight.ui.screens.WorkoutDetailScreen
+import com.jdluu.flexinsight.ui.viewmodel.AITrainerViewModel
+import com.jdluu.flexinsight.ui.viewmodel.DashboardViewModel
+import com.jdluu.flexinsight.ui.viewmodel.HistoryViewModel
+import com.jdluu.flexinsight.ui.viewmodel.PRListViewModel
+import com.jdluu.flexinsight.ui.viewmodel.PlannerViewModel
+import com.jdluu.flexinsight.ui.viewmodel.RecoveryViewModel
+import com.jdluu.flexinsight.ui.viewmodel.SettingsViewModel
+import com.jdluu.flexinsight.ui.viewmodel.WorkoutDetailViewModel
 
 @Composable
 fun FlexAppNavigation(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    val snackbarHostState = LocalSnackbarHostState.current
-    val scope = rememberCoroutineScope()
-    
     // Check for API key and redirect to Onboarding if missing
     val settingsViewModel = hiltViewModel<SettingsViewModel>()
     val settingsUiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
-    
+
     LaunchedEffect(settingsUiState.apiKey, settingsUiState.loadingState) {
         if (settingsUiState.loadingState is LoadingState.Success && settingsUiState.apiKey.isNullOrBlank()) {
             if (navController.currentDestination?.route != Screen.Onboarding.route) {
@@ -57,7 +61,7 @@ fun FlexAppNavigation(
                     navController.navigate(Screen.WorkoutDetail.createRoute(workoutId))
                 },
                 onNavigateToRecovery = {
-                    navController.navigate(Screen.AITrainer.route)
+                    navController.navigate(Screen.Recovery.route)
                 },
                 onNavigateToHistory = {
                     navController.navigate(Screen.History.route)
@@ -71,6 +75,15 @@ fun FlexAppNavigation(
                 onNavigateToSettings = {
                     navController.navigate(Screen.Settings.route)
                 }
+            )
+        }
+        composable(Screen.Recovery.route) {
+            val viewModel = hiltViewModel<RecoveryViewModel>()
+            RecoveryScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToPlanner = { navController.navigate(Screen.Planner.route) },
+                onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
             )
         }
         composable(Screen.History.route) {
@@ -99,7 +112,6 @@ fun FlexAppNavigation(
             val viewModel = hiltViewModel<AITrainerViewModel>()
             AITrainerScreen(
                 viewModel = viewModel,
-                onNavigateBack = { navController.popBackStack() },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) }
             )
         }
@@ -126,9 +138,7 @@ fun FlexAppNavigation(
             val viewModel = hiltViewModel<WorkoutDetailViewModel>()
             WorkoutDetailScreen(
                 viewModel = viewModel,
-                onNavigateBack = {
-                    navController.popBackStack()
-                }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         composable(Screen.Onboarding.route) {
