@@ -1,99 +1,133 @@
 package com.jdluu.flexinsight.ui.screens.dashboard.parts
 
-import androidx.compose.foundation.background
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
-import com.jdluu.flexinsight.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.jdluu.flexinsight.data.model.ProfileInfo
-import com.jdluu.flexinsight.ui.theme.BackgroundDark
-import com.jdluu.flexinsight.ui.theme.Primary
-import com.jdluu.flexinsight.ui.theme.TextSecondary
-import java.text.SimpleDateFormat
+import com.jdluu.flexinsight.R
+import com.jdluu.flexinsight.ui.theme.FlexTheme
+import com.jdluu.flexinsight.ui.theme.MonoMetricSmall
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardHeader(
-    profileInfo: ProfileInfo? = null,
-    onNotificationsClick: () -> Unit = {},
-    onRefreshClick: () -> Unit = {}
+    userName: String?,
+    lastSyncAt: Long?,
+    isSyncing: Boolean,
+    onSyncClick: () -> Unit,
+    onProfileClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val calendar = Calendar.getInstance()
     val hour = calendar.get(Calendar.HOUR_OF_DAY)
-    
-    val greeting = when (hour) {
-        in 5..11 -> stringResource(R.string.dashboard_greeting_morning)
-        in 12..16 -> stringResource(R.string.dashboard_greeting_afternoon)
-        else -> stringResource(R.string.dashboard_greeting_evening)
+    val greeting = when {
+        hour < 12 -> stringResource(id = R.string.dashboard_greeting_morning)
+        hour < 18 -> stringResource(id = R.string.dashboard_greeting_afternoon)
+        else -> stringResource(id = R.string.dashboard_greeting_evening)
+    }
+    val athleteName = userName?.takeIf { it.isNotBlank() }
+        ?: stringResource(id = R.string.dashboard_welcome_guest)
+
+    val syncLabel = when {
+        isSyncing -> stringResource(id = R.string.sync_status_syncing)
+        lastSyncAt != null -> {
+            val diff = System.currentTimeMillis() - lastSyncAt
+            when {
+                diff < 60_000 -> stringResource(id = R.string.sync_status_just_now)
+                diff < 3600_000 -> stringResource(id = R.string.sync_status_mins_ago, diff / 60_000)
+                diff < 86400_000 -> stringResource(id = R.string.sync_status_hours_ago, diff / 3600_000)
+                else -> stringResource(id = R.string.sync_status_synced)
+            }
+        }
+        else -> stringResource(id = R.string.dashboard_tap_sync)
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 24.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = greeting,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+    Column(modifier = modifier.fillMaxWidth()) {
+        TopAppBar(
+            title = {
+                Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                    Text(
+                        text = stringResource(id = R.string.nav_today),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        maxLines = 1
+                    )
+                    Text(
+                        text = "$greeting, $athleteName",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            },
+            actions = {
+                Box(
+                    modifier = Modifier
+                        .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+                        .clickable(enabled = !isSyncing, onClick = onSyncClick)
+                        .padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Surface(
+                        shape = MaterialTheme.shapes.small,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        border = BorderStroke(1.dp, FlexTheme.colors.hairline),
+                        modifier = Modifier.heightIn(min = 34.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            if (isSyncing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(13.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Outlined.Sync,
+                                    contentDescription = stringResource(id = R.string.dashboard_tap_sync),
+                                    modifier = Modifier.size(15.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            Text(
+                                text = syncLabel,
+                                style = MonoMetricSmall,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+                IconButton(onClick = onProfileClick) {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = stringResource(id = R.string.nav_settings),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                scrolledContainerColor = MaterialTheme.colorScheme.surface
             )
-            Text(
-                text = profileInfo?.displayName ?: stringResource(R.string.dashboard_welcome_guest),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-        
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            IconButton(
-                onClick = onRefreshClick,
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Sync Data",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            
-            IconButton(
-                onClick = onNotificationsClick,
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Settings",
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
+        )
+        HorizontalDivider(thickness = 1.dp, color = FlexTheme.colors.hairline)
     }
 }

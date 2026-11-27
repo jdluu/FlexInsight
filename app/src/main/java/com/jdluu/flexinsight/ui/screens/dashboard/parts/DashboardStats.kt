@@ -1,111 +1,47 @@
 package com.jdluu.flexinsight.ui.screens.dashboard.parts
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
-import androidx.compose.material.icons.filled.AccessibilityNew
-import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.jdluu.flexinsight.data.model.MuscleGroupProgress
+import com.jdluu.flexinsight.R
+import com.jdluu.flexinsight.data.model.WeeklyGoalProgress
 import com.jdluu.flexinsight.data.model.WeeklyProgress
-import com.jdluu.flexinsight.domain.calc.StreakCalculator
-import com.jdluu.flexinsight.domain.calc.VolumeCalculator
-import com.jdluu.flexinsight.ui.theme.OrangeAccent
-import com.jdluu.flexinsight.ui.theme.Primary
-import com.jdluu.flexinsight.ui.theme.SurfaceCard
-import com.jdluu.flexinsight.ui.theme.TextSecondary
+import com.jdluu.flexinsight.data.model.WorkoutStats
+import com.jdluu.flexinsight.ui.components.CalibratedPlateBar
+import com.jdluu.flexinsight.ui.components.PlateCard
+import com.jdluu.flexinsight.ui.components.PlateStatusPill
+import com.jdluu.flexinsight.ui.theme.FlexTheme
+import com.jdluu.flexinsight.ui.theme.MonoMetricMedium
+import com.jdluu.flexinsight.ui.theme.PlateNumeralMedium
 import com.jdluu.flexinsight.ui.utils.UnitConverter
 
 @Composable
-fun StreakIndicator(streak: Int = 0) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.Start
-    ) {
-        Surface(
-            modifier = Modifier
-                .wrapContentWidth()
-                .semantics(mergeDescendants = true) {},
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surface,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocalFireDepartment,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.tertiary,
-                    modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    text = if (streak > 0) "Day $streak" else "No streak",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "streak",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                if (streak > 0) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .width(64.dp)
-                            .height(6.dp)
-                            .clip(RoundedCornerShape(3.dp))
-                            .background(MaterialTheme.colorScheme.outlineVariant)
-                    ) {
-                        // Progress bar based on streak (max 7 days for visual)
-                        val progress = StreakCalculator.barProgress(streak)
-                        Box(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .fillMaxWidth(progress)
-                                .clip(RoundedCornerShape(3.dp))
-                                .background(MaterialTheme.colorScheme.tertiary)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun WeeklyProgressSection(
-    progress: List<WeeklyProgress> = emptyList(),
-    muscleGroupProgress: List<MuscleGroupProgress> = emptyList(),
-    useMetric: Boolean = false,
-    onSeeAllClick: () -> Unit = {}
+fun WeeklyVolumePlateCard(
+    workoutStats: WorkoutStats?,
+    weeklyProgress: List<WeeklyProgress>,
+    weeklyGoalProgress: WeeklyGoalProgress?,
+    currentStreak: Int,
+    useMetric: Boolean,
+    modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
+    val thisWeekVol = weeklyProgress.firstOrNull()?.totalVolume ?: 0.0
+    val goalCompleted = weeklyGoalProgress?.completed ?: weeklyProgress.firstOrNull()?.workoutCount ?: 0
+    val goalTarget = (weeklyGoalProgress?.target ?: 5).coerceAtLeast(1)
+    val goalFraction = (goalCompleted.toFloat() / goalTarget.toFloat()).coerceIn(0f, 1f)
+    val totalWorkouts = workoutStats?.totalWorkouts ?: 0
+    val unitLabel = UnitConverter.getWeightUnit(useMetric)
+
+    PlateCard(
+        modifier = modifier.padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(16.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -113,222 +49,93 @@ fun WeeklyProgressSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Weekly Progress",
-                fontSize = 18.sp,
+                text = stringResource(id = R.string.dashboard_weekly_volume),
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            TextButton(onClick = onSeeAllClick) {
-                Text(
-                    text = "See All",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+            PlateStatusPill(
+                label = "$goalCompleted / $goalTarget sessions",
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         }
 
+        Spacer(modifier = Modifier.height(10.dp))
+
+        CalibratedPlateBar(
+            progress = goalFraction,
+            segments = goalTarget.coerceIn(3, 7),
+            activeColor = MaterialTheme.colorScheme.primary,
+            barHeight = 10.dp
+        )
+
+        Spacer(modifier = Modifier.height(14.dp))
+        HorizontalDivider(thickness = 1.dp, color = FlexTheme.colors.hairline)
         Spacer(modifier = Modifier.height(12.dp))
 
-        Card(
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Column {
-                        Text(
-                            text = "Volume Trend",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            val totalVolume = VolumeCalculator.sumWeeklyVolume(progress)
-                            Text(
-                                text = formatVolume(totalVolume),
-                                fontSize = 32.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = UnitConverter.getWeightUnit(useMetric),
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Normal,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.Bottom
-                    ) {
-                        // Show last 5 weeks of progress
-                        val weeksToShow = progress.takeLast(5)
-                        val maxVolume = weeksToShow.maxOfOrNull { it.totalVolume } ?: 1.0
-
-                        repeat(5) { index ->
-                            val weekIndex = weeksToShow.size - 5 + index
-                            val weekVolume = if (weekIndex >= 0 && weekIndex < weeksToShow.size) {
-                                weeksToShow[weekIndex].totalVolume
-                            } else {
-                                0.0
-                            }
-                            val height = if (maxVolume > 0) {
-                                ((weekVolume / maxVolume) * 32).coerceAtLeast(4.0).dp
-                            } else {
-                                4.dp
-                            }
-                            val isCurrent = index == 4 && weekIndex >= 0
-
-                            Box(
-                                modifier = Modifier
-                                    .width(6.dp)
-                                    .height(height)
-                                    .clip(RoundedCornerShape(3.dp))
-                                    .background(
-                                        if (isCurrent) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                    )
-                            )
-                        }
-                    }
-                }
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    if (muscleGroupProgress.isEmpty()) {
-                        // Show placeholder if no data
-                        Text(
-                            text = "No muscle group data available",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    } else {
-                        val totalVolume = VolumeCalculator.sumWeeklyVolume(progress)
-                        muscleGroupProgress.forEach { muscleGroup ->
-                            // Calculate percentage of total volume
-                            val percentage = VolumeCalculator.sharePercent(muscleGroup.volume, totalVolume)
-                            val icon = when (muscleGroup.muscleGroup.lowercase()) {
-                                "chest" -> Icons.Default.AccessibilityNew
-                                "back" -> Icons.Default.GridView
-                                "legs" -> Icons.AutoMirrored.Filled.DirectionsWalk
-                                "shoulders" -> Icons.Default.FitnessCenter
-                                "arms" -> Icons.Default.FitnessCenter
-                                "core" -> Icons.Default.FitnessCenter
-                                else -> Icons.Default.FitnessCenter
-                            }
-                            MuscleProgressItem(
-                                muscle = muscleGroup.muscleGroup,
-                                percentage = percentage,
-                                intensity = muscleGroup.intensity,
-                                icon = icon
-                            )
-                        }
-                    }
-                }
-            }
+            MetricColumn(
+                value = UnitConverter.formatVolume(thisWeekVol, useMetric),
+                unit = unitLabel,
+                label = "Week Vol",
+                modifier = Modifier.weight(1f)
+            )
+            MetricColumn(
+                value = "$currentStreak",
+                unit = "d",
+                label = "Streak",
+                modifier = Modifier.weight(1f)
+            )
+            MetricColumn(
+                value = formatNumber(totalWorkouts),
+                unit = "",
+                label = "Workouts",
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
 
 @Composable
-fun MuscleProgressItem(muscle: String, percentage: Int, intensity: String, icon: ImageVector) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .semantics(mergeDescendants = true) {},
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalAlignment = Alignment.CenterVertically
+private fun MetricColumn(
+    value: String,
+    unit: String,
+    label: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Surface(
-            modifier = Modifier.size(40.dp),
-            shape = RoundedCornerShape(12.dp),
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
         ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp)
+            Text(
+                text = value,
+                style = PlateNumeralMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1
+            )
+            if (unit.isNotEmpty()) {
+                Text(
+                    text = unit,
+                    style = MonoMetricMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
             }
         }
-
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = muscle,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "$percentage%",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-            ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            // Determine relative width for visual emphasis (relative to the largest group shown)
-                            // or just use the raw percentage?
-                            // User request implies "accurate percentages".
-                            // If we use raw percentage (e.g. 30%), the bar will be 30% width.
-                            // Previously it was full width (100%) for the top one.
-                            // Let's stick to raw percentage for accuracy, but scale it slightly if they are all small?
-                            // Actually, let's keep it simple: raw percentage width.
-                            .fillMaxWidth(percentage / 100f)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(
-                                // Color coding based on intensity instead of arbitrary percentage thresholds
-                                when(intensity) {
-                                    "HI" -> MaterialTheme.colorScheme.primary
-                                    "MD" -> MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                                    else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                                }
-                            )
-                    )
-            }
-        }
-
-        // Intensity label removed per user request
-//        Text(
-//            text = intensity,
-//            fontSize = 12.sp,
-//            fontWeight = FontWeight.Bold,
-//            color = MaterialTheme.colorScheme.onSurfaceVariant
-//        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
