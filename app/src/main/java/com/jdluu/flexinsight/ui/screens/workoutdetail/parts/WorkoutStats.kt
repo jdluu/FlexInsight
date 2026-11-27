@@ -1,101 +1,87 @@
 package com.jdluu.flexinsight.ui.screens.workoutdetail.parts
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.jdluu.flexinsight.data.model.SingleWorkoutStats
 import com.jdluu.flexinsight.domain.calc.DurationCalculator
 import com.jdluu.flexinsight.domain.calc.PersonalRecordCalculator
-import com.jdluu.flexinsight.ui.theme.Primary
-import com.jdluu.flexinsight.ui.theme.SurfaceCard
-import com.jdluu.flexinsight.ui.theme.TextSecondary
+import com.jdluu.flexinsight.ui.components.PlateCard
+import com.jdluu.flexinsight.ui.components.PlateStatusPill
+import com.jdluu.flexinsight.ui.theme.FlexTheme
+import com.jdluu.flexinsight.ui.theme.PlateNumeralMedium
 import com.jdluu.flexinsight.ui.utils.UnitConverter
+import com.jdluu.flexinsight.ui.viewmodel.ExerciseWithSets
 
 @Composable
 fun WorkoutStatsCard(
     stats: SingleWorkoutStats?,
-    exercisesWithSets: List<com.jdluu.flexinsight.ui.viewmodel.ExerciseWithSets>,
+    exercisesWithSets: List<ExerciseWithSets>,
     totalReps: Int,
     useMetric: Boolean = false
 ) {
     val durationText = stats?.durationMinutes?.let(DurationCalculator::durationLabel) ?: "0m"
-
     val volumeText = if (stats?.totalVolume != null && stats.totalVolume > 0) {
         UnitConverter.formatVolumeWithCommas(stats.totalVolume, useMetric)
     } else {
         "0"
     }
-
+    val weightUnit = UnitConverter.getWeightUnit(useMetric)
     val setsText = (stats?.totalSets ?: 0).toString()
     val repsText = totalReps.toString()
-
     val hasPR = PersonalRecordCalculator.hasPersonalRecord(exercisesWithSets.flatMap { it.sets })
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    PlateCard(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        containerColor = MaterialTheme.colorScheme.surface
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            Color.Transparent
-                        ),
-                        radius = 200f
-                    )
-                )
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    StatItem(durationText, "Duration", modifier = Modifier.weight(1f))
-                    StatItem(volumeText, "Vol (lbs)", modifier = Modifier.weight(1f))
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    StatItem(setsText, "Sets", modifier = Modifier.weight(1f))
-                    StatItem(repsText, "Reps", modifier = Modifier.weight(1f))
-                }
+                StatItem(durationText, "Duration", modifier = Modifier.weight(1f))
+                StatItem(volumeText, "Volume ($weightUnit)", modifier = Modifier.weight(1f))
+            }
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HorizontalDivider(thickness = 1.dp, color = FlexTheme.colors.hairline)
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                StatItem(setsText, "Sets", modifier = Modifier.weight(1f))
+                StatItem(repsText, "Reps", modifier = Modifier.weight(1f))
+            }
+
+            if (hasPR || exercisesWithSets.isNotEmpty()) {
+                HorizontalDivider(thickness = 1.dp, color = FlexTheme.colors.hairline)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (hasPR) {
-                        TagChip("PR DAY", MaterialTheme.colorScheme.primary, Icons.Default.EmojiEvents)
+                        PlateStatusPill(
+                            label = "PR Day",
+                            icon = Icons.Default.EmojiEvents,
+                            containerColor = FlexTheme.colors.recoveredContainer,
+                            contentColor = FlexTheme.colors.onRecoveredContainer
+                        )
                     }
-                    TagChip("AI Summary", Color(0xFF9333EA), Icons.Default.AutoAwesome)
+                    if (exercisesWithSets.isNotEmpty()) {
+                        PlateStatusPill(
+                            label = "${exercisesWithSets.size} Exercises",
+                            icon = Icons.Default.FitnessCenter,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            borderColor = FlexTheme.colors.hairline
+                        )
+                    }
                 }
             }
         }
@@ -106,48 +92,18 @@ fun WorkoutStatsCard(
 fun StatItem(value: String, label: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Text(
             text = value,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
+            style = PlateNumeralMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1
         )
         Text(
-            text = label.uppercase(),
-            fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            letterSpacing = 1.sp
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-    }
-}
-
-@Composable
-fun TagChip(text: String, color: Color, icon: ImageVector) {
-    Surface(
-        shape = RoundedCornerShape(24.dp),
-        color = color.copy(alpha = 0.2f),
-        border = BorderStroke(1.dp, color.copy(alpha = 0.2f))
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(16.dp)
-            )
-            Text(
-                text = text,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
     }
 }

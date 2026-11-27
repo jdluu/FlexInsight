@@ -1,35 +1,90 @@
 package com.jdluu.flexinsight.ui.screens.history.parts
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.automirrored.filled.DirectionsRun
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.FitnessCenter
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.jdluu.flexinsight.R
 import com.jdluu.flexinsight.data.model.Exercise
 import com.jdluu.flexinsight.data.model.PRDetails
-import com.jdluu.flexinsight.ui.theme.Primary
-import com.jdluu.flexinsight.ui.theme.SurfaceCardAlt
-import com.jdluu.flexinsight.ui.theme.SurfaceHighlight
-import com.jdluu.flexinsight.ui.theme.TextSecondary
-import com.jdluu.flexinsight.ui.utils.UnitConverter
-import com.jdluu.flexinsight.ui.screens.history.parts.formatDateShort
-
+import com.jdluu.flexinsight.data.model.Workout
 import com.jdluu.flexinsight.ui.components.EmptyStateIllustration
+import com.jdluu.flexinsight.ui.components.PlateCard
+import com.jdluu.flexinsight.ui.components.PlateSectionHeader
+import com.jdluu.flexinsight.ui.components.PlateStatusPill
+import com.jdluu.flexinsight.ui.theme.FlexTheme
+import com.jdluu.flexinsight.ui.theme.MonoMetricSmall
+import com.jdluu.flexinsight.ui.theme.PlateNumeralSmall
+import com.jdluu.flexinsight.ui.utils.UnitConverter
+
+@Composable
+fun RecentSessionsSection(
+    workouts: List<Workout>,
+    onWorkoutClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (workouts.isEmpty()) return
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        PlateSectionHeader(title = stringResource(id = R.string.history_recent_sessions))
+
+        workouts.take(6).forEach { workout ->
+            val durationMinutes = workout.endTime?.let { (it - workout.startTime) / 60_000 } ?: 0L
+            PlateCard(
+                onClick = { onWorkoutClick(workout.id) },
+                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = workout.name ?: stringResource(id = R.string.workout_default_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = buildString {
+                                append(formatDateShort(workout.startTime))
+                                if (durationMinutes > 0) append(" · ${durationMinutes}m")
+                            },
+                            style = MonoMetricSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun RecentPRsSection(
@@ -38,49 +93,31 @@ fun RecentPRsSection(
     onNavigateToWorkoutDetail: (String) -> Unit = {},
     onViewAllClick: () -> Unit = {}
 ) {
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Recent PRs",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            TextButton(onClick = onViewAllClick) {
-                Text(
-                    text = "View All",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
+        PlateSectionHeader(
+            title = stringResource(id = R.string.pr_list_title),
+            trailingActionLabel = if (prsWithDetails.isNotEmpty()) "View All" else null,
+            onTrailingAction = onViewAllClick
+        )
 
         if (prsWithDetails.isEmpty()) {
             EmptyStateIllustration(
-                icon = Icons.Default.FitnessCenter,
+                icon = Icons.Outlined.FitnessCenter,
                 title = "No PRs Yet",
-                description = "Keep pushing your limits - your first PR is just one workout away.",
-                modifier = Modifier.padding(bottom = 16.dp)
+                description = "Complete workouts with tracked sets to surface your best lifts here."
             )
         } else {
-            // ... grouping logic ...
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                val exercisePRs = remember(prsWithDetails) { prsWithDetails.groupBy { it.exerciseName } }
-                val newestPRPerExercise = remember(exercisePRs) { exercisePRs.mapValues { (_, prs) -> prs.maxByOrNull { it.date } } }
+            val exercisePRs = remember(prsWithDetails) { prsWithDetails.groupBy { it.exerciseName } }
+            val newestPRPerExercise = remember(exercisePRs) {
+                exercisePRs.mapValues { (_, prs) -> prs.maxByOrNull { it.date } }
+            }
 
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 prsWithDetails.forEach { prDetails ->
                     val isNewPR = newestPRPerExercise[prDetails.exerciseName]?.setId == prDetails.setId
                     val convertedWeight = UnitConverter.convertWeight(prDetails.weight, useMetric)
@@ -102,59 +139,52 @@ fun RecentPRsSection(
 @Composable
 fun EmptyStateMessage(message: String, isPlaceholder: Boolean = false) {
     EmptyStateIllustration(
-        icon = Icons.Default.Info,
-        title = if (isPlaceholder) "Working on it..." else "Empty",
-        description = message
+        icon = Icons.Outlined.Info,
+        title = if (isPlaceholder) "Need More History" else "Nothing Here Yet",
+        description = message,
+        modifier = Modifier.padding(horizontal = 16.dp)
     )
 }
 
 @Composable
 fun ExerciseHistoryItem(exercise: Exercise) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+    PlateCard(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(14.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = exercise.name,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 if (!exercise.notes.isNullOrBlank()) {
                     Text(
                         text = exercise.notes,
-                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
             if (exercise.restDuration != null && exercise.restDuration > 0) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f)
-                ) {
-                    Text(
-                        text = "${exercise.restDuration}s rest",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
+                PlateStatusPill(
+                    label = "${exercise.restDuration}s rest",
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    borderColor = FlexTheme.colors.hairline
+                )
             }
         }
     }
@@ -170,66 +200,57 @@ fun PRCard(
     isNewPR: Boolean,
     onClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+    PlateCard(
+        onClick = onClick,
+        contentPadding = PaddingValues(14.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Surface(
-                modifier = Modifier.size(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                color = if (isNewPR) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                modifier = Modifier.size(46.dp),
+                shape = MaterialTheme.shapes.small,
+                color = if (isNewPR) MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surfaceContainerLow
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = Icons.Default.FitnessCenter,
+                        imageVector = Icons.Outlined.FitnessCenter,
                         contentDescription = null,
-                        tint = if (isNewPR) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp)
+                        tint = if (isNewPR) MaterialTheme.colorScheme.onPrimaryContainer
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = exercise,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
-                    ) {
-                        Text(
-                            text = muscle.uppercase(),
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 0.5.sp
-                        )
-                    }
+                    PlateStatusPill(
+                        label = muscle,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        borderColor = FlexTheme.colors.hairline
+                    )
                     Text(
                         text = date,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MonoMetricSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -237,38 +258,30 @@ fun PRCard(
 
             Column(
                 horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    horizontalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
                     Text(
                         text = weight,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.ExtraBold
+                        style = PlateNumeralSmall,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = unit,
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MonoMetricSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 2.dp)
                     )
                 }
                 if (isNewPR) {
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    ) {
-                        Text(
-                            text = "NEW PR",
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    PlateStatusPill(
+                        label = "PR",
+                        containerColor = FlexTheme.colors.moderateContainer,
+                        contentColor = FlexTheme.colors.onModerateContainer
+                    )
                 }
             }
         }

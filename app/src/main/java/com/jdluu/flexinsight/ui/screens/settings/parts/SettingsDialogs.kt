@@ -3,7 +3,6 @@ package com.jdluu.flexinsight.ui.screens.settings.parts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -11,18 +10,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.res.stringResource
 import com.jdluu.flexinsight.R
-import com.jdluu.flexinsight.ui.theme.*
+import com.jdluu.flexinsight.ui.theme.FlexTheme
 
-/**
- * Dialog for entering API Key.
- */
 @Composable
 fun ApiKeyDialog(
     currentApiKey: String?,
@@ -31,56 +26,42 @@ fun ApiKeyDialog(
     error: String?
 ) {
     var apiKeyText by remember { mutableStateOf(currentApiKey ?: "") }
-    // Basic validation logic matching ApiKeyManager
     val isValid = apiKeyText.isNotBlank() && apiKeyText.length >= 10
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         title = {
             Text(
                 text = stringResource(id = R.string.settings_dialog_api_key_title),
-                color = Color.White,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     text = stringResource(id = R.string.settings_dialog_api_key_desc),
-                    color = TextSecondary,
-                    fontSize = 14.sp
+                    style = MaterialTheme.typography.bodyMedium
                 )
                 OutlinedTextField(
                     value = apiKeyText,
                     onValueChange = { apiKeyText = it },
-                    label = { Text(stringResource(id = R.string.api_key_label), color = TextSecondary) },
-                    placeholder = { Text(stringResource(id = R.string.api_key_placeholder), color = TextTertiary) },
+                    label = { Text(stringResource(id = R.string.api_key_label)) },
+                    placeholder = { Text(stringResource(id = R.string.api_key_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Primary,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                        focusedLabelColor = TextSecondary,
-                        unfocusedLabelColor = TextSecondary
-                    ),
                     singleLine = true,
-                    isError = !isValid && apiKeyText.isNotEmpty(),
+                    isError = (!isValid && apiKeyText.isNotEmpty()) || error != null,
                     supportingText = {
-                        if (!isValid && apiKeyText.isNotEmpty()) {
-                            Text(
-                                text = stringResource(id = R.string.api_key_error_length),
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 12.sp
-                            )
-                        } else if (error != null) {
-                             Text(
-                                text = error,
-                                color = MaterialTheme.colorScheme.error,
-                                fontSize = 12.sp
-                            )
+                        when {
+                            !isValid && apiKeyText.isNotEmpty() -> {
+                                Text(stringResource(id = R.string.api_key_error_length))
+                            }
+                            error != null -> {
+                                Text(error)
+                            }
                         }
                     }
                 )
@@ -89,28 +70,19 @@ fun ApiKeyDialog(
         confirmButton = {
             Button(
                 onClick = { onSave(apiKeyText) },
-                enabled = isValid,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Primary,
-                    disabledContainerColor = Primary.copy(alpha = 0.5f)
-                )
+                enabled = isValid
             ) {
-                Text(stringResource(id = R.string.save), color = BackgroundDark, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(id = R.string.cancel), color = TextSecondary)
+                Text(stringResource(id = R.string.cancel))
             }
-        },
-        containerColor = SurfaceCardAlt,
-        shape = RoundedCornerShape(16.dp)
+        }
     )
 }
 
-/**
- * Dialog for setting weekly goal.
- */
 @Composable
 fun WeeklyGoalDialog(
     currentGoal: Int,
@@ -119,24 +91,25 @@ fun WeeklyGoalDialog(
 ) {
     var goalText by remember { mutableStateOf(currentGoal.toString()) }
     var error by remember { mutableStateOf<String?>(null) }
+    val invalidGoalError = stringResource(id = R.string.settings_dialog_goal_error)
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         title = {
             Text(
                 text = stringResource(id = R.string.settings_dialog_goal_title),
-                color = Color.White,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     text = stringResource(id = R.string.settings_dialog_goal_desc),
-                    color = TextSecondary,
-                    fontSize = 14.sp
+                    style = MaterialTheme.typography.bodyMedium
                 )
                 OutlinedTextField(
                     value = goalText,
@@ -144,87 +117,80 @@ fun WeeklyGoalDialog(
                         goalText = it
                         error = null
                     },
-                    label = { Text(stringResource(id = R.string.settings_dialog_goal_label), color = TextSecondary) },
-                    placeholder = { Text(stringResource(id = R.string.settings_dialog_goal_placeholder), color = TextTertiary) },
+                    label = { Text(stringResource(id = R.string.settings_dialog_goal_label)) },
+                    placeholder = { Text(stringResource(id = R.string.settings_dialog_goal_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Primary,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                        focusedLabelColor = TextSecondary,
-                        unfocusedLabelColor = TextSecondary
-                    ),
                     singleLine = true,
+                    isError = error != null,
+                    supportingText = error?.let { msg -> { Text(msg) } },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
-                val errorText = error
-                if (errorText != null) {
-                    Text(
-                        text = errorText,
-                        color = RedAccent,
-                        fontSize = 12.sp
-                    )
-                }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
                     val goal = goalText.toIntOrNull()
-                    if (goal != null && goal > 0 && goal <= 7) {
+                    if (goal != null && goal in 1..7) {
                         onSave(goal)
                     } else {
-                        error = "Please enter a number between 1 and 7" // Can leave this dynamic or resource mapped later
+                        error = invalidGoalError
                     }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                }
             ) {
-                Text(stringResource(id = R.string.save), color = BackgroundDark, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(id = R.string.cancel), color = TextSecondary)
+                Text(stringResource(id = R.string.cancel))
             }
-        },
-        containerColor = SurfaceCardAlt,
-        shape = RoundedCornerShape(16.dp)
+        }
     )
 }
 
-/**
- * Dialog for selecting theme.
- */
 @Composable
 fun ThemeDialog(
     currentTheme: String,
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit
 ) {
-    val themes = listOf("System", "Light", "Dark") // We skip true I18N here without a dynamic string mapper
+    val themes = listOf(
+        "System" to stringResource(id = R.string.theme_system),
+        "Light" to stringResource(id = R.string.theme_light),
+        "Dark" to stringResource(id = R.string.theme_dark)
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
         title = {
             Text(
-                text = "Theme", // This could also optionally be mapped
-                color = Color.White,
+                text = stringResource(id = R.string.theme_label),
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                themes.forEach { theme ->
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                themes.forEach { (themeKey, themeLabel) ->
+                    val selected = themeKey == currentTheme
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onSelect(theme) },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (theme == currentTheme) Primary.copy(alpha = 0.2f) else SurfaceCardAlt,
-                        border = if (theme == currentTheme) BorderStroke(1.dp, Primary) else null
+                            .clip(MaterialTheme.shapes.medium)
+                            .clickable { onSelect(themeKey) },
+                        shape = MaterialTheme.shapes.medium,
+                        color = if (selected) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainerLow
+                        },
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = if (selected) MaterialTheme.colorScheme.primary else FlexTheme.colors.hairline
+                        )
                     ) {
                         Row(
                             modifier = Modifier
@@ -234,16 +200,20 @@ fun ThemeDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = theme,
-                                color = Color.White,
-                                fontSize = 16.sp,
-                                fontWeight = if (theme == currentTheme) FontWeight.Bold else FontWeight.Normal
+                                text = themeLabel,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (selected) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
                             )
-                            if (theme == currentTheme) {
+                            if (selected) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = null,
-                                    tint = Primary
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
                         }
@@ -253,17 +223,12 @@ fun ThemeDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(id = R.string.cancel), color = TextSecondary)
+                Text(stringResource(id = R.string.cancel))
             }
-        },
-        containerColor = SurfaceCardAlt,
-        shape = RoundedCornerShape(16.dp)
+        }
     )
 }
 
-/**
- * Dialog for clearing cache confirmation.
- */
 @Composable
 fun ClearCacheDialog(
     onDismiss: () -> Unit,
@@ -271,41 +236,41 @@ fun ClearCacheDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         title = {
             Text(
                 text = stringResource(id = R.string.settings_dialog_clear_cache_title),
-                color = Color.White,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
             Text(
                 text = stringResource(id = R.string.settings_dialog_clear_cache_desc),
-                color = TextSecondary,
-                fontSize = 14.sp
+                style = MaterialTheme.typography.bodyMedium
             )
         },
         confirmButton = {
             Button(
                 onClick = onConfirm,
-                colors = ButtonDefaults.buttonColors(containerColor = RedAccent)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                )
             ) {
-                Text(stringResource(id = R.string.settings_dialog_clear_action), color = Color.White, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.settings_dialog_clear_action))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(id = R.string.cancel), color = TextSecondary)
+                Text(stringResource(id = R.string.cancel))
             }
-        },
-        containerColor = SurfaceCardAlt,
-        shape = RoundedCornerShape(16.dp)
+        }
     )
 }
 
-/**
- * Dialog for editing profile display name.
- */
 @Composable
 fun EditProfileDialog(
     currentName: String,
@@ -314,24 +279,25 @@ fun EditProfileDialog(
 ) {
     var nameText by remember { mutableStateOf(currentName) }
     var error by remember { mutableStateOf<String?>(null) }
+    val emptyNameError = stringResource(id = R.string.settings_dialog_profile_error)
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         title = {
             Text(
                 text = stringResource(id = R.string.settings_dialog_profile_title),
-                color = Color.White,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         },
         text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
                     text = stringResource(id = R.string.settings_dialog_profile_desc),
-                    color = TextSecondary,
-                    fontSize = 14.sp
+                    style = MaterialTheme.typography.bodyMedium
                 )
                 OutlinedTextField(
                     value = nameText,
@@ -339,27 +305,13 @@ fun EditProfileDialog(
                         nameText = it
                         error = null
                     },
-                    label = { Text(stringResource(id = R.string.settings_dialog_profile_label), color = TextSecondary) },
-                    placeholder = { Text(stringResource(id = R.string.settings_dialog_profile_placeholder), color = TextTertiary) },
+                    label = { Text(stringResource(id = R.string.settings_dialog_profile_label)) },
+                    placeholder = { Text(stringResource(id = R.string.settings_dialog_profile_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Primary,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
-                        focusedLabelColor = TextSecondary,
-                        unfocusedLabelColor = TextSecondary
-                    ),
-                    singleLine = true
+                    singleLine = true,
+                    isError = error != null,
+                    supportingText = error?.let { msg -> { Text(msg) } }
                 )
-                val errorText = error
-                if (errorText != null) {
-                    Text(
-                        text = errorText,
-                        color = RedAccent,
-                        fontSize = 12.sp
-                    )
-                }
             }
         },
         confirmButton = {
@@ -368,20 +320,17 @@ fun EditProfileDialog(
                     if (nameText.isNotBlank()) {
                         onSave(nameText.trim())
                     } else {
-                        error = "Name cannot be empty"
+                        error = emptyNameError
                     }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                }
             ) {
-                Text(stringResource(id = R.string.save), color = BackgroundDark, fontWeight = FontWeight.Bold)
+                Text(stringResource(id = R.string.save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(id = R.string.cancel), color = TextSecondary)
+                Text(stringResource(id = R.string.cancel))
             }
-        },
-        containerColor = SurfaceCardAlt,
-        shape = RoundedCornerShape(16.dp)
+        }
     )
 }

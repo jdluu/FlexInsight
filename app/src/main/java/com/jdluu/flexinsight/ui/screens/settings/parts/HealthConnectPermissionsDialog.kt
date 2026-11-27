@@ -9,12 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.jdluu.flexinsight.R
 
-/**
- * Explains each Health Connect permission before the system permission sheet is shown.
- */
 @Composable
 fun HealthConnectPermissionsDialog(
     onDismiss: () -> Unit,
@@ -25,12 +21,16 @@ fun HealthConnectPermissionsDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        titleContentColor = MaterialTheme.colorScheme.onSurface,
+        textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         title = {
             Text(
                 text = stringResource(
                     if (requestMode) R.string.health_permissions_dialog_title_request
                     else R.string.health_permissions_dialog_title_info
                 ),
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
         },
@@ -44,7 +44,7 @@ fun HealthConnectPermissionsDialog(
             ) {
                 Text(
                     text = stringResource(R.string.health_permissions_dialog_intro),
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 PermissionExplainRow(
@@ -73,14 +73,14 @@ fun HealthConnectPermissionsDialog(
                 )
                 Text(
                     text = stringResource(R.string.health_permissions_dialog_footer),
-                    fontSize = 12.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         },
         confirmButton = {
             if (requestMode) {
-                TextButton(onClick = onConfirm) {
+                Button(onClick = onConfirm) {
                     Text(stringResource(R.string.health_permissions_dialog_allow))
                 }
             } else {
@@ -102,7 +102,16 @@ fun HealthConnectPermissionsDialog(
 @Composable
 private fun PermissionExplainRow(title: String, reason: String) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(text = title, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-        Text(text = reason, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = reason,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

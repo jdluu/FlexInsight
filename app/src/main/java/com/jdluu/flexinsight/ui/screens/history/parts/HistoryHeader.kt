@@ -1,57 +1,83 @@
 package com.jdluu.flexinsight.ui.screens.history.parts
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.jdluu.flexinsight.ui.theme.Primary
-import com.jdluu.flexinsight.ui.theme.BackgroundDarkAlt
-import com.jdluu.flexinsight.ui.theme.SurfaceCardAlt
-import com.jdluu.flexinsight.ui.theme.TextSecondary
+import com.jdluu.flexinsight.R
+import com.jdluu.flexinsight.ui.components.PlateStatusPill
+import com.jdluu.flexinsight.ui.theme.FlexTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryHeader(onFilterClick: () -> Unit = {}) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "Workout History",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        IconButton(onClick = onFilterClick) {
-            Icon(
-                imageVector = Icons.Default.Tune,
-                contentDescription = "Filter",
-                tint = MaterialTheme.colorScheme.primary
+fun HistoryHeader(
+    activeFilter: String = "All Time",
+    onFilterClick: () -> Unit = {}
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        TopAppBar(
+            title = {
+                Text(
+                    text = stringResource(id = R.string.history_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            },
+            actions = {
+                if (activeFilter != "All Time") {
+                    PlateStatusPill(
+                        label = activeFilter,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+                }
+                IconButton(onClick = onFilterClick) {
+                    Icon(
+                        imageVector = Icons.Outlined.Tune,
+                        contentDescription = stringResource(id = R.string.history_filter_dialog_title),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                scrolledContainerColor = MaterialTheme.colorScheme.surface
             )
-        }
+        )
+        HorizontalDivider(thickness = 1.dp, color = FlexTheme.colors.hairline)
     }
 }
 
 @Composable
-fun TabSelector(selectedTab: Int, onTabSelected: (Int) -> Unit) {
-    val tabs = listOf("Summary", "Exercises", "Compare")
+fun TabSelector(
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val tabs = listOf(
+        stringResource(id = R.string.history_tab_summary),
+        stringResource(id = R.string.history_tab_exercises),
+        stringResource(id = R.string.history_tab_compare)
+    )
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.secondaryContainer
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, FlexTheme.colors.hairline)
     ) {
         Row(
             modifier = Modifier
@@ -60,38 +86,29 @@ fun TabSelector(selectedTab: Int, onTabSelected: (Int) -> Unit) {
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             tabs.forEachIndexed { index, tab ->
-                val isComingSoon = index > 0 // Exercises and Compare tabs
+                val isSelected = selectedTab == index
                 Surface(
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (selectedTab == index) MaterialTheme.colorScheme.primary
-                           else if (isComingSoon) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                           else Color.Transparent,
-                    onClick = { if (!isComingSoon) onTabSelected(index) }
+                    shape = MaterialTheme.shapes.small,
+                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    onClick = { onTabSelected(index) }
                 ) {
-                    Column(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .padding(horizontal = 8.dp, vertical = 10.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = tab,
-                            fontSize = 14.sp,
-                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium,
-                            color = if (selectedTab == index) MaterialTheme.colorScheme.onPrimary
-                                   else if (isComingSoon) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                   else MaterialTheme.colorScheme.onSecondaryContainer,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
-                        if (isComingSoon) {
-                            Text(
-                                text = "Soon",
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        }
                     }
                 }
             }

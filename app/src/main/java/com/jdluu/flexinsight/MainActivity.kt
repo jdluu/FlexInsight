@@ -1,19 +1,27 @@
 package com.jdluu.flexinsight
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jdluu.flexinsight.data.preferences.ApiKeyManager
@@ -47,12 +55,28 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val themePreference by userPreferencesManager.themeFlow.collectAsStateWithLifecycle(initialValue = "System")
+            val themePreference by userPreferencesManager.themeFlow
+                .collectAsStateWithLifecycle(initialValue = "System")
 
             val darkTheme = when (themePreference) {
                 "Dark" -> true
                 "Light" -> false
-                else -> isSystemInDarkTheme() // "System" or any other value
+                else -> isSystemInDarkTheme()
+            }
+
+            LaunchedEffect(darkTheme) {
+                enableEdgeToEdge(
+                    statusBarStyle = if (darkTheme) {
+                        SystemBarStyle.dark(Color.TRANSPARENT)
+                    } else {
+                        SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                    },
+                    navigationBarStyle = if (darkTheme) {
+                        SystemBarStyle.dark(Color.TRANSPARENT)
+                    } else {
+                        SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+                    }
+                )
             }
 
             FlexInsightTheme(darkTheme = darkTheme) {
@@ -80,7 +104,7 @@ fun MainScreen(
         Screen.Dashboard.route,
         Screen.History.route,
         Screen.Planner.route,
-        Screen.Settings.route
+        Screen.AITrainer.route
     )
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -117,20 +141,19 @@ fun MainScreen(
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
+            containerColor = MaterialTheme.colorScheme.background,
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
             snackbarHost = { SnackbarHost(snackbarHostState) },
             bottomBar = {
                 if (showBottomNav) {
                     FlexBottomNavigation(
                         currentRoute = currentRoute,
                         onNavigate = { route ->
-                            // Always navigate to the selected tab, clearing any screens on top
                             navController.navigate(route) {
-                                // Pop up to the start destination, but don't pop the start destination itself
                                 popUpTo(navController.graph.startDestinationId) {
                                     saveState = false
                                     inclusive = false
                                 }
-                                // Avoid multiple copies of the same destination
                                 launchSingleTop = true
                             }
                         }

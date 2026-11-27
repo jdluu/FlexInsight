@@ -1,141 +1,141 @@
 package com.jdluu.flexinsight.ui.screens.planner.parts
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.jdluu.flexinsight.R
 import com.jdluu.flexinsight.data.model.WeeklyGoalProgress
-import com.jdluu.flexinsight.ui.theme.BackgroundDarkAlt
-import com.jdluu.flexinsight.ui.theme.Primary
-import com.jdluu.flexinsight.ui.theme.TextSecondary
+import com.jdluu.flexinsight.ui.components.CalibratedPlateBar
+import com.jdluu.flexinsight.ui.components.PlateCard
+import com.jdluu.flexinsight.ui.components.PlateStatusPill
+import com.jdluu.flexinsight.ui.theme.FlexTheme
+import com.jdluu.flexinsight.ui.theme.MonoMetricMedium
+import com.jdluu.flexinsight.ui.theme.PlateNumeralMedium
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlannerHeader() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "Planner",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = MaterialTheme.colorScheme.onBackground
+fun PlannerHeader(
+    hevyEditingEnabled: Boolean = false
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        TopAppBar(
+            title = {
+                Text(
+                    text = stringResource(id = R.string.nav_planner),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            actions = {
+                if (!hevyEditingEnabled) {
+                    PlateStatusPill(
+                        label = "View-only",
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        borderColor = FlexTheme.colors.hairline,
+                        modifier = Modifier.padding(end = 12.dp)
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background,
+                scrolledContainerColor = MaterialTheme.colorScheme.surface
+            )
         )
+        HorizontalDivider(thickness = 1.dp, color = FlexTheme.colors.hairline)
     }
 }
 
 @Composable
 fun WeeklyGoalCard(weeklyGoalProgress: WeeklyGoalProgress? = null) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+    val target = (weeklyGoalProgress?.target ?: 5).coerceAtLeast(1)
+    val completed = (weeklyGoalProgress?.completed ?: 0).coerceAtLeast(0)
+    val progress = (completed.toFloat() / target.toFloat()).coerceIn(0f, 1f)
+    val isComplete = completed >= target
+    val accentColor = if (isComplete) FlexTheme.colors.recovered else MaterialTheme.colorScheme.primary
+
+    PlateCard(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        containerColor = MaterialTheme.colorScheme.surface
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
+                verticalAlignment = Alignment.Top
             ) {
-                Column {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
                     Text(
-                        text = "Weekly Goal",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        letterSpacing = 1.sp
+                        text = stringResource(id = R.string.settings_item_weekly_goal),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "${weeklyGoalProgress?.target ?: 5} workouts per week",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f)
+                        text = "$target workouts per week",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.Bottom
-                    ) {
-                        Text(
-                            text = "${weeklyGoalProgress?.completed ?: 0}",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                        Text(
-                            text = "/${weeklyGoalProgress?.target ?: 5}",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
-                        )
-                    }
                 }
+
                 if (weeklyGoalProgress != null) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                    ) {
-                        Text(
-                            text = weeklyGoalProgress.status,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
+                    val (pillBg, pillFg) = if (isComplete) {
+                        FlexTheme.colors.recoveredContainer to FlexTheme.colors.onRecoveredContainer
+                    } else {
+                        MaterialTheme.colorScheme.primaryContainer to MaterialTheme.colorScheme.onPrimaryContainer
                     }
+                    PlateStatusPill(
+                        label = weeklyGoalProgress.status,
+                        containerColor = pillBg,
+                        contentColor = pillFg
+                    )
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(12.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(MaterialTheme.colorScheme.outlineVariant)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.Bottom
             ) {
-                val progress = if (weeklyGoalProgress != null && weeklyGoalProgress.target > 0) {
-                    (weeklyGoalProgress.completed.toFloat() / weeklyGoalProgress.target).coerceIn(0f, 1f)
-                } else {
-                    0f
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(progress)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(MaterialTheme.colorScheme.primary)
+                Text(
+                    text = "$completed",
+                    style = PlateNumeralMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "/ $target",
+                    style = MonoMetricMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
             }
 
-            val remaining = weeklyGoalProgress?.let { it.target - it.completed } ?: 0
+            CalibratedPlateBar(
+                progress = progress,
+                segments = target.coerceIn(1, 7),
+                activeColor = accentColor,
+                barHeight = 10.dp
+            )
+
+            val remaining = (target - completed).coerceAtLeast(0)
             Text(
-                text = if (remaining > 0) {
-                    "$remaining workout${if (remaining == 1) "" else "s"} left to hit your goal!"
-                } else if (weeklyGoalProgress?.completed ?: 0 >= (weeklyGoalProgress?.target ?: 0)) {
-                    "Goal achieved! Great work!"
-                } else {
-                    "Keep tracking your workouts!"
+                text = when {
+                    remaining > 0 -> "$remaining workout${if (remaining == 1) "" else "s"} remaining this week"
+                    else -> "Weekly target reached"
                 },
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSecondaryContainer
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

@@ -2,6 +2,7 @@ package com.jdluu.flexinsight.ui.navigation
 
 sealed class Screen(val route: String) {
     object Dashboard : Screen("dashboard")
+    object Recovery : Screen("recovery")
     object History : Screen("history")
     object AITrainer : Screen("ai_trainer")
     object Planner : Screen("planner")

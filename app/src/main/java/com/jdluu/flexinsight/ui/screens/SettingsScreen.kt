@@ -1,6 +1,8 @@
 package com.jdluu.flexinsight.ui.screens
 
-
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,31 +13,26 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.jdluu.flexinsight.FlexInsightApplication
-import com.jdluu.flexinsight.ui.components.ErrorBanner
-import com.jdluu.flexinsight.ui.components.NetworkStatusIndicator
-import com.jdluu.flexinsight.ui.screens.settings.parts.*
-import com.jdluu.flexinsight.ui.theme.*
-import com.jdluu.flexinsight.ui.viewmodel.SettingsViewModel
-import androidx.compose.ui.res.stringResource
+import androidx.health.connect.client.PermissionController
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.jdluu.flexinsight.BuildConfig
 import com.jdluu.flexinsight.R
 import com.jdluu.flexinsight.ui.common.LoadingState
+import com.jdluu.flexinsight.ui.common.LocalSnackbarHostState
+import com.jdluu.flexinsight.ui.components.ErrorBanner
+import com.jdluu.flexinsight.ui.components.NetworkStatusIndicator
+import com.jdluu.flexinsight.ui.screens.settings.parts.*
+import com.jdluu.flexinsight.ui.theme.FlexTheme
+import com.jdluu.flexinsight.ui.viewmodel.SettingsViewModel
 import kotlinx.coroutines.launch
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.health.connect.client.PermissionController
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-
-@Composable
 @OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
@@ -44,7 +41,7 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val scope = rememberCoroutineScope()
-    val snackbarHostState = com.jdluu.flexinsight.ui.common.LocalSnackbarHostState.current
+    val snackbarHostState = LocalSnackbarHostState.current
 
     var showApiKeyDialog by remember { mutableStateOf(false) }
     var showWeeklyGoalDialog by remember { mutableStateOf(false) }
@@ -82,28 +79,37 @@ fun SettingsScreen(
         }
     }
 
-    // Sync Status Feedback
     LaunchedEffect(uiState.syncState) {
         syncStateFeedback?.let { snackbarHostState.showSnackbar(it) }
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(id = R.string.settings_item_profile)) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.action_back)
+            Column {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(id = R.string.nav_settings),
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold
                         )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(id = R.string.action_back)
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.onBackground
+                    )
                 )
-            )
+                HorizontalDivider(thickness = 1.dp, color = FlexTheme.colors.hairline)
+            }
         }
     ) { paddingValues ->
         if (uiState.isLoading) {
@@ -120,15 +126,14 @@ fun SettingsScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
+                    .padding(paddingValues)
                     .background(MaterialTheme.colorScheme.background),
-                contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
-                verticalArrangement = Arrangement.spacedBy(28.dp)
+                contentPadding = PaddingValues(top = 16.dp, bottom = 72.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 item {
-                    // Network status indicator
-                    val networkState = uiState.networkState
                     NetworkStatusIndicator(
-                        networkState = networkState,
+                        networkState = uiState.networkState,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
@@ -145,7 +150,6 @@ fun SettingsScreen(
                     )
                 }
 
-                // Error banner
                 uiState.error?.let { error ->
                     item {
                         ErrorBanner(
@@ -157,6 +161,7 @@ fun SettingsScreen(
                         )
                     }
                 }
+
                 item {
                     SectionTitle(stringResource(id = R.string.settings_section_integrations))
                     ApiKeySection(
@@ -203,6 +208,7 @@ fun SettingsScreen(
                         )
                     }
                 }
+
                 item {
                     SectionTitle(stringResource(id = R.string.settings_section_preferences))
                     PreferenceItem(
@@ -244,6 +250,7 @@ fun SettingsScreen(
                         subtitle = stringResource(id = R.string.settings_item_view_only_desc)
                     )
                 }
+
                 item {
                     SectionTitle(stringResource(id = R.string.settings_section_data_privacy))
                     PreferenceItem(
@@ -253,19 +260,14 @@ fun SettingsScreen(
                         onClick = {
                             scope.launch {
                                 val report = viewModel.exportCoachReport()
-                                val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                val intent = Intent(Intent.ACTION_SEND).apply {
                                     type = "text/plain"
-                                    putExtra(android.content.Intent.EXTRA_SUBJECT, exportSubject)
-                                    putExtra(android.content.Intent.EXTRA_TEXT, report)
+                                    putExtra(Intent.EXTRA_SUBJECT, exportSubject)
+                                    putExtra(Intent.EXTRA_TEXT, report)
                                 }
                                 try {
-                                    context.startActivity(
-                                        android.content.Intent.createChooser(
-                                            intent,
-                                            exportReportTitle
-                                        )
-                                    )
-                                } catch (e: Exception) {
+                                    context.startActivity(Intent.createChooser(intent, exportReportTitle))
+                                } catch (_: Exception) {
                                     snackbarHostState.showSnackbar(exportFailedMessage)
                                 }
                             }
@@ -279,6 +281,7 @@ fun SettingsScreen(
                         onClick = { showClearCacheDialog = true }
                     )
                 }
+
                 item {
                     SectionTitle(stringResource(id = R.string.settings_section_help_feedback))
                     PreferenceItem(
@@ -286,14 +289,14 @@ fun SettingsScreen(
                         icon = Icons.Default.Email,
                         value = null,
                         onClick = {
-                            val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
-                                data = android.net.Uri.parse("mailto:")
-                                putExtra(android.content.Intent.EXTRA_EMAIL, arrayOf(supportEmail))
-                                putExtra(android.content.Intent.EXTRA_SUBJECT, supportSubject)
+                            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                data = Uri.parse("mailto:")
+                                putExtra(Intent.EXTRA_EMAIL, arrayOf(supportEmail))
+                                putExtra(Intent.EXTRA_SUBJECT, supportSubject)
                             }
                             try {
-                                context.startActivity(android.content.Intent.createChooser(intent, contactSupportTitle))
-                            } catch (e: Exception) {
+                                context.startActivity(Intent.createChooser(intent, contactSupportTitle))
+                            } catch (_: Exception) {
                                 scope.launch { snackbarHostState.showSnackbar(supportNoAppMessage) }
                             }
                         }
@@ -303,15 +306,16 @@ fun SettingsScreen(
                         icon = Icons.Default.Description,
                         value = null,
                         onClick = {
-                            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/jdluu/FlexInsight"))
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/jdluu/FlexInsight"))
                             try {
                                 context.startActivity(intent)
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 scope.launch { snackbarHostState.showSnackbar(browserNoAppMessage) }
                             }
                         }
                     )
                 }
+
                 if (BuildConfig.DEBUG) {
                     item {
                         SectionTitle(stringResource(id = R.string.settings_section_developer))
@@ -324,12 +328,13 @@ fun SettingsScreen(
                         )
                     }
                 }
+
                 item {
                     SectionTitle(stringResource(id = R.string.settings_section_about))
                     PreferenceItem(
                         title = stringResource(id = R.string.settings_item_version),
                         icon = Icons.Default.Info,
-                        value = "v1.0.4 (Build 203)",
+                        value = "v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                         isValueOnly = true,
                         onClick = {}
                     )
@@ -355,7 +360,6 @@ fun SettingsScreen(
         )
     }
 
-    // API Key Dialog
     if (showApiKeyDialog) {
         ApiKeyDialog(
             currentApiKey = uiState.apiKey,
@@ -372,7 +376,6 @@ fun SettingsScreen(
         )
     }
 
-    // Weekly Goal Dialog
     if (showWeeklyGoalDialog) {
         WeeklyGoalDialog(
             currentGoal = uiState.weeklyGoal,
@@ -384,7 +387,6 @@ fun SettingsScreen(
         )
     }
 
-    // Theme Dialog
     if (showThemeDialog) {
         ThemeDialog(
             currentTheme = uiState.theme,
@@ -396,7 +398,6 @@ fun SettingsScreen(
         )
     }
 
-    // Clear Cache Dialog
     if (showClearCacheDialog) {
         ClearCacheDialog(
             onDismiss = { showClearCacheDialog = false },
@@ -407,7 +408,6 @@ fun SettingsScreen(
         )
     }
 
-    // Edit Profile Dialog
     if (showEditProfileDialog) {
         val currentName = uiState.profileInfo?.displayName ?: ""
         EditProfileDialog(
@@ -417,30 +417,6 @@ fun SettingsScreen(
                 viewModel.updateDisplayName(newName)
                 showEditProfileDialog = false
             }
-        )
-    }
-
-    // Error Snackbar
-    uiState.error?.let { error ->
-        LaunchedEffect(error) {
-            // Error is displayed in UI state
-        }
-    }
-}
-
-@Composable
-fun SettingsHeader() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Profile",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
